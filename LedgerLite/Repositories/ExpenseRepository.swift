@@ -31,6 +31,10 @@ final class ExpenseRepository {
         try context.save()
     }
 
+    func update(_ expense: Expense) throws {
+        try context.save()
+    }
+
     func delete(_ expense: Expense) throws {
         context.delete(expense)
         try context.save()

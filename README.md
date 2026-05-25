@@ -65,7 +65,7 @@ ViewModels → Services → Network. Money is always `Int` (minor units).
 - [x] Phase 0 — Project scaffolding
 - [x] Phase 1 — Data models + Money type
 - [x] Phase 2 — Currency service (Frankfurter + fallback)
-- [ ] Phase 3 — Today tab + Quick Add sheet
+- [x] Phase 3 — Today tab + Quick Add sheet
 - [ ] Phase 4 — Subscriptions tab
 - [ ] Phase 5 — Subscription auto-detection
 - [ ] Phase 6 — Insights tab (Swift Charts)
