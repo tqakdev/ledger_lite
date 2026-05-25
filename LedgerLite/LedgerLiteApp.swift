@@ -45,7 +45,8 @@ struct LedgerLiteApp: App {
         if let groupURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: Constants.App.appGroupIdentifier) {
             let storeURL = groupURL.appendingPathComponent("LedgerLite.store")
-            let config = ModelConfiguration(schema: schema, url: storeURL)
+            // cloudKitDatabase: .none until Phase 7.5 — entitlements are present but sync is not wired yet.
+            let config = ModelConfiguration(schema: schema, url: storeURL, cloudKitDatabase: .none)
             do {
                 return try ModelContainer(for: schema, configurations: [config])
             } catch {
@@ -58,7 +59,8 @@ struct LedgerLiteApp: App {
 
         // Default location: works without provisioning, but widget can't access this store.
         do {
-            return try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema)])
+            let config = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
+            return try ModelContainer(for: schema, configurations: [config])
         } catch {
             fatalError("ModelContainer init failed entirely: \(error)")
         }

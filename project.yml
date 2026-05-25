@@ -88,8 +88,12 @@ targets:
     platform: iOS
     sources:
       - path: LedgerLiteTests
+    resources:
+      - path: LedgerLiteTests/Fixtures
+        type: folder
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.enes.ledgerlite.tests
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: LedgerLite

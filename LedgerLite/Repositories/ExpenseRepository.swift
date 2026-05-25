@@ -35,4 +35,17 @@ final class ExpenseRepository {
         context.delete(expense)
         try context.save()
     }
+
+    func fetchNeedingRateRefresh() throws -> [Expense] {
+        try context.fetch(
+            FetchDescriptor<Expense>(
+                predicate: #Predicate { $0.needsRateRefresh == true },
+                sortBy: [SortDescriptor(\.date, order: .forward)]
+            )
+        )
+    }
+
+    func savePendingChanges() throws {
+        try context.save()
+    }
 }

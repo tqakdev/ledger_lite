@@ -1,6 +1,16 @@
 import Foundation
 
 extension Date {
+    /// UTC midnight for the calendar day of `self` — matches `ExchangeRateCache.dateString`.
+    var utcStartOfDay: Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        return calendar.startOfDay(for: self)
+    }
+
+    /// Today's date at UTC midnight.
+    static var utcToday: Date { Date().utcStartOfDay }
+
     var startOfDay: Date {
         Calendar.current.startOfDay(for: self)
     }
