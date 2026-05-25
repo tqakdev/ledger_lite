@@ -1,0 +1,24 @@
+import Foundation
+
+enum Constants {
+    enum App {
+        static let appGroupIdentifier   = "group.com.enes.ledgerlite"
+        static let homeCurrencyDefault  = "USD"
+
+        /// ~30 major currencies verified against Frankfurter's /currencies endpoint at build time.
+        /// BGN and RON added for EU users; IDR included despite 0-decimal practice (ISO says 2).
+        static let supportedCurrencies: [String] = [
+            "USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "CNY",
+            "HKD", "SGD", "NZD", "SEK", "NOK", "DKK", "MXN", "BRL",
+            "INR", "KRW", "TRY", "ZAR", "SAR", "AED", "THB", "MYR",
+            "IDR", "PLN", "CZK", "HUF", "ILS", "PHP", "BGN", "RON",
+        ]
+    }
+
+    enum URLs {
+        /// Swap in the real URL once the domain is registered.
+        static let privacyPolicy        = URL(string: "https://ledgerlite.app/privacy")!
+        static let frankfurterBase      = URL(string: "https://api.frankfurter.app")!
+        static let exchangeRateHostBase = URL(string: "https://api.exchangerate.host")!
+    }
+}
