@@ -60,7 +60,7 @@ struct ExpenseFormSheet: View {
                 viewModel = vm
             }
         }
-        .presentationDetents([.large])
+        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
 
@@ -83,6 +83,8 @@ struct ExpenseFormSheet: View {
                         set: { viewModel.selectedCategory = $0 }
                     )
                 )
+
+                Divider()
 
                 VStack(spacing: 8) {
                     TextField(String(localized: "Merchant"), text: merchantBinding(viewModel))
@@ -137,6 +139,7 @@ struct ExpenseFormSheet: View {
                     .font(.system(size: 40, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
+                    .contentTransition(.numericText())
                 if !isEnteringAmount {
                     Text(String(localized: "Tap amount to use keypad"))
                         .font(.caption2)
@@ -146,6 +149,7 @@ struct ExpenseFormSheet: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .contentShape(Rectangle())
+            .ignoresSafeArea(.keyboard, edges: .bottom)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(String(localized: "Amount"))
@@ -193,10 +197,9 @@ struct ExpenseFormSheet: View {
             get: { viewModel.currencyCode },
             set: { newCode in
                 if newCode != viewModel.currencyCode {
-                    // TODO: Silently resets amount to 0 on currency change.
-                    // Consider a confirmation dialog or haptic feedback to make this less surprising.
                     viewModel.currencyCode = newCode
-                    viewModel.minorUnits = 0
+                    withAnimation(.default) { viewModel.minorUnits = 0 }
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 }
             }
         )
