@@ -20,6 +20,9 @@ build/
 .swiftpm/
 Package.resolved
 
+# Local build overrides (Team ID etc.) — copy Local.xcconfig.template → Local.xcconfig
+Local.xcconfig
+
 # macOS
 .DS_Store
 .AppleDouble

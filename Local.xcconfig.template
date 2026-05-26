@@ -1,0 +1,8 @@
+// Local build overrides — copy this file to Local.xcconfig and fill in your values.
+// Local.xcconfig is gitignored and never committed.
+//
+// How to find your Team ID:
+//   Xcode → Settings → Accounts → select your Apple ID → Team ID column
+//   Or: https://developer.apple.com/account → Membership → Team ID
+
+DEVELOPMENT_TEAM =

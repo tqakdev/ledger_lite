@@ -11,13 +11,17 @@ configs:
   Debug: debug
   Release: release
 
+configFiles:
+  Debug: Local.xcconfig
+  Release: Local.xcconfig
+
 settings:
   base:
     SWIFT_VERSION: "5.9"
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
-    DEVELOPMENT_TEAM: G8R6AJTB2K  # Enes Talip Chelik (Personal Team)
+    DEVELOPMENT_TEAM: ""  # Set in Local.xcconfig (gitignored) — see Local.xcconfig.template
 
 targets:
 
