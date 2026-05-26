@@ -17,7 +17,7 @@ settings:
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
-    DEVELOPMENT_TEAM: ""  # TODO: set your Apple Developer Team ID (e.g. "ABCDE12345")
+    DEVELOPMENT_TEAM: G8R6AJTB2K  # Enes Talip Chelik (Personal Team)
 
 targets:
 
@@ -35,19 +35,15 @@ targets:
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        UIRequiresFullScreen: true
         ITSAppUsesNonExemptEncryption: false
     entitlements:
       path: LedgerLite/Resources/LedgerLite.entitlements
       properties:
-        # TODO: CLOUDKIT — register iCloud.com.enes.ledgerlite at
-        # https://developer.apple.com/account/resources/icloud/list
-        # and group.com.enes.ledgerlite at
+        # TODO: Phase 7.5 + paid Apple Developer Program — add iCloud.com.enes.ledgerlite
+        # (Personal Team cannot use iCloud capability on device).
+        # Register group.com.enes.ledgerlite at
         # https://developer.apple.com/account/resources/identifiers/list/applicationGroup
-        # Then set DEVELOPMENT_TEAM above and re-run xcodegen generate.
-        com.apple.developer.icloud-container-identifiers:
-          - iCloud.com.enes.ledgerlite
-        com.apple.developer.icloud-services:
-          - CloudKit
         com.apple.security.application-groups:
           - group.com.enes.ledgerlite
     settings:

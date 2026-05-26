@@ -1,6 +1,11 @@
 import SwiftUI
 import SwiftData
 
+private enum ExpenseFormField: Hashable {
+    case merchant
+    case note
+}
+
 struct ExpenseFormSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -9,6 +14,9 @@ struct ExpenseFormSheet: View {
     let onComplete: () -> Void
 
     @State private var viewModel: ExpenseFormViewModel?
+    @FocusState private var focusedField: ExpenseFormField?
+
+    private var isEnteringAmount: Bool { focusedField == nil }
 
     var body: some View {
         NavigationStack {
@@ -30,10 +38,17 @@ struct ExpenseFormSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     if let viewModel {
                         Button(String(localized: "Save")) {
+                            focusedField = nil
                             Task { await save(viewModel) }
                         }
                         .fontWeight(.semibold)
                         .disabled(!viewModel.canSave)
+                    }
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(String(localized: "Done")) {
+                        focusedField = nil
                     }
                 }
             }
@@ -51,53 +66,91 @@ struct ExpenseFormSheet: View {
 
     @ViewBuilder
     private func formContent(_ viewModel: ExpenseFormViewModel) -> some View {
-        VStack(spacing: 0) {
-            Text(viewModel.formattedAmount())
-                .font(.system(size: 44, weight: .semibold, design: .rounded))
-                .monospacedDigit()
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-                .accessibilityLabel(String(localized: "Amount"))
-                .accessibilityValue(viewModel.formattedAmount())
+        ScrollView {
+            VStack(spacing: 16) {
+                amountHeader(viewModel)
 
-            if case .add = mode {
-                currencyPicker(viewModel)
-            }
+                if case .add = mode {
+                    // Currency is intentionally hidden in edit mode — changing it after creation
+                    // would require re-fetching the exchange rate and recalculating the home-currency amount.
+                    currencyPicker(viewModel)
+                }
 
-            CategoryPickerStrip(
-                categories: viewModel.categories,
-                selected: Binding(
-                    get: { viewModel.selectedCategory },
-                    set: { viewModel.selectedCategory = $0 }
+                CategoryPickerStrip(
+                    categories: viewModel.categories,
+                    selected: Binding(
+                        get: { viewModel.selectedCategory },
+                        set: { viewModel.selectedCategory = $0 }
+                    )
                 )
-            )
-            .padding(.vertical, 12)
 
-            VStack(spacing: 8) {
-                TextField(String(localized: "Merchant"), text: merchantBinding(viewModel))
-                    .textFieldStyle(.roundedBorder)
-                TextField(String(localized: "Note"), text: noteBinding(viewModel))
-                    .textFieldStyle(.roundedBorder)
+                VStack(spacing: 8) {
+                    TextField(String(localized: "Merchant"), text: merchantBinding(viewModel))
+                        .textFieldStyle(.roundedBorder)
+                        .focused($focusedField, equals: .merchant)
+                        .submitLabel(.next)
+                        .onSubmit { focusedField = .note }
+
+                    TextField(String(localized: "Note"), text: noteBinding(viewModel))
+                        .textFieldStyle(.roundedBorder)
+                        .focused($focusedField, equals: .note)
+                        .submitLabel(.done)
+                        .onSubmit { focusedField = nil }
+                }
+                .padding(.horizontal)
+
+                if let error = viewModel.errorMessage {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                if !isEnteringAmount {
+                    // Spacer so last field can scroll above the keyboard.
+                    Color.clear.frame(height: 8)
+                }
             }
-            .padding(.horizontal)
-
-            Spacer(minLength: 12)
-
-            AmountNumpad(
-                decimalPlaces: viewModel.decimalPlaces,
-                onDigit: { viewModel.appendDigit($0) },
-                onDelete: { viewModel.deleteLastDigit() }
-            )
-            .padding(.horizontal)
             .padding(.bottom, 8)
-
-            if let error = viewModel.errorMessage {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .padding(.bottom, 8)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if isEnteringAmount {
+                AmountNumpad(
+                    decimalPlaces: viewModel.decimalPlaces,
+                    onDigit: { viewModel.appendDigit($0) },
+                    onDelete: { viewModel.deleteLastDigit() }
+                )
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .background(.bar)
             }
         }
+    }
+
+    private func amountHeader(_ viewModel: ExpenseFormViewModel) -> some View {
+        Button {
+            focusedField = nil
+        } label: {
+            VStack(spacing: 4) {
+                Text(viewModel.formattedAmount())
+                    .font(.system(size: 40, weight: .semibold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(.primary)
+                if !isEnteringAmount {
+                    Text(String(localized: "Tap amount to use keypad"))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(String(localized: "Amount"))
+        .accessibilityValue(viewModel.formattedAmount())
+        .accessibilityHint(String(localized: "Shows the number pad for entering the amount"))
     }
 
     @ViewBuilder
@@ -109,6 +162,9 @@ struct ExpenseFormSheet: View {
         }
         .pickerStyle(.menu)
         .padding(.horizontal)
+        .onChange(of: viewModel.currencyCode) { _, _ in
+            focusedField = nil
+        }
     }
 
     private func save(_ viewModel: ExpenseFormViewModel) async {
@@ -137,6 +193,8 @@ struct ExpenseFormSheet: View {
             get: { viewModel.currencyCode },
             set: { newCode in
                 if newCode != viewModel.currencyCode {
+                    // TODO: Silently resets amount to 0 on currency change.
+                    // Consider a confirmation dialog or haptic feedback to make this less surprising.
                     viewModel.currencyCode = newCode
                     viewModel.minorUnits = 0
                 }

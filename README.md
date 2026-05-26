@@ -19,10 +19,21 @@ open LedgerLite.xcodeproj
 The `.xcodeproj` is generated from `project.yml` and is not committed to version control.
 Run `xcodegen generate` any time `project.yml` changes.
 
-## CloudKit & App Group setup
+## Run on your iPhone (free Apple ID / Personal Team)
+
+1. Xcode → **Settings → Accounts** → sign in with your Apple ID.
+2. **LedgerLite** target → **Signing & Capabilities** → **Automatically manage signing** → Team: **(Personal Team)**.
+3. Repeat for **LedgerLiteWidget** (same team).
+4. Select your iPhone → **⌘R**.
+
+**iCloud is not included in entitlements** until Phase 7.5 — Apple’s free Personal Team does not support the iCloud capability on device. Local SwiftData works fine without it.
+
+If signing still fails on **App Groups**, register `group.com.enes.ledgerlite` in the [Developer Portal](https://developer.apple.com/account/resources/identifiers/list/applicationGroup) (free account can create App Group IDs), then click **Try Again** in Xcode.
+
+## CloudKit & App Group setup (Phase 7.5 / paid program)
 
 > **TODO: CLOUDKIT** — the following must be done in the Apple Developer Portal before
-> iCloud sync works and before building on a physical device:
+> iCloud sync works (requires **paid** Apple Developer Program):
 >
 > 1. Register the **App Group**: `group.com.enes.ledgerlite`
 >    → https://developer.apple.com/account/resources/identifiers/list/applicationGroup

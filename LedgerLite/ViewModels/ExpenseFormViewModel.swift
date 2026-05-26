@@ -8,7 +8,7 @@ enum ExpenseFormMode: Identifiable {
     var id: String {
         switch self {
         case .add: return "add"
-        case .edit(let expense): return expense.id.uuidString
+        case .edit(let expense): return expense.id.uuidString 
         }
     }
 

@@ -38,17 +38,14 @@ final class TodayViewModel {
     }
 
     var todayTotalFormatted: String {
-        Money(minorUnits: todayTotalMinor, currencyCode: homeCurrencyCode)
-            .formatted(locale: Locale(identifier: "en_US"))
+        Money(minorUnits: todayTotalMinor, currencyCode: homeCurrencyCode).formatted()
     }
 
     func refresh() {
         homeCurrencyCode = UserPreferences.homeCurrencyCode
         do {
             expenses = try expenseRepository.fetchToday()
-            todayTotalMinor = expenses.reduce(0) { partial, expense in
-                partial + homeAmountMinor(for: expense)
-            }
+            todayTotalMinor = totalInHomeCurrency(expenses)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -80,12 +77,21 @@ final class TodayViewModel {
 
     // MARK: - Private
 
-    private func homeAmountMinor(for expense: Expense) -> Int {
-        if expense.currencyCode == expense.homeCurrencyAtEntry {
-            return expense.amountMinor
+    /// Sums expenses in home-currency minor units.
+    /// Accumulates raw Decimal before rounding once at the end — avoids per-row rounding drift.
+    private func totalInHomeCurrency(_ expenses: [Expense]) -> Int {
+        let homePlaces = Money.decimals(for: homeCurrencyCode)
+        var accumulated = Decimal(0)
+        for expense in expenses {
+            if expense.currencyCode == expense.homeCurrencyAtEntry {
+                accumulated += Decimal(expense.amountMinor)
+            } else {
+                let srcDecimal = expense.money.decimalValue
+                let homeMinorDecimal = srcDecimal * expense.exchangeRateToHome * Decimal.powerOfTen(homePlaces)
+                accumulated += homeMinorDecimal
+            }
         }
-        return Money(minorUnits: expense.amountMinor, currencyCode: expense.currencyCode)
-            .converted(to: expense.homeCurrencyAtEntry, rate: expense.exchangeRateToHome)
-            .minorUnits
+        let rounded = accumulated.rounded(scale: 0)
+        return NSDecimalNumber(decimal: rounded).intValue
     }
 }

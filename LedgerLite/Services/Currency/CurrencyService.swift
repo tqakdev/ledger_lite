@@ -11,7 +11,7 @@ final class CurrencyService {
     init(
         context: ModelContext,
         primary: RateFetching = FrankfurterClient(),
-        fallback: RateFetching = ExchangeRateHostClient()
+        fallback: RateFetching = OpenERAPIClient()
     ) {
         self.cacheRepository = ExchangeRateCacheRepository(context: context)
         self.expenseRepository = ExpenseRepository(context: context)

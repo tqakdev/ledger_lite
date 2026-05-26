@@ -1,13 +1,13 @@
 import Foundation
 
-/// Fallback rate provider for currencies Frankfurter does not cover.
-/// Uses the exchangerate.host API shape (`base` + `symbols` query params).
-/// https://api.exchangerate.host/latest?base=EUR&symbols=USD,GBP
-struct ExchangeRateHostClient: RateFetching {
+/// Fallback rate provider using open.er-api.com (free, no API key, stable since 2019).
+/// Endpoint: GET https://open.er-api.com/v6/latest/{base}
+/// Note: free tier returns live rates only — historical-date requests fall back to latest available.
+struct OpenERAPIClient: RateFetching {
     private let http: HTTPFetching
     private let baseURL: URL
 
-    init(http: HTTPFetching = URLSessionHTTPClient(), baseURL: URL = Constants.URLs.exchangeRateHostBase) {
+    init(http: HTTPFetching = URLSessionHTTPClient(), baseURL: URL = Constants.URLs.openERAPIBase) {
         self.http = http
         self.baseURL = baseURL
     }
@@ -16,57 +16,56 @@ struct ExchangeRateHostClient: RateFetching {
         let filtered = quotes.filter { $0 != base }
         guard !filtered.isEmpty else { return [:] }
 
-        let request = try buildRequest(base: base, quotes: filtered, on: date)
-        let (data, response) = try await http.data(for: request)
+        let (data, response) = try await http.data(for: buildRequest(base: base))
 
         switch response.statusCode {
         case 200:
-            let decoded = try decodeResponse(data: data, expectedBase: base)
-            AppLogger.currency.info("ExchangeRateHost OK \(base)→[\(filtered.joined(separator: ","))] \(decoded.date)")
-            return decoded.rates
+            let all = try decodeRates(from: data, expectedBase: base)
+            let result = all.filter { filtered.contains($0.key) }
+            AppLogger.currency.info("OpenERAPI OK \(base)→[\(filtered.joined(separator: ","))]")
+            return result
         case 404:
-            AppLogger.currency.error("ExchangeRateHost 404 for \(base)→[\(filtered.joined(separator: ","))]")
-            throw CurrencyError.unsupportedCurrency(filtered.joined(separator: ","))
+            AppLogger.currency.error("OpenERAPI 404 for base \(base)")
+            throw CurrencyError.unsupportedCurrency(base)
         default:
-            AppLogger.currency.error("ExchangeRateHost HTTP \(response.statusCode)")
-            if response.statusCode >= 500 {
-                throw CurrencyError.networkUnavailable
-            }
-            throw CurrencyError.decodingFailed
+            AppLogger.currency.error("OpenERAPI HTTP \(response.statusCode)")
+            throw response.statusCode >= 500 ? CurrencyError.networkUnavailable : CurrencyError.decodingFailed
         }
     }
 
     // MARK: - Private
 
-    private func buildRequest(base: String, quotes: [String], on date: Date) throws -> URLRequest {
-        let normalized = date.utcStartOfDay
-        let dateString = ExchangeRateCache.dateString(for: normalized)
-        let isToday = dateString == ExchangeRateCache.dateString(for: Date.utcToday)
-        let path = isToday ? "latest" : dateString
-
-        var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
-            URLQueryItem(name: "base", value: base),
-            URLQueryItem(name: "symbols", value: quotes.joined(separator: ",")),
-        ]
-        guard let url = components.url else { throw CurrencyError.decodingFailed }
+    private func buildRequest(base: String) -> URLRequest {
+        let url = baseURL
+            .appendingPathComponent("v6")
+            .appendingPathComponent("latest")
+            .appendingPathComponent(base)
         return URLRequest(url: url)
     }
 
-    private func decodeResponse(data: Data, expectedBase: String) throws -> (date: String, rates: [String: Decimal]) {
-        let json = try JSONSerialization.jsonObject(with: data)
-        guard let dict = json as? [String: Any] else { throw CurrencyError.decodingFailed }
-
-        if let success = dict["success"] as? Bool, !success {
-            if let errorInfo = dict["error"] as? [String: Any],
-               let info = errorInfo["info"] as? String {
-                AppLogger.currency.error("ExchangeRateHost API error: \(info)")
-            }
+    private func decodeRates(from data: Data, expectedBase: String) throws -> [String: Decimal] {
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw CurrencyError.decodingFailed
         }
+        guard (json["result"] as? String) == "success" else { throw CurrencyError.decodingFailed }
+        guard (json["base_code"] as? String) == expectedBase else { throw CurrencyError.decodingFailed }
+        guard let ratesDict = json["rates"] as? [String: Any] else { throw CurrencyError.decodingFailed }
 
-        let decoded = try APIRateDecoder.decodeRates(from: data)
-        guard decoded.base == expectedBase else { throw CurrencyError.decodingFailed }
-        return (decoded.date, decoded.rates)
+        let posix = Locale(identifier: "en_US_POSIX")
+        var rates: [String: Decimal] = [:]
+        rates.reserveCapacity(ratesDict.count)
+        for (code, value) in ratesDict {
+            switch value {
+            case let d as Double:
+                rates[code] = Decimal(string: String(d), locale: posix) ?? .zero
+            case let n as NSNumber:
+                rates[code] = Decimal(string: n.stringValue, locale: posix) ?? .zero
+            case let i as Int:
+                rates[code] = Decimal(i)
+            default:
+                break
+            }
+        }
+        return rates
     }
 }

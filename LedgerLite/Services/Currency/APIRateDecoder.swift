@@ -33,6 +33,9 @@ enum APIRateDecoder {
         case let int as Int:
             return Decimal(int)
         case let double as Double:
+            // TODO: JSONSerialization parses JSON numbers as Double, losing precision beyond ~15
+            // significant digits. For exchange rates (6–7 sig figs) this is harmless, but a future
+            // improvement would use a custom Codable type to receive the raw string representation.
             return Decimal(string: String(double), locale: posix) ?? .zero
         case let number as NSNumber:
             return Decimal(string: number.stringValue, locale: posix) ?? .zero

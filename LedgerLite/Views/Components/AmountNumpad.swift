@@ -30,17 +30,12 @@ struct AmountNumpad: View {
         }
     }
 
-    @ViewBuilder
+    // TODO: Add a decimal-point key here for currencies where decimalPlaces > 0, with a hint
+    // like "Enter cents" so users understand the numpad auto-shifts from major to minor units.
     private var bottomLeftKey: some View {
-        if decimalPlaces > 0 {
-            Color.clear
-                .frame(maxWidth: .infinity, minHeight: 52)
-                .accessibilityHidden(true)
-        } else {
-            Color.clear
-                .frame(maxWidth: .infinity, minHeight: 52)
-                .accessibilityHidden(true)
-        }
+        Color.clear
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .accessibilityHidden(true)
     }
 
     private func numpadButton(_ label: String, action: @escaping () -> Void) -> some View {

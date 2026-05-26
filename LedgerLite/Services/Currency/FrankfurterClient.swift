@@ -26,6 +26,9 @@ struct FrankfurterClient: RateFetching {
             AppLogger.currency.info("Frankfurter OK \(base)→[\(filtered.joined(separator: ","))] \(decoded.date)")
             return decoded.rates
         case 404:
+            // TODO: Frankfurter returns 404 for the entire batch when any one currency is unsupported.
+            // Improve resilience by catching this, identifying the culprit via binary search or
+            // per-code retries, and re-fetching with the unsupported code removed.
             AppLogger.currency.error("Frankfurter 404 for \(base)→[\(filtered.joined(separator: ","))]")
             throw CurrencyError.unsupportedCurrency(filtered.joined(separator: ","))
         default:

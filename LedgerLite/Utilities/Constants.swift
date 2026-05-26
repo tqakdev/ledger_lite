@@ -18,7 +18,7 @@ enum Constants {
     enum URLs {
         /// Swap in the real URL once the domain is registered.
         static let privacyPolicy        = URL(string: "https://ledgerlite.app/privacy")!
-        static let frankfurterBase      = URL(string: "https://api.frankfurter.app")!
-        static let exchangeRateHostBase = URL(string: "https://api.exchangerate.host")!
+        static let frankfurterBase      = URL(string: "https://api.frankfurter.dev/v1")!
+        static let openERAPIBase        = URL(string: "https://open.er-api.com")!
     }
 }

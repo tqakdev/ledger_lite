@@ -8,7 +8,7 @@ protocol HTTPFetching: Sendable {
 struct URLSessionHTTPClient: HTTPFetching {
     private let session: URLSession
 
-    init(session: URLSession = .shared) {
+    init(session: URLSession = URLSession(configuration: .ephemeral)) {
         self.session = session
     }
 
