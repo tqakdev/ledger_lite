@@ -60,7 +60,7 @@ struct ExpenseFormSheet: View {
                 viewModel = vm
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
 
