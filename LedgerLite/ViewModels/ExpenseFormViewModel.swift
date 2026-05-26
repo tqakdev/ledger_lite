@@ -8,7 +8,7 @@ enum ExpenseFormMode: Identifiable {
     var id: String {
         switch self {
         case .add: return "add"
-        case .edit(let expense): return expense.id.uuidString 
+        case .edit(let expense): return expense.id.uuidString
         }
     }
 
@@ -25,6 +25,7 @@ enum ExpenseFormMode: Identifiable {
 final class ExpenseFormViewModel {
     let mode: ExpenseFormMode
 
+    var amountString: String = ""
     var minorUnits: Int = 0
     var currencyCode: String
     var selectedCategory: Category?
@@ -40,8 +41,6 @@ final class ExpenseFormViewModel {
     private let categoryRepository: CategoryRepository
     private let currencyService: CurrencyService
     private let homeCurrencyCode: String
-
-    var decimalPlaces: Int { Money.decimals(for: currencyCode) }
 
     var canSave: Bool {
         minorUnits > 0 && selectedCategory != nil && !isSaving
@@ -66,6 +65,8 @@ final class ExpenseFormViewModel {
             note = expense.note ?? ""
             merchant = expense.merchant ?? ""
             date = expense.date
+            amountString = AmountInputParser(currencyCode: expense.currencyCode, locale: .current)
+                .format(minorUnits: expense.amountMinor)
         }
     }
 
@@ -80,15 +81,11 @@ final class ExpenseFormViewModel {
         }
     }
 
-    func appendDigit(_ digit: Int) {
-        guard (0...9).contains(digit) else { return }
-        let next = minorUnits * 10 + digit
-        guard next <= 999_999_999 else { return }
-        minorUnits = next
-    }
-
-    func deleteLastDigit() {
-        minorUnits /= 10
+    /// Parses a raw TextField string, updates `amountString` (sanitized) and `minorUnits`.
+    func setAmount(_ raw: String) {
+        let (display, units) = AmountInputParser(currencyCode: currencyCode, locale: .current).parse(raw)
+        amountString = display
+        minorUnits = units
     }
 
     func formattedAmount(locale: Locale = .current) -> String {
