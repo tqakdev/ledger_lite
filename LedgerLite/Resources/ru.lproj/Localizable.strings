@@ -1,0 +1,147 @@
+/* General */
+"OK" = "OK";
+"Cancel" = "Отмена";
+"Done" = "Готово";
+"Delete" = "Удалить";
+"Edit" = "Редактировать";
+"Save" = "Сохранить";
+"Add" = "Добавить";
+"Close" = "Закрыть";
+"Skip" = "Пропустить";
+"Continue" = "Продолжить";
+"Something went wrong" = "Что-то пошло не так";
+"Open Settings" = "Открыть настройки";
+
+/* Tab bar */
+"Today" = "Сегодня";
+"History" = "История";
+"Subscriptions" = "Подписки";
+"Insights" = "Аналитика";
+"Settings" = "Настройки";
+
+/* Today tab */
+"No Expenses Today" = "Расходов сегодня нет";
+"Tap + to log your first expense." = "Нажмите +, чтобы добавить первый расход.";
+"Day Total" = "Итого за день";
+"30-day avg" = "Среднее за 30 дн.";
+
+/* History tab */
+"Yesterday" = "Вчера";
+"Search all expenses" = "Поиск по всем расходам";
+"No Expenses" = "Нет расходов";
+"No Results" = "Нет результатов";
+"No expenses recorded for this day." = "Расходов за этот день не найдено.";
+"No expenses match your search." = "Расходы по вашему запросу не найдены.";
+"Jump to Date" = "Перейти к дате";
+"Jump to date" = "Перейти к дате";
+"Date" = "Дата";
+
+/* Expense form */
+"Amount" = "Сумма";
+"Merchant" = "Продавец";
+"Category" = "Категория";
+"Note" = "Заметка";
+"Currency" = "Валюта";
+"Add Expense" = "Добавить расход";
+"Edit Expense" = "Редактировать расход";
+"None" = "Нет";
+
+/* Subscriptions tab */
+"Add Subscription" = "Добавить подписку";
+"Scan" = "Сканировать";
+"Active" = "Активные";
+"Inactive" = "Неактивные";
+"No active subscriptions" = "Нет активных подписок";
+"No Subscriptions" = "Нет подписок";
+"Add a subscription manually, or paste a billing email to detect it automatically." = "Добавьте подписку вручную или вставьте письмо о списании для автоматического определения.";
+"Scan from email or SMS" = "Сканировать из письма или SMS";
+"Est. Monthly Cost" = "Прим. расход в месяц";
+"Active subscriptions only" = "Только активные подписки";
+"Pause" = "Приостановить";
+"Resume" = "Возобновить";
+"Restore" = "Восстановить";
+"Paused" = "Приостановлена";
+"Cancelled" = "Отменена";
+"Weekly" = "Еженедельно";
+"Monthly" = "Ежемесячно";
+"Yearly" = "Ежегодно";
+"Tomorrow" = "Завтра";
+"Name" = "Название";
+"Billing Cycle" = "Платёжный цикл";
+"Next Billing Date" = "Следующая дата списания";
+"Edit Subscription" = "Редактировать подписку";
+
+/* Insights tab */
+"This Week" = "Эта неделя";
+"This Month" = "Этот месяц";
+"This Year" = "Этот год";
+"All Time" = "За всё время";
+"Week" = "Неделя";
+"Month" = "Месяц";
+"Year" = "Год";
+"Top Merchant" = "Главный продавец";
+"No Data" = "Нет данных";
+"No expenses in this period." = "Расходов за этот период нет.";
+"Start tracking to see insights." = "Начните отслеживать расходы, чтобы увидеть аналитику.";
+"Log Expense" = "Добавить расход";
+"Spending by Category" = "Расходы по категориям";
+"Spending Over Time" = "Расходы во времени";
+"Budget Progress" = "Исполнение бюджета";
+"View Details" = "Подробнее";
+"Manage" = "Управление";
+"Share" = "Поделиться";
+"No budget set" = "Бюджет не задан";
+
+/* Settings */
+"General" = "Основные";
+"Home Currency" = "Домашняя валюта";
+"Categories" = "Категории";
+"Manage Categories" = "Управление категориями";
+"Budgets" = "Бюджеты";
+"Monthly Budgets" = "Месячные бюджеты";
+"Notifications" = "Уведомления";
+"Billing Reminders" = "Напоминания об оплате";
+"Active — notified 2 days before each billing date." = "Активно — уведомление за 2 дня до каждой даты списания.";
+"Reminders are off." = "Напоминания отключены.";
+"Security" = "Безопасность";
+"Face ID Lock" = "Блокировка Face ID";
+"Touch ID Lock" = "Блокировка Touch ID";
+"Biometric Lock" = "Биометрическая блокировка";
+"App locks when sent to background." = "Приложение блокируется при переходе в фон.";
+"Protect your data with Face ID or Touch ID." = "Защитите данные с помощью Face ID или Touch ID.";
+"Data" = "Данные";
+"Export CSV" = "Экспорт CSV";
+"Import CSV" = "Импорт CSV";
+"Reset All Data" = "Сбросить все данные";
+"Delete Everything" = "Удалить всё";
+"This will permanently delete all expenses and subscriptions. This cannot be undone." = "Это безвозвратно удалит все расходы и подписки. Отменить действие невозможно.";
+"All data deleted." = "Все данные удалены.";
+"About" = "О приложении";
+"Version" = "Версия";
+"Disable in System Settings" = "Отключить в системных настройках";
+"Go to Settings → Notifications → LedgerLite to turn off billing reminders." = "Перейдите в Настройки → Уведомления → LedgerLite, чтобы отключить напоминания об оплате.";
+"Import Complete" = "Импорт завершён";
+"The file contains no expense rows." = "Файл не содержит строк с расходами.";
+"Could not access the selected file." = "Не удалось получить доступ к выбранному файлу.";
+"Biometrics Unavailable" = "Биометрия недоступна";
+"Face ID or Touch ID is not set up on this device. Enable it in Settings → Face ID & Passcode." = "Face ID или Touch ID не настроен на этом устройстве. Включите в Настройки → Face ID и пароль.";
+"Notifications Denied" = "Уведомления запрещены";
+"Allow notifications in Settings → Notifications → LedgerLite." = "Разрешите уведомления в Настройки → Уведомления → LedgerLite.";
+
+/* Onboarding */
+"Welcome to LedgerLite" = "Добро пожаловать в LedgerLite";
+"Track daily spending, manage subscriptions, and understand where your money goes." = "Отслеживайте ежедневные расходы, управляйте подписками и узнайте, куда уходят деньги.";
+"Get Started" = "Начать";
+"Pick Your Currency" = "Выберите валюту";
+"Choose the currency you spend in most. You can change this any time in Settings." = "Выберите валюту, которой пользуетесь чаще всего. Изменить её можно в Настройках.";
+"You're All Set" = "Всё готово";
+"Tap the + button on the Today tab to log your first expense. Swipe left on any row to delete it." = "Нажмите + на вкладке «Сегодня», чтобы добавить первый расход. Смахните строку влево, чтобы удалить.";
+"Stay on Top of Bills" = "Не забывайте об оплате";
+"Get notified 2 days before each subscription billing date so you're never surprised." = "Получайте уведомления за 2 дня до даты списания по каждой подписке.";
+"Allow Notifications" = "Разрешить уведомления";
+"Start Tracking" = "Начать отслеживание";
+
+/* Lock screen */
+"Unlock LedgerLite" = "Разблокировать LedgerLite";
+"Tap to authenticate" = "Нажмите для аутентификации";
+"Authentication failed. Tap to try again." = "Ошибка аутентификации. Нажмите, чтобы повторить.";

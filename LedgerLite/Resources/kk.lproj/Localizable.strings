@@ -1,0 +1,147 @@
+/* General */
+"OK" = "OK";
+"Cancel" = "Бас тарту";
+"Done" = "Дайын";
+"Delete" = "Жою";
+"Edit" = "Өңдеу";
+"Save" = "Сақтау";
+"Add" = "Қосу";
+"Close" = "Жабу";
+"Skip" = "Өткізіп жіберу";
+"Continue" = "Жалғастыру";
+"Something went wrong" = "Қате орын алды";
+"Open Settings" = "Параметрлерді ашу";
+
+/* Tab bar */
+"Today" = "Бүгін";
+"History" = "Тарих";
+"Subscriptions" = "Жазылымдар";
+"Insights" = "Талдау";
+"Settings" = "Параметрлер";
+
+/* Today tab */
+"No Expenses Today" = "Бүгін шығын жоқ";
+"Tap + to log your first expense." = "Бірінші шығынды тіркеу үшін + түймесін басыңыз.";
+"Day Total" = "Күндік жиын";
+"30-day avg" = "30 күндік орт.";
+
+/* History tab */
+"Yesterday" = "Кеше";
+"Search all expenses" = "Барлық шығындарды іздеу";
+"No Expenses" = "Шығын жоқ";
+"No Results" = "Нәтиже жоқ";
+"No expenses recorded for this day." = "Бұл күнге шығын тіркелмеген.";
+"No expenses match your search." = "Іздеуіңізге сәйкес шығын табылмады.";
+"Jump to Date" = "Күнге өту";
+"Jump to date" = "Күнге өту";
+"Date" = "Күн";
+
+/* Expense form */
+"Amount" = "Сома";
+"Merchant" = "Дүкен";
+"Category" = "Санат";
+"Note" = "Ескертпе";
+"Currency" = "Валюта";
+"Add Expense" = "Шығын қосу";
+"Edit Expense" = "Шығынды өңдеу";
+"None" = "Жоқ";
+
+/* Subscriptions tab */
+"Add Subscription" = "Жазылым қосу";
+"Scan" = "Сканерлеу";
+"Active" = "Белсенді";
+"Inactive" = "Белсенді емес";
+"No active subscriptions" = "Белсенді жазылым жоқ";
+"No Subscriptions" = "Жазылым жоқ";
+"Add a subscription manually, or paste a billing email to detect it automatically." = "Жазылымды қолмен қосыңыз немесе автоматты анықтау үшін төлем хатын қойып жіберіңіз.";
+"Scan from email or SMS" = "Хат немесе SMS арқылы сканерлеу";
+"Est. Monthly Cost" = "Айлық шамамен шығын";
+"Active subscriptions only" = "Тек белсенді жазылымдар";
+"Pause" = "Тоқтата тұру";
+"Resume" = "Жалғастыру";
+"Restore" = "Қалпына келтіру";
+"Paused" = "Тоқтатылған";
+"Cancelled" = "Болдырылмаған";
+"Weekly" = "Апта сайын";
+"Monthly" = "Ай сайын";
+"Yearly" = "Жыл сайын";
+"Tomorrow" = "Ертең";
+"Name" = "Атауы";
+"Billing Cycle" = "Төлем циклі";
+"Next Billing Date" = "Келесі төлем күні";
+"Edit Subscription" = "Жазылымды өңдеу";
+
+/* Insights tab */
+"This Week" = "Осы апта";
+"This Month" = "Осы ай";
+"This Year" = "Осы жыл";
+"All Time" = "Барлық уақыт";
+"Week" = "Апта";
+"Month" = "Ай";
+"Year" = "Жыл";
+"Top Merchant" = "Ең жиі дүкен";
+"No Data" = "Деректер жоқ";
+"No expenses in this period." = "Бұл кезеңде шығын жоқ.";
+"Start tracking to see insights." = "Талдауды көру үшін шығындарды тіркей бастаңыз.";
+"Log Expense" = "Шығын тіркеу";
+"Spending by Category" = "Санат бойынша шығын";
+"Spending Over Time" = "Уақыт бойынша шығын";
+"Budget Progress" = "Бюджеттің орындалуы";
+"View Details" = "Толығырақ";
+"Manage" = "Басқару";
+"Share" = "Бөлісу";
+"No budget set" = "Бюджет белгіленбеген";
+
+/* Settings */
+"General" = "Жалпы";
+"Home Currency" = "Негізгі валюта";
+"Categories" = "Санаттар";
+"Manage Categories" = "Санаттарды басқару";
+"Budgets" = "Бюджеттер";
+"Monthly Budgets" = "Ай сайынғы бюджеттер";
+"Notifications" = "Хабарландырулар";
+"Billing Reminders" = "Төлем еске салғыштары";
+"Active — notified 2 days before each billing date." = "Белсенді — әр төлем күнінен 2 күн бұрын хабарландыру жіберіледі.";
+"Reminders are off." = "Еске салғыштар өшірілген.";
+"Security" = "Қауіпсіздік";
+"Face ID Lock" = "Face ID құлпы";
+"Touch ID Lock" = "Touch ID құлпы";
+"Biometric Lock" = "Биометриялық құлып";
+"App locks when sent to background." = "Қосымша фонға жіберілгенде құлыпталады.";
+"Protect your data with Face ID or Touch ID." = "Деректеріңізді Face ID немесе Touch ID арқылы қорғаңыз.";
+"Data" = "Деректер";
+"Export CSV" = "CSV экспорты";
+"Import CSV" = "CSV импорты";
+"Reset All Data" = "Барлық деректерді қалпына келтіру";
+"Delete Everything" = "Барлығын жою";
+"This will permanently delete all expenses and subscriptions. This cannot be undone." = "Бұл барлық шығындар мен жазылымдарды біржола жояды. Бұл әрекетті болдырмауға болмайды.";
+"All data deleted." = "Барлық деректер жойылды.";
+"About" = "Қосымша туралы";
+"Version" = "Нұсқа";
+"Disable in System Settings" = "Жүйе параметрлерінде өшіру";
+"Go to Settings → Notifications → LedgerLite to turn off billing reminders." = "Төлем еске салғыштарын өшіру үшін Параметрлер → Хабарландырулар → LedgerLite бөліміне өтіңіз.";
+"Import Complete" = "Импорт аяқталды";
+"The file contains no expense rows." = "Файлда шығын жолдары жоқ.";
+"Could not access the selected file." = "Таңдалған файлға қол жеткізу мүмкін болмады.";
+"Biometrics Unavailable" = "Биометрия қол жетімді емес";
+"Face ID or Touch ID is not set up on this device. Enable it in Settings → Face ID & Passcode." = "Face ID немесе Touch ID бұл құрылғыда орнатылмаған. Параметрлер → Face ID және рұқсат коды бөлімінде қосыңыз.";
+"Notifications Denied" = "Хабарландырулар тыйым салынған";
+"Allow notifications in Settings → Notifications → LedgerLite." = "Параметрлер → Хабарландырулар → LedgerLite бөлімінде хабарландыруларға рұқсат беріңіз.";
+
+/* Onboarding */
+"Welcome to LedgerLite" = "LedgerLite қолданбасына қош келдіңіз";
+"Track daily spending, manage subscriptions, and understand where your money goes." = "Күнделікті шығындарды бақылаңыз, жазылымдарды басқарыңыз және ақшаңыз қайда кететінін біліңіз.";
+"Get Started" = "Бастау";
+"Pick Your Currency" = "Валютаны таңдаңыз";
+"Choose the currency you spend in most. You can change this any time in Settings." = "Жиі қолданатын валютаңызды таңдаңыз. Оны кез келген уақытта Параметрлерден өзгертуге болады.";
+"You're All Set" = "Бәрі дайын";
+"Tap the + button on the Today tab to log your first expense. Swipe left on any row to delete it." = "Бірінші шығынды тіркеу үшін «Бүгін» қойындысындағы + түймесін басыңыз. Жою үшін жолды солға сырғытыңыз.";
+"Stay on Top of Bills" = "Төлемдерді уақытында төлеңіз";
+"Get notified 2 days before each subscription billing date so you're never surprised." = "Әр жазылым бойынша төлем күнінен 2 күн бұрын хабарландыру алыңыз.";
+"Allow Notifications" = "Хабарландыруларға рұқсат беру";
+"Start Tracking" = "Бақылауды бастау";
+
+/* Lock screen */
+"Unlock LedgerLite" = "LedgerLite бағдарламасын ашу";
+"Tap to authenticate" = "Аутентификация үшін түртіңіз";
+"Authentication failed. Tap to try again." = "Аутентификация сәтсіз аяқталды. Қайталау үшін түртіңіз.";
