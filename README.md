@@ -1,93 +1,82 @@
 # LedgerLite
 
-iOS expense and subscription tracker. Swift 5.9+, SwiftUI, SwiftData, iOS 17+.
+A clean, privacy-first expense and subscription tracker for iOS. Built with SwiftUI and SwiftData — no accounts, no cloud required.
 
-## Prerequisites
+## Features
 
+- **Quick Add** — log an expense in seconds with a large amount field, category picker, merchant suggestions, and quick-add templates
+- **Today view** — see today's total, compare against your 30-day daily average, and swipe to edit or delete
+- **History** — browse by day with date navigation and full-text search across all expenses
+- **Subscriptions** — track recurring bills, see your estimated monthly cost, pause/resume/cancel, and get renewal reminders
+- **Auto-detect** — paste a billing email or SMS and let the app extract subscription details automatically
+- **Insights** — spending by category (donut chart), daily/monthly trends (bar chart), budget progress, and top merchant — across week, month, year, or all time
+- **Multi-currency** — live exchange rates via Frankfurter; amounts stored in minor units so rounding is exact
+- **Widget** — Today total on your Home Screen or Lock Screen
+- **CSV export** — one tap to export all expenses
+- **Budgets** — set monthly limits per category; get notified when you approach or exceed them
+
+## Requirements
+
+- iOS 17.0+
 - Xcode 16+
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) — `brew install xcodegen`
 
 ## Getting started
 
 ```bash
-git clone <repo-url>
-cd LedgerLite
+git clone https://github.com/bluemadisonblue/ledger_lite.git
+cd ledger_lite
 xcodegen generate
 open LedgerLite.xcodeproj
 ```
 
-The `.xcodeproj` is generated from `project.yml` and is not committed to version control.
-Run `xcodegen generate` any time `project.yml` changes.
+The `.xcodeproj` is generated from `project.yml` and is not committed to version control. Run `xcodegen generate` whenever `project.yml` changes.
 
-## Run on your iPhone (free Apple ID / Personal Team)
+### Run on your iPhone (free Apple ID)
 
 1. Xcode → **Settings → Accounts** → sign in with your Apple ID.
-2. **LedgerLite** target → **Signing & Capabilities** → **Automatically manage signing** → Team: **(Personal Team)**.
-3. Repeat for **LedgerLiteWidget** (same team).
-4. Select your iPhone → **⌘R**.
+2. **LedgerLite** target → **Signing & Capabilities** → **Automatically manage signing** → set Team to your Personal Team.
+3. Repeat for the **LedgerLiteWidget** target.
+4. Select your iPhone and press **⌘R**.
 
-**iCloud is not included in entitlements** until Phase 7.5 — Apple’s free Personal Team does not support the iCloud capability on device. Local SwiftData works fine without it.
-
-If signing still fails on **App Groups**, register `group.com.enes.ledgerlite` in the [Developer Portal](https://developer.apple.com/account/resources/identifiers/list/applicationGroup) (free account can create App Group IDs), then click **Try Again** in Xcode.
-
-## CloudKit & App Group setup (Phase 7.5 / paid program)
-
-> **TODO: CLOUDKIT** — the following must be done in the Apple Developer Portal before
-> iCloud sync works (requires **paid** Apple Developer Program):
->
-> 1. Register the **App Group**: `group.com.enes.ledgerlite`
->    → https://developer.apple.com/account/resources/identifiers/list/applicationGroup
->
-> 2. Register the **CloudKit container**: `iCloud.com.enes.ledgerlite`
->    → https://developer.apple.com/account/resources/icloud/list
->
-> 3. Add both to your App ID: `com.enes.ledgerlite`
->
-> 4. Set `DEVELOPMENT_TEAM` in `project.yml` to your 10-character team ID.
->
-> 5. Re-run `xcodegen generate`.
->
-> Until then the app runs on Simulator using local SwiftData only.
-> CloudKit sync is wired in **Phase 7.5**.
-
-The App Group (`group.com.enes.ledgerlite`) is already configured in both the main app
-and widget entitlements. It allows the widget to read the same SwiftData store as the
-main app via a shared container URL. This is set up from day one to avoid a painful
-Phase 8 retrofit.
+If signing fails on **App Groups**, register `group.com.enes.ledgerlite` in the [Developer Portal](https://developer.apple.com/account/resources/identifiers/list/applicationGroup) (free accounts can create App Group IDs), then click **Try Again** in Xcode.
 
 ## Architecture
 
-MVVM + SwiftData. Views → ViewModels → Repositories → SwiftData.
-ViewModels → Services → Network. Money is always `Int` (minor units).
+MVVM with a clean layered separation: Views talk only to ViewModels; ViewModels call Repositories and Services; nothing below the ViewModel layer imports SwiftUI.
 
-| Layer | Path |
-|-------|------|
-| Models | `LedgerLite/Models/` |
-| Views | `LedgerLite/Views/` |
-| ViewModels | `LedgerLite/ViewModels/` |
-| Services | `LedgerLite/Services/` |
-| Repositories | `LedgerLite/Repositories/` |
-| Utilities | `LedgerLite/Utilities/` |
-| Widget | `LedgerLiteWidget/` |
-| Tests | `LedgerLiteTests/` |
+| Layer | Path | Responsibility |
+|-------|------|----------------|
+| Models | `LedgerLite/Models/` | SwiftData entities (`Expense`, `Category`, `Subscription`) |
+| Views | `LedgerLite/Views/` | SwiftUI screens and components |
+| ViewModels | `LedgerLite/ViewModels/` | `@Observable` + `@MainActor`; owns UI state |
+| Repositories | `LedgerLite/Repositories/` | SwiftData fetch/insert/delete |
+| Services | `LedgerLite/Services/` | Currency rates, notifications, Spotlight, CSV |
+| Utilities | `LedgerLite/Utilities/` | `Money` type, `UserPreferences`, extensions |
+| Widget | `LedgerLiteWidget/` | WidgetKit extension |
+| Tests | `LedgerLiteTests/` | Unit tests for models, ViewModels, services |
 
-## Build phases
+**Key design decisions:**
 
-- [x] Phase 0 — Project scaffolding
-- [x] Phase 1 — Data models + Money type
-- [x] Phase 2 — Currency service (Frankfurter + fallback)
-- [x] Phase 3 — Today tab + Quick Add sheet
-- [x] Phase 4 — Subscriptions tab
-- [x] Phase 5 — Subscription auto-detection
-- [x] Phase 6 — Insights tab (Swift Charts)
-- [x] Phase 7 — Settings + CSV export
-- [ ] Phase 7.5 — CloudKit sync
-- [x] Phase 8 — Widget + Siri / App Intents
-- [x] Phase 9 — Final polish (App Store prep)
+- All money is stored as `Int` (minor units, e.g. cents). `Double` is never used for monetary values.
+- Exchange rates are frozen at entry time (`exchangeRateToHome`) so historical totals never drift.
+- `@Observable` macro throughout — no `ObservableObject`, no `@Published`.
+- All async work uses structured concurrency (`async/await`, `Task`). No Combine.
+- User-facing strings use `String(localized:)` — localization-ready.
+- Logging uses `os.Logger` per subsystem.
 
-## Notes
+## CloudKit sync (future)
 
-- All money is stored as `Int` (minor units). `Double` is never used for money.
-- All async work uses structured concurrency (`async/await`, `Task`, `TaskGroup`).
-- User-facing strings use `String(localized:)` throughout (localization-ready).
-- Logging uses `os.Logger` per subsystem; `print()` is banned.
+iCloud sync via CloudKit is planned. To enable it on a paid Apple Developer account:
+
+1. Register the App Group `group.com.enes.ledgerlite` in the Developer Portal.
+2. Register the CloudKit container `iCloud.com.enes.ledgerlite`.
+3. Add both to the App ID `com.enes.ledgerlite`.
+4. Set `DEVELOPMENT_TEAM` in `project.yml` to your 10-character team ID.
+5. Re-run `xcodegen generate`.
+
+The App Group is already wired in both the app and widget entitlements so the widget can read the same SwiftData store via a shared container URL.
+
+## License
+
+MIT
