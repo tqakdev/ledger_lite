@@ -21,7 +21,7 @@ final class AppNotificationDelegate: NSObject, UNUserNotificationCenterDelegate 
         let path: String?
         if id.hasPrefix("budget-") {
             path = "insights"
-        } else if id.hasPrefix("subscription-") {
+        } else if id.hasPrefix("sub-") {
             path = "subscriptions"
         } else {
             path = nil

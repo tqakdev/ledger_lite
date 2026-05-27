@@ -30,6 +30,7 @@ final class TodayViewModel {
     var activeSheet: TodaySheet?
     var errorMessage: String?
     var isLoading: Bool = false
+    var currentStreak: Int = 0
 
     private let expenseRepository: ExpenseRepository
     private let modelContext: ModelContext
@@ -50,6 +51,7 @@ final class TodayViewModel {
             expenses = try expenseRepository.fetchToday()
             todayTotalMinor = expenses.totalInHomeCurrency(homeCurrencyCode)
             dailyAverageMinor = computeDailyAverage()
+            currentStreak = computeStreak()
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -84,6 +86,22 @@ final class TodayViewModel {
     }
 
     // MARK: - Private
+
+    private func computeStreak() -> Int {
+        let cal = Calendar.current
+        let allExpenses = (try? modelContext.fetch(
+            FetchDescriptor<Expense>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        )) ?? []
+        let expenseDays = Set(allExpenses.map { cal.startOfDay(for: $0.date) })
+        var streak = 0
+        var checkDate = cal.startOfDay(for: Date())
+        while expenseDays.contains(checkDate) {
+            streak += 1
+            guard let prev = cal.date(byAdding: .day, value: -1, to: checkDate) else { break }
+            checkDate = prev
+        }
+        return streak
+    }
 
     private func computeDailyAverage() -> Int {
         guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) else { return 0 }

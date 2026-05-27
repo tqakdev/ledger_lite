@@ -23,6 +23,7 @@ final class HistoryViewModel {
     var selectedDate: Date = Calendar.current.startOfDay(for: Date())
     var expenses: [Expense] = []
     var dayTotalMinor: Int = 0
+    var monthTotalMinor: Int = 0
     var homeCurrencyCode: String = UserPreferences.homeCurrencyCode
     var activeSheet: HistorySheet?
     var errorMessage: String?
@@ -114,6 +115,7 @@ final class HistoryViewModel {
                 )
             )
             dayTotalMinor = expenses.totalInHomeCurrency(homeCurrencyCode)
+            monthTotalMinor = computeMonthTotal()
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -140,6 +142,19 @@ final class HistoryViewModel {
     func dismissSheet() {
         activeSheet = nil
         refresh()
+    }
+
+    private func computeMonthTotal() -> Int {
+        let cal = Calendar.current
+        guard let monthStart = cal.date(from: cal.dateComponents([.year, .month], from: selectedDate)),
+              let nextMonth = cal.date(byAdding: .month, value: 1, to: monthStart) else { return 0 }
+        let monthExpenses = (try? modelContext.fetch(
+            FetchDescriptor<Expense>(
+                predicate: #Predicate { $0.date >= monthStart && $0.date < nextMonth },
+                sortBy: []
+            )
+        )) ?? []
+        return monthExpenses.totalInHomeCurrency(homeCurrencyCode)
     }
 
 }

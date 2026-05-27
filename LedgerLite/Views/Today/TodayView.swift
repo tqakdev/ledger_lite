@@ -114,6 +114,7 @@ struct TodayView: View {
             subtitle: Date.now.formatted(date: .complete, time: .omitted)
         ) {
             velocityLabel(viewModel)
+            streakChip(viewModel)
         }
         .redacted(reason: viewModel.isLoading && viewModel.expenses.isEmpty ? .placeholder : [])
     }
@@ -134,6 +135,23 @@ struct TodayView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background((isAbove ? Color.orange : Color.green).opacity(0.12))
+            .clipShape(Capsule())
+        }
+    }
+
+    @ViewBuilder
+    private func streakChip(_ viewModel: TodayViewModel) -> some View {
+        if viewModel.currentStreak >= 2 {
+            HStack(spacing: 4) {
+                Text("🔥")
+                    .font(.caption)
+                Text(String(localized: "\(viewModel.currentStreak)-day streak"))
+                    .font(.caption)
+            }
+            .foregroundStyle(.orange)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Color.orange.opacity(0.12))
             .clipShape(Capsule())
         }
     }

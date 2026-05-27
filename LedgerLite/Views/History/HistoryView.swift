@@ -200,7 +200,17 @@ struct HistoryView: View {
             amount: vm.dayTotalFormatted,
             amountMinor: vm.dayTotalMinor,
             subtitle: label
-        )
+        ) {
+            if !Calendar.current.isDate(vm.selectedDate, equalTo: Date(), toGranularity: .month) {
+                HStack(spacing: 4) {
+                    Image(systemName: "calendar")
+                        .font(.caption2)
+                    Text(String(localized: "Month: \(Money(minorUnits: vm.monthTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())"))
+                        .font(.caption)
+                }
+                .foregroundStyle(.secondary)
+            }
+        }
     }
 
     // MARK: - Expense list
