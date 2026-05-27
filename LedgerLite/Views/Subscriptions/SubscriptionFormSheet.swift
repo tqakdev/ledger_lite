@@ -99,35 +99,36 @@ struct SubscriptionFormSheet: View {
 
     private func amountSection(_ viewModel: SubscriptionFormViewModel) -> some View {
         let symbol = Self.currencySymbol(for: viewModel.currencyCode)
-        let symbolSize: CGFloat = symbol.count > 2 ? 22 : 28
+        let symbolSize: CGFloat = symbol.count > 2 ? 20 : 26
         return VStack(spacing: 8) {
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(symbol)
                     .font(.system(size: symbolSize, weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
+                    .fixedSize()
                 ZStack {
                     if viewModel.amountString.isEmpty {
                         Text("0")
-                            .font(.system(size: 56, weight: .semibold, design: .rounded))
+                            .font(.system(size: 56, weight: .bold, design: .rounded))
                             .foregroundStyle(.tertiary)
                             .monospacedDigit()
                             .allowsHitTesting(false)
                     }
                     TextField("", text: amountBinding(viewModel))
-                        .font(.system(size: 56, weight: .semibold, design: .rounded))
+                        .font(.system(size: 56, weight: .bold, design: .rounded))
                         .monospacedDigit()
-                        .multilineTextAlignment(.center)
+                        .multilineTextAlignment(.trailing)
                         .keyboardType(.decimalPad)
                         .focused($focusedField, equals: .amount)
                         .tint(viewModel.amountString.isEmpty ? .clear : .accentColor)
-                        .frame(minWidth: 56)
+                        .fixedSize()
                 }
             }
-            .fixedSize()
             .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.vertical, 8)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
             .accessibilityLabel(String(localized: "Amount"))
 
             Picker(String(localized: "Currency"), selection: currencyBinding(viewModel)) {

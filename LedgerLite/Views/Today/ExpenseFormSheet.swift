@@ -118,42 +118,43 @@ struct ExpenseFormSheet: View {
 
     private func amountField(_ viewModel: ExpenseFormViewModel) -> some View {
         let symbol = Self.currencySymbol(for: viewModel.currencyCode)
-        let symbolSize: CGFloat = symbol.count > 2 ? 22 : 28
-        return HStack(alignment: .firstTextBaseline, spacing: 2) {
+        let symbolSize: CGFloat = symbol.count > 2 ? 20 : 26
+        return HStack(alignment: .firstTextBaseline, spacing: 4) {
             Text(symbol)
                 .font(.system(size: symbolSize, weight: .semibold, design: .rounded))
                 .foregroundStyle(.secondary)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
+                .fixedSize()
 
             ZStack {
                 // Styled placeholder — only shown when field is empty so cursor never sits on it
                 if viewModel.amountString.isEmpty {
                     Text("0")
-                        .font(.system(size: 56, weight: .semibold, design: .rounded))
+                        .font(.system(size: 56, weight: .bold, design: .rounded))
                         .foregroundStyle(.tertiary)
                         .monospacedDigit()
                         .allowsHitTesting(false)
                 }
                 TextField("", text: amountBinding(viewModel))
-                    .font(.system(size: 56, weight: .semibold, design: .rounded))
+                    .font(.system(size: 56, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                    .multilineTextAlignment(.center)
+                    .multilineTextAlignment(.trailing)
                     .keyboardType(.decimalPad)
                     .focused($focusedField, equals: .amount)
                     .contentTransition(.numericText())
                     .animation(.smooth(duration: 0.15), value: viewModel.amountString)
                     // Hide cursor when empty so it doesn't overlap the styled "0" placeholder
                     .tint(viewModel.amountString.isEmpty ? .clear : .accentColor)
-                    .frame(minWidth: 56)
+                    .fixedSize()
             }
         }
-        .fixedSize()
         .frame(maxWidth: .infinity, alignment: .center)
         // Subtle scale-in when first digit is entered
         .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
         .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
-        .padding(.vertical, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
         .background(
             LinearGradient(
                 colors: [Color.accentColor.opacity(0.07), Color.clear],

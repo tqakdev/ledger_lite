@@ -51,17 +51,23 @@ struct SubscriptionRowView: View {
     private var categoryIcon: some View {
         Group {
             if let cat = subscription.category {
-                Image(systemName: cat.iconName)
-                    .font(.callout.weight(.medium))
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-                    .background(Color(hex: cat.colorHex))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(hex: cat.colorHex).opacity(0.15))
+                        .frame(width: 44, height: 44)
+                    Image(systemName: cat.iconName)
+                        .font(.body)
+                        .foregroundStyle(Color(hex: cat.colorHex))
+                }
             } else {
-                Image(systemName: "calendar.circle.fill")
-                    .font(.system(size: 44))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 44, height: 44)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.secondary.opacity(0.15))
+                        .frame(width: 44, height: 44)
+                    Image(systemName: "repeat.circle.fill")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
     }

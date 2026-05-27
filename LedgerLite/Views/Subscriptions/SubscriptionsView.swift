@@ -80,9 +80,13 @@ struct SubscriptionsView: View {
         if viewModel.subscriptions.isEmpty {
             emptyState(viewModel)
         } else {
-            List {
-                monthlyCostCard(viewModel)
+            VStack(spacing: 0) {
+                monthlyCostCardStandalone(viewModel)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
 
+                List {
                 Section(String(localized: "Active")) {
                     if viewModel.activeSubscriptions.isEmpty {
                         Text(String(localized: "No active subscriptions"))
@@ -119,48 +123,45 @@ struct SubscriptionsView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            }  // end VStack
         }
     }
 
-    // MARK: - Monthly cost card
+    // MARK: - Monthly cost card (standalone — above the list)
 
-    @ViewBuilder
-    private func monthlyCostCard(_ viewModel: SubscriptionsViewModel) -> some View {
-        Section {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Image(systemName: "calendar.circle.fill")
-                        .foregroundStyle(Color.accentColor)
-                        .font(.subheadline)
-                    Text(String(localized: "Est. Monthly Cost"))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                if viewModel.monthlyCostIsLoading {
-                    ProgressView().frame(height: 44)
-                } else {
-                    Text(Money(minorUnits: viewModel.monthlyCostMinor, currencyCode: viewModel.homeCurrencyCode).formatted())
-                        .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                }
-                Text(String(localized: "Active subscriptions only"))
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+    private func monthlyCostCardStandalone(_ viewModel: SubscriptionsViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: "calendar.circle.fill")
+                    .foregroundStyle(Color.accentColor)
+                    .font(.subheadline)
+                Text(String(localized: "Est. Monthly Cost"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(
-                LinearGradient(
-                    colors: [Color.accentColor.opacity(0.08), Color(.secondarySystemGroupedBackground)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
-            .listRowBackground(Color.clear)
+            if viewModel.monthlyCostIsLoading {
+                ProgressView().frame(height: 44)
+            } else {
+                Text(Money(minorUnits: viewModel.monthlyCostMinor, currencyCode: viewModel.homeCurrencyCode).formatted())
+                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                    .animation(.spring(response: 0.3), value: viewModel.monthlyCostMinor)
+            }
+            Text(String(localized: "Active subscriptions only"))
+                .font(.caption)
+                .foregroundStyle(.tertiary)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(
+            LinearGradient(
+                colors: [Color.accentColor.opacity(0.07), Color(.secondarySystemGroupedBackground)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     // MARK: - Row + swipe actions

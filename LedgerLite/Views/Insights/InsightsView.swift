@@ -48,10 +48,6 @@ struct InsightsView: View {
     private func content(_ vm: InsightsViewModel) -> some View {
         ScrollView {
             VStack(spacing: 0) {
-                periodPicker(vm)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-
                 if vm.isLoading && vm.categoryTotals.isEmpty {
                     ProgressView()
                         .padding(.vertical, 40)
@@ -70,6 +66,12 @@ struct InsightsView: View {
                     .animation(.easeInOut(duration: 0.2), value: vm.period)
                 }
             }
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            periodPicker(vm)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(.bar)
         }
         .onChange(of: vm.period) { _, _ in
             selectedAngleValue = nil
@@ -217,20 +219,6 @@ struct InsightsView: View {
         GroupBox {
             if vm.dailyTotals.isEmpty {
                 emptyLabel
-            } else if vm.dailyTotals.count == 1, let item = vm.dailyTotals.first {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(item.date.formatted(date: .abbreviated, time: .omitted))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
-                            .font(.title2.bold())
-                            .monospacedDigit()
-                    }
-                    Spacer()
-                }
-                .padding()
-                .frame(height: 180)
             } else {
                 trendChart(vm)
             }
@@ -272,7 +260,7 @@ struct InsightsView: View {
             }
         }
         .chartXAxis {
-            AxisMarks(values: .automatic) { _ in
+            AxisMarks(values: .automatic(desiredCount: totals.count == 1 ? 1 : 6)) { _ in
                 AxisGridLine()
                 AxisTick()
                 AxisValueLabel(format: xFmt)
@@ -369,7 +357,7 @@ struct InsightsView: View {
                     .padding(.vertical, 4)
             }
         } label: {
-            Label(String(localized: "Top Merchant"), systemImage: "trophy.fill")
+            Text(String(localized: "Top Merchant"))
                 .font(.headline)
         }
         .padding(.horizontal)
