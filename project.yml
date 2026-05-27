@@ -73,6 +73,12 @@ targets:
         CFBundleDisplayName: LedgerLite
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations:
+          - en
+          - es
+          - ru
+          - kk
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
