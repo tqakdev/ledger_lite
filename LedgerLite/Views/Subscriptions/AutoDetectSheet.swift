@@ -37,10 +37,10 @@ struct AutoDetectSheet: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
-        .presentationCornerRadius(24)  // A8
+        .presentationCornerRadius(24)
     }
 
-    // MARK: - Phase A: paste zone
+    // MARK: - Paste zone
 
     private func pasteZone(_ viewModel: AutoDetectViewModel) -> some View {
         ScrollView {
@@ -94,7 +94,7 @@ struct AutoDetectSheet: View {
         .scrollDismissesKeyboard(.interactively)
     }
 
-    // MARK: - Phase B: candidate review
+    // MARK: - Candidate review
 
     private func candidateList(_ viewModel: AutoDetectViewModel) -> some View {
         List {

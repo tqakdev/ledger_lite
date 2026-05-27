@@ -18,7 +18,6 @@ struct SubscriptionFormSheet: View {
     @State private var viewModel: SubscriptionFormViewModel?
     @FocusState private var focusedField: SubscriptionFormField?
     @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
-    // C3
     @State private var showError = false
     @State private var errorText = ""
 
@@ -66,8 +65,7 @@ struct SubscriptionFormSheet: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
-        .presentationCornerRadius(24)  // A8
-        // C3
+        .presentationCornerRadius(24)
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
             Button(String(localized: "OK"), role: .cancel) {}
         } message: {
@@ -77,7 +75,7 @@ struct SubscriptionFormSheet: View {
             if let msg {
                 errorText = msg
                 showError = true
-                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1 error haptic
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
             }
         }
     }
@@ -127,7 +125,16 @@ struct SubscriptionFormSheet: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)
+            .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
+            .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
             .padding(.vertical, 12)
+            .background(
+                LinearGradient(
+                    colors: [Color.accentColor.opacity(0.07), Color.clear],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
             .accessibilityLabel(String(localized: "Amount"))
 
             Picker(String(localized: "Currency"), selection: currencyBinding(viewModel)) {
@@ -159,7 +166,6 @@ struct SubscriptionFormSheet: View {
     @ViewBuilder
     private func detailsSection(_ viewModel: SubscriptionFormViewModel) -> some View {
         VStack(spacing: 12) {
-            // Name — grouped card matching ExpenseFormSheet.detailsGroup style
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Image(systemName: "tag")
@@ -187,7 +193,6 @@ struct SubscriptionFormSheet: View {
             )
             .padding(.horizontal)
 
-            // Notes — grouped card
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Image(systemName: "note.text")
@@ -259,7 +264,7 @@ struct SubscriptionFormSheet: View {
             switch subscription.status {
             case .active:
                 Button(String(localized: "Pause Subscription")) {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     subscription.status = .paused
                     try? modelContext.save()
                     onComplete()
@@ -269,7 +274,7 @@ struct SubscriptionFormSheet: View {
 
             case .paused:
                 Button(String(localized: "Resume Subscription")) {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     subscription.status = .active
                     try? modelContext.save()
                     onComplete()
@@ -283,7 +288,7 @@ struct SubscriptionFormSheet: View {
 
             if subscription.status != .cancelled {
                 Button(String(localized: "Cancel Subscription"), role: .destructive) {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     subscription.status = .cancelled
                     try? modelContext.save()
                     onComplete()
@@ -299,7 +304,7 @@ struct SubscriptionFormSheet: View {
 
     private func save(_ viewModel: SubscriptionFormViewModel) async {
         if await viewModel.save() {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1 success haptic
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             onComplete()
             dismiss()
         }

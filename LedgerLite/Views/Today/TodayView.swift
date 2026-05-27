@@ -13,7 +13,7 @@ private struct ShimmerModifier: ViewModifier {
                     LinearGradient(
                         stops: [
                             .init(color: .clear, location: 0.0),
-                            .init(color: Color(.systemBackground).opacity(0.7), location: 0.5),
+                            .init(color: Color.white.opacity(0.55), location: 0.5),
                             .init(color: .clear, location: 1.0),
                         ],
                         startPoint: UnitPoint(x: phase, y: 0.5),
