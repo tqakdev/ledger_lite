@@ -5,7 +5,6 @@ import LocalAuthentication
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
 
-    // B1: reactive home-currency display — shares App Group suite with UserPreferences + widget
     @AppStorage("homeCurrencyCode", store: UserDefaults(suiteName: Constants.App.appGroupIdentifier))
     private var homeCurrencyCode = Constants.App.homeCurrencyDefault
 
@@ -22,12 +21,10 @@ struct SettingsView: View {
         }
     }
 
-    // B4: notification state
     @State private var notificationsAuthorized = false
     @State private var showCannotDisableAlert  = false
     @State private var showDeniedAlert         = false
 
-    // B5: CSV export / import
     @State private var isExporting      = false
     @State private var exportItems: [Any] = []
     @State private var isImporting      = false
@@ -35,7 +32,6 @@ struct SettingsView: View {
     @State private var importResultText: String?
     @State private var showImportResult = false
 
-    // C3: error alert
     @State private var showError = false
     @State private var errorText = ""
 
@@ -66,18 +62,15 @@ struct SettingsView: View {
         .task {
             notificationsAuthorized = await SubscriptionService(context: modelContext).notificationsAuthorized()
         }
-        // B5: share sheet
         .sheet(isPresented: Binding(
             get: { !exportItems.isEmpty },
             set: { if !$0 { exportItems = [] } }
         )) {
             ActivitySheet(items: exportItems)
         }
-        // C3: generic error
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
             Button(String(localized: "OK"), role: .cancel) {}
         } message: { Text(errorText) }
-        // B4: "can't disable in-app" alert
         .alert(String(localized: "Disable in System Settings"), isPresented: $showCannotDisableAlert) {
             Button(String(localized: "Open Settings")) {
                 UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
@@ -104,7 +97,6 @@ struct SettingsView: View {
         } message: {
             Text(String(localized: "Face ID or Touch ID is not set up on this device. Enable it in Settings → Face ID & Passcode."))
         }
-        // B4: "permission denied" alert
         .alert(String(localized: "Notifications Denied"), isPresented: $showDeniedAlert) {
             Button(String(localized: "Open Settings")) {
                 UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
@@ -115,7 +107,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - B1: General
+    // MARK: - General
 
     private var generalSection: some View {
         Section(String(localized: "General")) {
@@ -136,7 +128,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - B2: Categories
+    // MARK: - Categories
 
     private var categoriesSection: some View {
         Section(String(localized: "Categories")) {
@@ -152,7 +144,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - B3: Budgets
+    // MARK: - Budgets
 
     private var budgetsSection: some View {
         Section(String(localized: "Budgets")) {
@@ -177,7 +169,7 @@ struct SettingsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
-    // MARK: - B4: Notifications
+    // MARK: - Notifications
 
     private var notificationsSection: some View {
         Section(String(localized: "Notifications")) {
@@ -227,7 +219,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - B5: Data
+    // MARK: - Data
 
     @ViewBuilder
     private var dataSection: some View {
@@ -272,7 +264,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - B6: About
+    // MARK: - About
 
     private var aboutSection: some View {
         Section(String(localized: "About")) {
@@ -509,7 +501,7 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - B1: Home Currency Picker (private, pushed via NavigationLink)
+// MARK: - Home Currency Picker
 
 private struct HomeCurrencyPickerView: View {
     @Environment(\.modelContext) private var modelContext
@@ -544,7 +536,7 @@ private struct HomeCurrencyPickerView: View {
     }
 }
 
-// MARK: - B5: UIActivityViewController wrapper
+// MARK: - UIActivityViewController wrapper
 
 private struct ActivitySheet: UIViewControllerRepresentable {
     let items: [Any]

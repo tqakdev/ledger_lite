@@ -5,7 +5,6 @@ struct SubscriptionsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: SubscriptionsViewModel?
     @State private var inactiveSectionExpanded = false
-    // C3
     @State private var showError = false
     @State private var errorText = ""
 
@@ -19,7 +18,7 @@ struct SubscriptionsView: View {
                 }
             }
             .navigationTitle(String(localized: "Subscriptions"))
-            .navigationBarTitleDisplayMode(.large)  // A9
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 if let viewModel {
                     ToolbarItem(placement: .primaryAction) {
@@ -58,7 +57,6 @@ struct SubscriptionsView: View {
                     .onDisappear { viewModel?.dismissDestination() }
             }
         }
-        // C3
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
             Button(String(localized: "OK"), role: .cancel) {}
         } message: {
@@ -68,7 +66,7 @@ struct SubscriptionsView: View {
             if let msg {
                 errorText = msg
                 showError = true
-                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
             }
         }
     }
@@ -81,55 +79,55 @@ struct SubscriptionsView: View {
             emptyState(viewModel)
         } else {
             VStack(spacing: 0) {
-                monthlyCostCardStandalone(viewModel)
+                monthlyCostCard(viewModel)
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                     .padding(.bottom, 4)
 
                 List {
-                Section(String(localized: "Active")) {
-                    if viewModel.activeSubscriptions.isEmpty {
-                        Text(String(localized: "No active subscriptions"))
-                            .foregroundStyle(.secondary)
-                            .font(.subheadline)
-                    } else {
-                        ForEach(viewModel.activeSubscriptions, id: \.id) { sub in
-                            subscriptionRow(sub, viewModel: viewModel)
-                        }
-                    }
-                }
-
-                if !viewModel.inactiveSubscriptions.isEmpty {
-                    Section(isExpanded: $inactiveSectionExpanded) {
-                        ForEach(viewModel.inactiveSubscriptions, id: \.id) { sub in
-                            subscriptionRow(sub, viewModel: viewModel)
-                        }
-                    } header: {
-                        Button {
-                            withAnimation { inactiveSectionExpanded.toggle() }
-                        } label: {
-                            HStack {
-                                Text(String(localized: "Inactive"))
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                Image(systemName: inactiveSectionExpanded ? "chevron.up" : "chevron.down")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                    Section(String(localized: "Active")) {
+                        if viewModel.activeSubscriptions.isEmpty {
+                            Text(String(localized: "No active subscriptions"))
+                                .foregroundStyle(.secondary)
+                                .font(.subheadline)
+                        } else {
+                            ForEach(viewModel.activeSubscriptions, id: \.id) { sub in
+                                subscriptionRow(sub, viewModel: viewModel)
                             }
                         }
-                        .buttonStyle(.plain)
+                    }
+
+                    if !viewModel.inactiveSubscriptions.isEmpty {
+                        Section(isExpanded: $inactiveSectionExpanded) {
+                            ForEach(viewModel.inactiveSubscriptions, id: \.id) { sub in
+                                subscriptionRow(sub, viewModel: viewModel)
+                            }
+                        } header: {
+                            Button {
+                                withAnimation { inactiveSectionExpanded.toggle() }
+                            } label: {
+                                HStack {
+                                    Text(String(localized: "Inactive"))
+                                        .font(.headline)
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                    Image(systemName: inactiveSectionExpanded ? "chevron.up" : "chevron.down")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
+                .listStyle(.insetGrouped)
             }
-            .listStyle(.insetGrouped)
-            }  // end VStack
         }
     }
 
-    // MARK: - Monthly cost card (standalone — above the list)
+    // MARK: - Monthly cost card
 
-    private func monthlyCostCardStandalone(_ viewModel: SubscriptionsViewModel) -> some View {
+    private func monthlyCostCard(_ viewModel: SubscriptionsViewModel) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Image(systemName: "calendar.circle.fill")
@@ -156,7 +154,7 @@ struct SubscriptionsView: View {
         .padding(16)
         .background(
             LinearGradient(
-                colors: [Color.accentColor.opacity(0.09), Color(.secondarySystemGroupedBackground)],
+                colors: [Color.accentColor.opacity(0.10), Color(.secondarySystemGroupedBackground)],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -164,7 +162,7 @@ struct SubscriptionsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
-    // MARK: - Row + swipe actions
+    // MARK: - Row
 
     private func subscriptionRow(_ sub: Subscription, viewModel: SubscriptionsViewModel) -> some View {
         SubscriptionRowView(
@@ -173,41 +171,41 @@ struct SubscriptionsView: View {
             homeAmountMinor: viewModel.subscriptionHomeAmounts[sub.id],
             homeCurrencyCode: viewModel.homeCurrencyCode
         )
-            .contentShape(Rectangle())
-            .onTapGesture { viewModel.presentEdit(sub) }
-            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                Button(role: .destructive) {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
-                    viewModel.deleteSubscription(sub)
+        .contentShape(Rectangle())
+        .onTapGesture { viewModel.presentEdit(sub) }
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                viewModel.deleteSubscription(sub)
+            } label: {
+                Label(String(localized: "Delete"), systemImage: "trash")
+            }
+        }
+        .swipeActions(edge: .leading) {
+            switch sub.status {
+            case .active:
+                Button {
+                    viewModel.pauseSubscription(sub)
                 } label: {
-                    Label(String(localized: "Delete"), systemImage: "trash")
+                    Label(String(localized: "Pause"), systemImage: "pause.fill")
                 }
-            }
-            .swipeActions(edge: .leading) {
-                switch sub.status {
-                case .active:
-                    Button {
-                        viewModel.pauseSubscription(sub)
-                    } label: {
-                        Label(String(localized: "Pause"), systemImage: "pause.fill")
-                    }
-                    .tint(.orange)
-                case .paused:
-                    Button {
-                        viewModel.resumeSubscription(sub)
-                    } label: {
-                        Label(String(localized: "Resume"), systemImage: "play.fill")
-                    }
-                    .tint(.green)
-                case .cancelled:
-                    Button {
-                        viewModel.resumeSubscription(sub)
-                    } label: {
-                        Label(String(localized: "Restore"), systemImage: "arrow.uturn.left")
-                    }
-                    .tint(.blue)
+                .tint(.orange)
+            case .paused:
+                Button {
+                    viewModel.resumeSubscription(sub)
+                } label: {
+                    Label(String(localized: "Resume"), systemImage: "play.fill")
                 }
+                .tint(.green)
+            case .cancelled:
+                Button {
+                    viewModel.resumeSubscription(sub)
+                } label: {
+                    Label(String(localized: "Restore"), systemImage: "arrow.uturn.left")
+                }
+                .tint(.blue)
             }
+        }
     }
 
     // MARK: - Empty state

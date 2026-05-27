@@ -7,7 +7,6 @@ struct SubscriptionRowView: View {
     var homeCurrencyCode: String = ""
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @ScaledMetric(relativeTo: .body) private var iconSize: CGFloat = 36
     @State private var pulsing = false
 
     private var daysUntil: Int {
@@ -21,8 +20,8 @@ struct SubscriptionRowView: View {
 
     private var daysLabel: String {
         switch daysUntil {
-        case 0: return String(localized: "Today")
-        case 1: return String(localized: "Tomorrow")
+        case 0:  return String(localized: "Today")
+        case 1:  return String(localized: "Tomorrow")
         default: return String(localized: "In \(daysUntil) days")
         }
     }
@@ -35,13 +34,11 @@ struct SubscriptionRowView: View {
                     Text(subscription.name)
                         .font(.body)
                         .lineLimit(1)
-                        .truncationMode(.tail)
                     Spacer()
                     VStack(alignment: .trailing, spacing: 1) {
                         Text(subscription.money.formatted())
                             .font(.body)
                             .monospacedDigit()
-                            .foregroundStyle(.primary)
                         if let homeMinor = homeAmountMinor,
                            !homeCurrencyCode.isEmpty,
                            subscription.currencyCode != homeCurrencyCode {
@@ -71,11 +68,11 @@ struct SubscriptionRowView: View {
         let hex  = subscription.category?.colorHex ?? "#BDC3C7"
         let icon = subscription.category?.iconName  ?? "repeat.circle.fill"
         return ZStack {
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(Color(hex: hex).opacity(0.15))
-                .frame(width: iconSize, height: iconSize)
+                .frame(width: 44, height: 44)
             Image(systemName: icon)
-                .font(.callout)
+                .font(.body.weight(.medium))
                 .foregroundStyle(Color(hex: hex))
         }
     }
@@ -125,9 +122,9 @@ struct SubscriptionRowView: View {
 extension BillingCycle {
     var displayName: String {
         switch self {
-        case .weekly: return String(localized: "Weekly")
-        case .monthly: return String(localized: "Monthly")
-        case .yearly: return String(localized: "Yearly")
+        case .weekly:            return String(localized: "Weekly")
+        case .monthly:           return String(localized: "Monthly")
+        case .yearly:            return String(localized: "Yearly")
         case .customDays(let n): return String(localized: "Every \(n) days")
         }
     }

@@ -1,6 +1,5 @@
 import SwiftUI
 
-// A2 + A10: chip styling, haptic, symmetric padding, scroll snapping
 struct CategoryPickerStrip: View {
     let categories: [Category]
     @Binding var selected: Category?
@@ -18,11 +17,9 @@ struct CategoryPickerStrip: View {
                     }
                 }
             }
-            // A10: allow chips to snap cleanly so they don't stop mid-chip
-            .scrollTargetLayout()
             .padding(.horizontal, 16)
         }
-        .scrollTargetBehavior(.viewAligned)
+        .scrollClipDisabled()
         .padding(.vertical, 4)
     }
 }
@@ -44,7 +41,6 @@ private struct CategoryChip: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
-            // A2: tertiarySystemFill for unselected (reads in both light/dark); 0.18 for selected
             .background(
                 isSelected
                     ? Color(hex: category.colorHex).opacity(0.18)
@@ -53,7 +49,6 @@ private struct CategoryChip: View {
             .foregroundStyle(isSelected ? Color(hex: category.colorHex) : .primary)
             .clipShape(Capsule())
             .fixedSize(horizontal: false, vertical: true)
-            // A2: separator border unselected (1 pt); full-alpha colour border selected (2 pt)
             .overlay(
                 Capsule()
                     .strokeBorder(
@@ -63,7 +58,6 @@ private struct CategoryChip: View {
             )
         }
         .buttonStyle(.plain)
-        // C2: full accessibility label with selection state
         .accessibilityLabel(String(localized: "\(category.name), \(isSelected ? "selected" : "not selected")"))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }

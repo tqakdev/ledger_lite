@@ -1,7 +1,6 @@
 import SwiftUI
 import SwiftData
 
-// A7: shimmer animation modifier used on the empty-state icon
 private struct ShimmerModifier: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var phase: CGFloat = -1
@@ -40,7 +39,6 @@ struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: TodayViewModel?
     @State private var fabVisible = false
-    // C3: error alert state
     @State private var showError  = false
     @State private var errorText  = ""
 
@@ -54,7 +52,7 @@ struct TodayView: View {
                 }
             }
             .navigationTitle(String(localized: "Today"))
-            .navigationBarTitleDisplayMode(.large)  // A9
+            .navigationBarTitleDisplayMode(.large)
         }
         .overlay(alignment: .bottomTrailing) {
             if let viewModel {
@@ -72,7 +70,6 @@ struct TodayView: View {
                 viewModel?.dismissSheet()
             }
         }
-        // C3: error alert
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
             Button(String(localized: "OK"), role: .cancel) {}
         } message: {
@@ -82,7 +79,7 @@ struct TodayView: View {
             if let msg {
                 errorText = msg
                 showError = true
-                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1 error haptic
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
             }
         }
     }
@@ -95,7 +92,6 @@ struct TodayView: View {
             emptyState
         } else {
             VStack(spacing: 0) {
-                // A5: card above the list so it has no separator line artefact
                 todaySummaryCard(viewModel)
                     .padding(.horizontal)
                     .padding(.vertical, 8)
@@ -113,7 +109,7 @@ struct TodayView: View {
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
-                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
+                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                                     viewModel.deleteExpense(expense)
                                 } label: {
                                     Label(String(localized: "Delete"), systemImage: "trash")
@@ -138,7 +134,7 @@ struct TodayView: View {
         }
     }
 
-    // MARK: - Summary card (A5)
+    // MARK: - Summary card
 
     private func todaySummaryCard(_ viewModel: TodayViewModel) -> some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -149,7 +145,6 @@ struct TodayView: View {
                 .font(.system(.largeTitle, design: .rounded, weight: .bold))
                 .monospacedDigit()
                 .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.todayTotalFormatted)
-            // A5: velocity indicator — only shown when 30-day history exists
             velocityLabel(viewModel)
             Text(Date.now.formatted(date: .complete, time: .omitted))
                 .font(.caption)
@@ -165,7 +160,6 @@ struct TodayView: View {
             )
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        // C4: placeholder skeleton on initial load before any expenses are fetched
         .redacted(reason: viewModel.isLoading && viewModel.expenses.isEmpty ? .placeholder : [])
     }
 
@@ -217,7 +211,7 @@ struct TodayView: View {
         }
     }
 
-    // MARK: - Empty state (A7)
+    // MARK: - Empty state
 
     private var emptyState: some View {
         VStack(spacing: 20) {
@@ -225,7 +219,7 @@ struct TodayView: View {
             Image(systemName: "tray")
                 .font(.system(size: 64))
                 .foregroundStyle(.secondary)
-                .shimmer()  // A7: repeating shimmer over the icon
+                .shimmer()
             VStack(spacing: 8) {
                 Text(String(localized: "No Expenses Today"))
                     .font(.title2.bold())

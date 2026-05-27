@@ -46,7 +46,6 @@ struct ExpenseRowView: View {
                     .font(.body)
                     .fontWeight(.semibold)
                     .monospacedDigit()
-                    // C2: accessibility label combining subtitle + amount + time
                     .accessibilityLabel("\(subtitle), \(expense.money.formatted()), \(timeText)")
                 if expense.currencyCode != homeCurrencyCode {
                     Text(homeEquivalent)
@@ -64,13 +63,12 @@ struct ExpenseRowView: View {
         .padding(.vertical, 4)
     }
 
-    // A6: RoundedRectangle icon matching SubscriptionRowView; 0.15 opacity fill + full-colour icon
     @ViewBuilder
     private var categoryIcon: some View {
         let hex  = expense.category?.colorHex ?? "#BDC3C7"
         let icon = expense.category?.iconName  ?? "square.grid.2x2.fill"
         ZStack {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(Color(hex: hex).opacity(0.15))
                 .frame(width: 44, height: 44)
             Image(systemName: icon)

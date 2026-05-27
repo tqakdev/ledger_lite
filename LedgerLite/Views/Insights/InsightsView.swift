@@ -9,7 +9,6 @@ struct InsightsView: View {
     @State private var showDrillDown = false
     @State private var showShareSheet = false
     @State private var shareItems: [Any] = []
-    // C3
     @State private var showError = false
     @State private var errorText = ""
 
@@ -23,7 +22,7 @@ struct InsightsView: View {
                 }
             }
             .navigationTitle(String(localized: "Insights"))
-            .navigationBarTitleDisplayMode(.large)  // A9
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 if let vm = viewModel, !vm.categoryTotals.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -45,7 +44,6 @@ struct InsightsView: View {
             }
             Task { await viewModel?.refresh() }
         }
-        // C3
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
             Button(String(localized: "OK"), role: .cancel) {}
         } message: {
@@ -55,7 +53,7 @@ struct InsightsView: View {
             if let msg {
                 errorText = msg
                 showError = true
-                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1 error haptic
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
             }
         }
         .sheet(isPresented: $showDrillDown) {
@@ -168,7 +166,7 @@ struct InsightsView: View {
             .onChange(of: selectedAngleValue) { _, v in
                 vm.selectedCategory = v.flatMap { categoryForAngle($0, totals: vm.categoryTotals) }
             }
-            // C2: manual accessibility label for donut (Swift Charts doesn't auto-describe it)
+            // Swift Charts doesn't auto-describe sectors; provide a manual label
             .accessibilityLabel(
                 String(localized: "\(vm.categoryTotals.count) categories, total \(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())")
             )

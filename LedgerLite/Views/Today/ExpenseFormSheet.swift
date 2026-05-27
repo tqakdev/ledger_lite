@@ -19,7 +19,6 @@ struct ExpenseFormSheet: View {
     @State private var viewModel: ExpenseFormViewModel?
     @FocusState private var focusedField: ExpenseFormField?
     @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
-    // C3: error alert
     @State private var showError  = false
     @State private var errorText  = ""
 
@@ -67,8 +66,7 @@ struct ExpenseFormSheet: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
-        .presentationCornerRadius(24)  // A8
-        // C3
+        .presentationCornerRadius(24)
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
             Button(String(localized: "OK"), role: .cancel) {}
         } message: {
@@ -78,7 +76,7 @@ struct ExpenseFormSheet: View {
             if let msg {
                 errorText = msg
                 showError = true
-                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1 error haptic
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
             }
         }
     }
@@ -94,7 +92,6 @@ struct ExpenseFormSheet: View {
                     templateStrip(viewModel)
                 }
 
-                // A1: redesigned amount field
                 amountField(viewModel)
 
                 if case .add = mode {
@@ -109,7 +106,6 @@ struct ExpenseFormSheet: View {
                     )
                 )
 
-                // A3 + A4: grouped merchant / note / date container
                 detailsGroup(viewModel)
             }
             .padding(.bottom, 8)
@@ -211,7 +207,7 @@ struct ExpenseFormSheet: View {
         .background(.ultraThinMaterial)
     }
 
-    // MARK: - A1: Amount field
+    // MARK: - Amount field
 
     private func amountField(_ viewModel: ExpenseFormViewModel) -> some View {
         let symbol = Self.currencySymbol(for: viewModel.currencyCode)
@@ -258,7 +254,6 @@ struct ExpenseFormSheet: View {
         .accessibilityValue(viewModel.formattedAmount())
     }
 
-    // A3 + A4: merchant, note, and date in a single grouped container
     private func detailsGroup(_ viewModel: ExpenseFormViewModel) -> some View {
         VStack(spacing: 0) {
             // Merchant row
@@ -293,7 +288,6 @@ struct ExpenseFormSheet: View {
 
             Divider().padding(.leading, 16)
 
-            // A4: Date row — compact picker, date only (time not surfaced in UI)
             HStack(spacing: 12) {
                 Image(systemName: "calendar")
                     .foregroundStyle(.secondary)
@@ -339,7 +333,7 @@ struct ExpenseFormSheet: View {
 
     private func save(_ viewModel: ExpenseFormViewModel) async {
         if await viewModel.save() {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1 success haptic
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             if case .add = mode { maybeRequestReview() }
             onComplete()
             dismiss()

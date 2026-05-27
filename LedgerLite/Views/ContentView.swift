@@ -46,7 +46,6 @@ struct ContentView: View {
                     .zIndex(1)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: isLocked)
         .fullScreenCover(isPresented: Binding(
             get: { !hasCompletedOnboarding },
             set: { if !$0 { hasCompletedOnboarding = true } }
