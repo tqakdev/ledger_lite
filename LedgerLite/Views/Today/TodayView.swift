@@ -229,16 +229,12 @@ struct TodayView: View {
             VStack(spacing: 8) {
                 Text(String(localized: "No Expenses Today"))
                     .font(.title2.bold())
-                Text(String(localized: "Tap the button below to log your first expense."))
+                Text(String(localized: "Tap  +  to log your first expense."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
             }
-            Button(String(localized: "Quick Add")) {
-                viewModel?.presentQuickAdd()
-            }
-            .buttonStyle(.borderedProminent)
             Spacer()
         }
     }

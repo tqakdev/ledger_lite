@@ -146,3 +146,8 @@
 "Unlock LedgerLite" = "Desbloquear LedgerLite";
 "Tap to authenticate" = "Toca para autenticarte";
 "Authentication failed. Tap to try again." = "Autenticación fallida. Toca para reintentar.";
+
+/* About */
+"Privacy Policy" = "Política de privacidad";
+"Next" = "Siguiente";
+"Tap  +  to log your first expense." = "Toca  +  para registrar tu primer gasto.";

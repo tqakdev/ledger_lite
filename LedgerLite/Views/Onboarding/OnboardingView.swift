@@ -22,11 +22,12 @@ struct OnboardingView: View {
     // MARK: - Pages
 
     private var welcomePage: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            Image(systemName: "wallet.pass.fill")
+        VStack(spacing: 0) {
+            Spacer().frame(height: 72)
+            Image(systemName: "chart.pie.fill")
                 .font(.system(size: 80))
                 .foregroundStyle(Color.accentColor)
+            Spacer().frame(height: 32)
             VStack(spacing: 12) {
                 Text(String(localized: "Welcome to LedgerLite"))
                     .font(.largeTitle.bold())
@@ -39,16 +40,17 @@ struct OnboardingView: View {
             }
             Spacer()
             nextButton(String(localized: "Get Started")) { withAnimation { page = 1 } }
-            Spacer().frame(height: 48)
+            Spacer().frame(height: 56)
         }
     }
 
     private var currencyPage: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        VStack(spacing: 0) {
+            Spacer().frame(height: 72)
             Image(systemName: "dollarsign.circle.fill")
                 .font(.system(size: 80))
                 .foregroundStyle(Color.accentColor)
+            Spacer().frame(height: 24)
             VStack(spacing: 12) {
                 Text(String(localized: "Pick Your Currency"))
                     .font(.largeTitle.bold())
@@ -59,6 +61,7 @@ struct OnboardingView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
+            Spacer().frame(height: 24)
             Picker(String(localized: "Currency"), selection: $homeCurrencyCode) {
                 ForEach(Constants.App.supportedCurrencies, id: \.self) { code in
                     Text(code).tag(code)
@@ -68,16 +71,17 @@ struct OnboardingView: View {
             .frame(height: 150)
             Spacer()
             nextButton(String(localized: "Continue")) { withAnimation { page = 2 } }
-            Spacer().frame(height: 48)
+            Spacer().frame(height: 56)
         }
     }
 
     private var readyPage: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        VStack(spacing: 0) {
+            Spacer().frame(height: 72)
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 80))
                 .foregroundStyle(.green)
+            Spacer().frame(height: 32)
             VStack(spacing: 12) {
                 Text(String(localized: "You're All Set"))
                     .font(.largeTitle.bold())
@@ -89,17 +93,18 @@ struct OnboardingView: View {
                     .padding(.horizontal, 32)
             }
             Spacer()
-            nextButton(String(localized: "Continue")) { withAnimation { page = 3 } }
-            Spacer().frame(height: 48)
+            nextButton(String(localized: "Next")) { withAnimation { page = 3 } }
+            Spacer().frame(height: 56)
         }
     }
 
     private var notificationsPage: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        VStack(spacing: 0) {
+            Spacer().frame(height: 72)
             Image(systemName: "bell.badge.fill")
                 .font(.system(size: 80))
                 .foregroundStyle(Color.accentColor)
+            Spacer().frame(height: 32)
             VStack(spacing: 12) {
                 Text(String(localized: "Stay on Top of Bills"))
                     .font(.largeTitle.bold())
@@ -123,7 +128,7 @@ struct OnboardingView: View {
             }
             .font(.subheadline)
             .foregroundStyle(.secondary)
-            Spacer().frame(height: 48)
+            Spacer().frame(height: 56)
         }
     }
 

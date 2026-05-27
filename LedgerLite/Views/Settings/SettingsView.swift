@@ -297,6 +297,17 @@ struct SettingsView: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel(String(localized: "Version \(appVersion), tap to copy"))
+
+            Link(destination: URL(string: "https://bluemadisonblue.github.io/ledgerlite-privacy/")!) {
+                HStack {
+                    Text(String(localized: "Privacy Policy"))
+                    Spacer()
+                    Image(systemName: "arrow.up.right.square")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .foregroundStyle(.primary)
         }
     }
 

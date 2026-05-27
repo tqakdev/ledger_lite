@@ -145,3 +145,8 @@
 "Unlock LedgerLite" = "LedgerLite бағдарламасын ашу";
 "Tap to authenticate" = "Аутентификация үшін түртіңіз";
 "Authentication failed. Tap to try again." = "Аутентификация сәтсіз аяқталды. Қайталау үшін түртіңіз.";
+
+/* About */
+"Privacy Policy" = "Құпиялылық саясаты";
+"Next" = "Келесі";
+"Tap  +  to log your first expense." = "Бірінші шығынды тіркеу үшін  +  түймесін басыңыз.";

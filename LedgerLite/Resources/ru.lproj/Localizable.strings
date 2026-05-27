@@ -145,3 +145,8 @@
 "Unlock LedgerLite" = "Разблокировать LedgerLite";
 "Tap to authenticate" = "Нажмите для аутентификации";
 "Authentication failed. Tap to try again." = "Ошибка аутентификации. Нажмите, чтобы повторить.";
+
+/* About */
+"Privacy Policy" = "Политика конфиденциальности";
+"Next" = "Далее";
+"Tap  +  to log your first expense." = "Нажмите  +, чтобы добавить первый расход.";
