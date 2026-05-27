@@ -27,3 +27,4 @@ Local.xcconfig
 .DS_Store
 .AppleDouble
 ._*
+.lazyweb/

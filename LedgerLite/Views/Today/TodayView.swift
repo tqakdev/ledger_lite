@@ -15,18 +15,10 @@ struct TodayView: View {
                 }
             }
             .navigationTitle(String(localized: "Today"))
-            .toolbar {
-                if let viewModel {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button {
-                            viewModel.presentQuickAdd()
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title2)
-                        }
-                        .accessibilityLabel(String(localized: "Quick Add"))
-                    }
-                }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if let viewModel {
+                quickAddFAB(viewModel)
             }
         }
         .onAppear {
@@ -104,6 +96,23 @@ struct TodayView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 4)
+    }
+
+    private func quickAddFAB(_ viewModel: TodayViewModel) -> some View {
+        Button {
+            viewModel.presentQuickAdd()
+        } label: {
+            Image(systemName: "plus")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 56, height: 56)
+                .background(Color.accentColor)
+                .clipShape(Circle())
+                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+        }
+        .padding(.trailing, 20)
+        .padding(.bottom, 20)
+        .accessibilityLabel(String(localized: "Quick Add"))
     }
 
     private var emptyState: some View {
