@@ -50,6 +50,7 @@ final class SubscriptionsViewModel {
         homeCurrencyCode = UserPreferences.homeCurrencyCode
         do {
             subscriptions = try subscriptionRepository.fetchAll()
+            advanceOverdueBillingDates()
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -58,6 +59,24 @@ final class SubscriptionsViewModel {
         Task {
             await checkNotificationStatus()
             await computeMonthlyCost()
+        }
+    }
+
+    private func advanceOverdueBillingDates() {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        for sub in subscriptions where sub.status == .active && sub.nextBillingDate < today {
+            var next = sub.nextBillingDate
+            while next < today {
+                switch sub.billingCycle {
+                case .weekly:           next = cal.date(byAdding: .day,   value: 7,  to: next) ?? next
+                case .monthly:          next = cal.date(byAdding: .month, value: 1,  to: next) ?? next
+                case .yearly:           next = cal.date(byAdding: .year,  value: 1,  to: next) ?? next
+                case .customDays(let n): next = cal.date(byAdding: .day,  value: n,  to: next) ?? next
+                }
+            }
+            sub.nextBillingDate = next
+            try? subscriptionRepository.update(sub)
         }
     }
 

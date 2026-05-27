@@ -17,6 +17,7 @@ struct SubscriptionFormSheet: View {
 
     @State private var viewModel: SubscriptionFormViewModel?
     @FocusState private var focusedField: SubscriptionFormField?
+    @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
     // C3
     @State private var showError = false
     @State private var errorText = ""
@@ -110,13 +111,13 @@ struct SubscriptionFormSheet: View {
                 ZStack {
                     if viewModel.amountString.isEmpty {
                         Text("0")
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .font(.system(size: amountFontSize, weight: .bold, design: .rounded))
                             .foregroundStyle(.tertiary)
                             .monospacedDigit()
                             .allowsHitTesting(false)
                     }
                     TextField("", text: amountBinding(viewModel))
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .font(.system(size: amountFontSize, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .multilineTextAlignment(.trailing)
                         .keyboardType(.decimalPad)

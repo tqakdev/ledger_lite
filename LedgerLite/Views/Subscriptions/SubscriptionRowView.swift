@@ -5,6 +5,7 @@ struct SubscriptionRowView: View {
     let notificationsAuthorized: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScaledMetric(relativeTo: .body) private var iconSize: CGFloat = 36
     @State private var pulsing = false
 
     private var daysUntil: Int {
@@ -60,7 +61,7 @@ struct SubscriptionRowView: View {
         return ZStack {
             RoundedRectangle(cornerRadius: 8)
                 .fill(Color(hex: hex).opacity(0.15))
-                .frame(width: 36, height: 36)
+                .frame(width: iconSize, height: iconSize)
             Image(systemName: icon)
                 .font(.callout)
                 .foregroundStyle(Color(hex: hex))

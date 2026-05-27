@@ -16,6 +16,7 @@ struct ExpenseFormSheet: View {
 
     @State private var viewModel: ExpenseFormViewModel?
     @FocusState private var focusedField: ExpenseFormField?
+    @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
     // C3: error alert
     @State private var showError  = false
     @State private var errorText  = ""
@@ -125,13 +126,13 @@ struct ExpenseFormSheet: View {
                 // Styled placeholder — only shown when field is empty so cursor never sits on it
                 if viewModel.amountString.isEmpty {
                     Text("0")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .font(.system(size: amountFontSize, weight: .bold, design: .rounded))
                         .foregroundStyle(.tertiary)
                         .monospacedDigit()
                         .allowsHitTesting(false)
                 }
                 TextField("", text: amountBinding(viewModel))
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .font(.system(size: amountFontSize, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .multilineTextAlignment(.trailing)
                     .keyboardType(.decimalPad)

@@ -333,8 +333,17 @@ struct InsightsView: View {
                 }
             }
         } label: {
-            Label(String(localized: "Budget Progress"), systemImage: "chart.bar.xaxis")
-                .font(.headline)
+            HStack {
+                Label(String(localized: "Budget Progress"), systemImage: "chart.bar.xaxis")
+                    .font(.headline)
+                Spacer()
+                NavigationLink {
+                    BudgetsSettingsView()
+                } label: {
+                    Text(String(localized: "Manage"))
+                        .font(.caption)
+                }
+            }
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
