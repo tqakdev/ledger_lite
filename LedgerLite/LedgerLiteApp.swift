@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import SQLite3
+import UserNotifications
 
 @main
 struct LedgerLiteApp: App {
@@ -8,6 +9,7 @@ struct LedgerLiteApp: App {
 
     init() {
         _ = MetricManager.shared   // register MetricKit subscriber before first scene activates
+        UNUserNotificationCenter.current().delegate = AppNotificationDelegate.shared
         container = Self.makeContainer()
     }
 

@@ -6,6 +6,8 @@ struct HistoryView: View {
     @State private var viewModel: HistoryViewModel?
     @State private var showError = false
     @State private var errorText = ""
+    @State private var showDatePicker = false
+    @State private var pickerDate: Date = Calendar.current.startOfDay(for: Date())
 
     var body: some View {
         NavigationStack {
@@ -18,12 +20,54 @@ struct HistoryView: View {
             }
             .navigationTitle(String(localized: "History"))
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                if let vm = viewModel, !vm.isGlobalSearch {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            pickerDate = vm.selectedDate
+                            showDatePicker = true
+                        } label: {
+                            Image(systemName: "calendar")
+                        }
+                        .accessibilityLabel(String(localized: "Jump to date"))
+                    }
+                }
+            }
         }
         .onAppear {
             if viewModel == nil {
                 viewModel = HistoryViewModel(context: modelContext)
             }
             viewModel?.refresh()
+        }
+        .sheet(isPresented: $showDatePicker) {
+            NavigationStack {
+                DatePicker(
+                    String(localized: "Date"),
+                    selection: $pickerDate,
+                    in: ...Calendar.current.startOfDay(for: Date()),
+                    displayedComponents: .date
+                )
+                .datePickerStyle(.graphical)
+                .padding(.horizontal)
+                .navigationTitle(String(localized: "Jump to Date"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(String(localized: "Done")) {
+                            viewModel?.selectedDate = Calendar.current.startOfDay(for: pickerDate)
+                            viewModel?.refresh()
+                            showDatePicker = false
+                        }
+                    }
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "Cancel")) {
+                            showDatePicker = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
         }
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
             Button(String(localized: "OK"), role: .cancel) {}
@@ -48,6 +92,7 @@ struct HistoryView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                 Divider()
+                categoryFilterStrip(vm)
             }
             if vm.isGlobalSearch {
                 globalSearchResults(vm)
@@ -110,6 +155,42 @@ struct HistoryView: View {
         if Calendar.current.isDateInToday(date) { return String(localized: "Today") }
         if Calendar.current.isDateInYesterday(date) { return String(localized: "Yesterday") }
         return date.formatted(.dateTime.month(.wide).day())
+    }
+
+    // MARK: - Category filter strip
+
+    @ViewBuilder
+    private func categoryFilterStrip(_ vm: HistoryViewModel) -> some View {
+        let present = vm.categories.filter { cat in
+            vm.expenses.contains { $0.category?.id == cat.id }
+        }
+        if present.count >= 2 {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(present) { cat in
+                        Button {
+                            vm.selectedCategoryFilter = (vm.selectedCategoryFilter?.id == cat.id) ? nil : cat
+                        } label: {
+                            Text(cat.name)
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(vm.selectedCategoryFilter?.id == cat.id
+                                    ? Color.accentColor
+                                    : Color(.tertiarySystemFill))
+                                .foregroundStyle(vm.selectedCategoryFilter?.id == cat.id
+                                    ? Color.white
+                                    : Color.primary)
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
+            Divider()
+        }
     }
 
     // MARK: - Summary card

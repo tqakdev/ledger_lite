@@ -1,0 +1,148 @@
+/* General */
+"OK" = "Aceptar";
+"Cancel" = "Cancelar";
+"Done" = "Listo";
+"Delete" = "Eliminar";
+"Edit" = "Editar";
+"Save" = "Guardar";
+"Add" = "Añadir";
+"Close" = "Cerrar";
+"Skip" = "Omitir";
+"Continue" = "Continuar";
+"Something went wrong" = "Algo salió mal";
+"Open Settings" = "Abrir Configuración";
+
+/* Tab bar */
+"Today" = "Hoy";
+"History" = "Historial";
+"Subscriptions" = "Suscripciones";
+"Insights" = "Análisis";
+"Settings" = "Ajustes";
+
+/* Today tab */
+"No Expenses Today" = "Sin gastos hoy";
+"Tap + to log your first expense." = "Toca + para registrar tu primer gasto.";
+"Day Total" = "Total del día";
+"30-day avg" = "Prom. 30 días";
+
+/* History tab */
+"Yesterday" = "Ayer";
+"Search all expenses" = "Buscar todos los gastos";
+"No Expenses" = "Sin gastos";
+"No Results" = "Sin resultados";
+"No expenses recorded for this day." = "No hay gastos registrados para este día.";
+"No expenses match your search." = "Ningún gasto coincide con tu búsqueda.";
+"Jump to Date" = "Ir a fecha";
+"Jump to date" = "Ir a fecha";
+"Date" = "Fecha";
+
+/* Expense form */
+"Amount" = "Importe";
+"Merchant" = "Comercio";
+"Category" = "Categoría";
+"Note" = "Nota";
+"Currency" = "Moneda";
+"Add Expense" = "Añadir gasto";
+"Edit Expense" = "Editar gasto";
+"None" = "Ninguno";
+
+/* Subscriptions tab */
+"Add Subscription" = "Añadir suscripción";
+"Scan" = "Escanear";
+"Active" = "Activas";
+"Inactive" = "Inactivas";
+"No active subscriptions" = "Sin suscripciones activas";
+"No Subscriptions" = "Sin suscripciones";
+"Add a subscription manually, or paste a billing email to detect it automatically." = "Añade una suscripción manualmente o pega un correo de facturación para detectarla automáticamente.";
+"Scan from email or SMS" = "Escanear desde correo o SMS";
+"Est. Monthly Cost" = "Coste mensual est.";
+"Active subscriptions only" = "Solo suscripciones activas";
+"Pause" = "Pausar";
+"Resume" = "Reanudar";
+"Restore" = "Restaurar";
+"Paused" = "Pausada";
+"Cancelled" = "Cancelada";
+"Weekly" = "Semanal";
+"Monthly" = "Mensual";
+"Yearly" = "Anual";
+"Tomorrow" = "Mañana";
+"Name" = "Nombre";
+"Billing Cycle" = "Ciclo de facturación";
+"Next Billing Date" = "Próxima fecha de cobro";
+"Add Subscription" = "Añadir suscripción";
+"Edit Subscription" = "Editar suscripción";
+
+/* Insights tab */
+"This Week" = "Esta semana";
+"This Month" = "Este mes";
+"This Year" = "Este año";
+"All Time" = "Todo el tiempo";
+"Week" = "Semana";
+"Month" = "Mes";
+"Year" = "Año";
+"Top Merchant" = "Comercio principal";
+"No Data" = "Sin datos";
+"No expenses in this period." = "Sin gastos en este período.";
+"Start tracking to see insights." = "Empieza a registrar gastos para ver análisis.";
+"Log Expense" = "Registrar gasto";
+"Spending by Category" = "Gasto por categoría";
+"Spending Over Time" = "Gasto a lo largo del tiempo";
+"Budget Progress" = "Progreso del presupuesto";
+"View Details" = "Ver detalles";
+"Manage" = "Gestionar";
+"Share" = "Compartir";
+"No budget set" = "Sin presupuesto";
+
+/* Settings */
+"General" = "General";
+"Home Currency" = "Moneda local";
+"Categories" = "Categorías";
+"Manage Categories" = "Gestionar categorías";
+"Budgets" = "Presupuestos";
+"Monthly Budgets" = "Presupuestos mensuales";
+"Notifications" = "Notificaciones";
+"Billing Reminders" = "Recordatorios de facturación";
+"Active — notified 2 days before each billing date." = "Activo — notificado 2 días antes de cada fecha de facturación.";
+"Reminders are off." = "Los recordatorios están desactivados.";
+"Security" = "Seguridad";
+"Face ID Lock" = "Bloqueo Face ID";
+"Touch ID Lock" = "Bloqueo Touch ID";
+"Biometric Lock" = "Bloqueo biométrico";
+"App locks when sent to background." = "La app se bloquea al enviarse al segundo plano.";
+"Protect your data with Face ID or Touch ID." = "Protege tus datos con Face ID o Touch ID.";
+"Data" = "Datos";
+"Export CSV" = "Exportar CSV";
+"Import CSV" = "Importar CSV";
+"Reset All Data" = "Restablecer todos los datos";
+"Delete Everything" = "Eliminar todo";
+"This will permanently delete all expenses and subscriptions. This cannot be undone." = "Esto eliminará permanentemente todos los gastos y suscripciones. No se puede deshacer.";
+"All data deleted." = "Todos los datos eliminados.";
+"About" = "Acerca de";
+"Version" = "Versión";
+"Disable in System Settings" = "Desactivar en Configuración";
+"Go to Settings → Notifications → LedgerLite to turn off billing reminders." = "Ve a Configuración → Notificaciones → LedgerLite para desactivar los recordatorios de facturación.";
+"Import Complete" = "Importación completada";
+"The file contains no expense rows." = "El archivo no contiene filas de gastos.";
+"Could not access the selected file." = "No se pudo acceder al archivo seleccionado.";
+"Biometrics Unavailable" = "Biometría no disponible";
+"Face ID or Touch ID is not set up on this device. Enable it in Settings → Face ID & Passcode." = "Face ID o Touch ID no está configurado en este dispositivo. Actívalo en Configuración → Face ID y código.";
+"Notifications Denied" = "Notificaciones denegadas";
+"Allow notifications in Settings → Notifications → LedgerLite." = "Permite las notificaciones en Configuración → Notificaciones → LedgerLite.";
+
+/* Onboarding */
+"Welcome to LedgerLite" = "Bienvenido a LedgerLite";
+"Track daily spending, manage subscriptions, and understand where your money goes." = "Registra tus gastos diarios, gestiona suscripciones y comprende a dónde va tu dinero.";
+"Get Started" = "Comenzar";
+"Pick Your Currency" = "Elige tu moneda";
+"Choose the currency you spend in most. You can change this any time in Settings." = "Elige la moneda que usas con más frecuencia. Puedes cambiarla en Ajustes en cualquier momento.";
+"You're All Set" = "Todo listo";
+"Tap the + button on the Today tab to log your first expense. Swipe left on any row to delete it." = "Toca el botón + en la pestaña Hoy para registrar tu primer gasto. Desliza a la izquierda para eliminar.";
+"Stay on Top of Bills" = "Mantente al día con tus facturas";
+"Get notified 2 days before each subscription billing date so you're never surprised." = "Recibe notificaciones 2 días antes de cada fecha de cobro para no llevarte sorpresas.";
+"Allow Notifications" = "Permitir notificaciones";
+"Start Tracking" = "Empezar a rastrear";
+
+/* Lock screen */
+"Unlock LedgerLite" = "Desbloquear LedgerLite";
+"Tap to authenticate" = "Toca para autenticarte";
+"Authentication failed. Tap to try again." = "Autenticación fallida. Toca para reintentar.";

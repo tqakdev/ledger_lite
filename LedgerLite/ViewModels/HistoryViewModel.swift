@@ -28,6 +28,8 @@ final class HistoryViewModel {
     var errorMessage: String?
     var isLoading: Bool = false
     var searchText: String = ""
+    var categories: [Category] = []
+    var selectedCategoryFilter: Category? = nil
 
     private let expenseRepository: ExpenseRepository
     private let modelContext: ModelContext
@@ -40,13 +42,20 @@ final class HistoryViewModel {
     var isGlobalSearch: Bool { !searchText.isEmpty }
 
     var filteredExpenses: [Expense] {
-        guard !searchText.isEmpty else { return expenses }
-        let q = searchText.lowercased()
-        return expenses.filter {
-            ($0.merchant?.lowercased().contains(q) ?? false) ||
-            ($0.note?.lowercased().contains(q) ?? false) ||
-            ($0.category?.name.lowercased().contains(q) ?? false)
+        var result = expenses
+        if let cat = selectedCategoryFilter {
+            let catId = cat.id
+            result = result.filter { $0.category?.id == catId }
         }
+        if !searchText.isEmpty {
+            let q = searchText.lowercased()
+            result = result.filter {
+                ($0.merchant?.lowercased().contains(q) ?? false) ||
+                ($0.note?.lowercased().contains(q) ?? false) ||
+                ($0.category?.name.lowercased().contains(q) ?? false)
+            }
+        }
+        return result
     }
 
     var searchResults: [Expense] = []
@@ -57,11 +66,16 @@ final class HistoryViewModel {
         guard let all = try? modelContext.fetch(
             FetchDescriptor<Expense>(sortBy: [SortDescriptor(\.date, order: .reverse)])
         ) else { return }
-        searchResults = all.filter {
+        var results = all.filter {
             ($0.merchant?.lowercased().contains(q) ?? false) ||
             ($0.note?.lowercased().contains(q) ?? false) ||
             ($0.category?.name.lowercased().contains(q) ?? false)
         }
+        if let cat = selectedCategoryFilter {
+            let catId = cat.id
+            results = results.filter { $0.category?.id == catId }
+        }
+        searchResults = results
     }
 
     var dayTotalFormatted: String {
@@ -86,6 +100,9 @@ final class HistoryViewModel {
     func refresh() {
         isLoading = true
         homeCurrencyCode = UserPreferences.homeCurrencyCode
+        categories = (try? modelContext.fetch(
+            FetchDescriptor<Category>(sortBy: [SortDescriptor(\.name)])
+        )) ?? []
         do {
             let cal = Calendar.current
             let dayStart = cal.startOfDay(for: selectedDate)

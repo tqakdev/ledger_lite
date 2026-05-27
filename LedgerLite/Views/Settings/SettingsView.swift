@@ -39,6 +39,9 @@ struct SettingsView: View {
     @State private var showError = false
     @State private var errorText = ""
 
+    // Reset data
+    @State private var showResetConfirmation = false
+
     private var appVersion: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
         let b = Bundle.main.infoDictionary?["CFBundleVersion"]           as? String ?? "1"
@@ -250,6 +253,24 @@ struct SettingsView: View {
                 }
             }
             .disabled(isImporting)
+
+            Button(role: .destructive) {
+                showResetConfirmation = true
+            } label: {
+                Label(String(localized: "Reset All Data"), systemImage: "trash.fill")
+            }
+        }
+        .confirmationDialog(
+            String(localized: "Reset All Data"),
+            isPresented: $showResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "Delete Everything"), role: .destructive) {
+                Task { await resetAllData() }
+            }
+            Button(String(localized: "Cancel"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "This will permanently delete all expenses and subscriptions. This cannot be undone."))
         }
     }
 
@@ -438,6 +459,27 @@ struct SettingsView: View {
         }
         fields.append(current)
         return fields
+    }
+
+    // MARK: - Reset
+
+    private func resetAllData() async {
+        do {
+            try modelContext.delete(model: Expense.self)
+            try modelContext.delete(model: Subscription.self)
+            try modelContext.save()
+            let defaults = UserDefaults.standard
+            defaults.dictionaryRepresentation().keys
+                .filter { $0.hasPrefix("budgetAlert_") }
+                .forEach { defaults.removeObject(forKey: $0) }
+            importResultText = String(localized: "All data deleted.")
+            showImportResult = true
+            AppLogger.data.info("All data reset by user")
+        } catch {
+            errorText = error.localizedDescription
+            showError = true
+            AppLogger.data.error("Reset all data failed: \(error)")
+        }
     }
 }
 

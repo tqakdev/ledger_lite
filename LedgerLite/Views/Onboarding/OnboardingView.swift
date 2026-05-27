@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
@@ -11,6 +12,7 @@ struct OnboardingView: View {
             welcomePage.tag(0)
             currencyPage.tag(1)
             readyPage.tag(2)
+            notificationsPage.tag(3)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
         .indexViewStyle(.page(backgroundDisplayMode: .always))
@@ -87,7 +89,40 @@ struct OnboardingView: View {
                     .padding(.horizontal, 32)
             }
             Spacer()
-            nextButton(String(localized: "Start Tracking")) { hasCompletedOnboarding = true }
+            nextButton(String(localized: "Continue")) { withAnimation { page = 3 } }
+            Spacer().frame(height: 48)
+        }
+    }
+
+    private var notificationsPage: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            Image(systemName: "bell.badge.fill")
+                .font(.system(size: 80))
+                .foregroundStyle(Color.accentColor)
+            VStack(spacing: 12) {
+                Text(String(localized: "Stay on Top of Bills"))
+                    .font(.largeTitle.bold())
+                    .multilineTextAlignment(.center)
+                Text(String(localized: "Get notified 2 days before each subscription billing date so you're never surprised."))
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+            Spacer()
+            nextButton(String(localized: "Allow Notifications")) {
+                Task {
+                    _ = try? await UNUserNotificationCenter.current()
+                        .requestAuthorization(options: [.alert, .badge, .sound])
+                    hasCompletedOnboarding = true
+                }
+            }
+            Button(String(localized: "Skip")) {
+                hasCompletedOnboarding = true
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
             Spacer().frame(height: 48)
         }
     }

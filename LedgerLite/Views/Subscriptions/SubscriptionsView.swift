@@ -167,7 +167,12 @@ struct SubscriptionsView: View {
     // MARK: - Row + swipe actions
 
     private func subscriptionRow(_ sub: Subscription, viewModel: SubscriptionsViewModel) -> some View {
-        SubscriptionRowView(subscription: sub, notificationsAuthorized: viewModel.notificationsAuthorized)
+        SubscriptionRowView(
+            subscription: sub,
+            notificationsAuthorized: viewModel.notificationsAuthorized,
+            homeAmountMinor: viewModel.subscriptionHomeAmounts[sub.id],
+            homeCurrencyCode: viewModel.homeCurrencyCode
+        )
             .contentShape(Rectangle())
             .onTapGesture { viewModel.presentEdit(sub) }
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {

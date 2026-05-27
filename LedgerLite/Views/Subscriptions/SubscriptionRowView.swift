@@ -3,6 +3,8 @@ import SwiftUI
 struct SubscriptionRowView: View {
     let subscription: Subscription
     let notificationsAuthorized: Bool
+    var homeAmountMinor: Int? = nil
+    var homeCurrencyCode: String = ""
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ScaledMetric(relativeTo: .body) private var iconSize: CGFloat = 36
@@ -29,16 +31,26 @@ struct SubscriptionRowView: View {
         HStack(spacing: 12) {
             categoryIcon
             VStack(alignment: .leading, spacing: 2) {
-                HStack {
+                HStack(alignment: .top) {
                     Text(subscription.name)
                         .font(.body)
                         .lineLimit(1)
                         .truncationMode(.tail)
                     Spacer()
-                    Text(subscription.money.formatted())
-                        .font(.body)
-                        .monospacedDigit()
-                        .foregroundStyle(.primary)
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text(subscription.money.formatted())
+                            .font(.body)
+                            .monospacedDigit()
+                            .foregroundStyle(.primary)
+                        if let homeMinor = homeAmountMinor,
+                           !homeCurrencyCode.isEmpty,
+                           subscription.currencyCode != homeCurrencyCode {
+                            Text("≈ \(Money(minorUnits: homeMinor, currencyCode: homeCurrencyCode).formatted())")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
+                    }
                 }
                 HStack {
                     Text(subscription.billingCycle.displayName)
