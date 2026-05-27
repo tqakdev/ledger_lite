@@ -103,7 +103,6 @@ struct TodayView: View {
                                 expense: expense,
                                 homeCurrencyCode: viewModel.homeCurrencyCode
                             )
-                            .listRowBackground(Color(.secondarySystemGroupedBackground))
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 viewModel.presentEdit(for: expense)
@@ -126,6 +125,9 @@ struct TodayView: View {
                             }
                         }
                     }
+                    Section { Color.clear.frame(height: 80) }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                 }
                 .listStyle(.insetGrouped)
             }
@@ -153,9 +155,9 @@ struct TodayView: View {
         .padding()
         .background(
             LinearGradient(
-                colors: [Color.accentColor.opacity(0.08), Color(.secondarySystemGroupedBackground)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                colors: [Color.accentColor.opacity(0.10), Color(.secondarySystemGroupedBackground)],
+                startPoint: .top,
+                endPoint: .bottom
             )
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))

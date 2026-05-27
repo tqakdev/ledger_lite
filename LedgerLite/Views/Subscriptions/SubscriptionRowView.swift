@@ -30,6 +30,8 @@ struct SubscriptionRowView: View {
                 HStack {
                     Text(subscription.name)
                         .font(.body)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                     Spacer()
                     Text(subscription.money.formatted())
                         .font(.body)
@@ -40,6 +42,7 @@ struct SubscriptionRowView: View {
                     Text(subscription.billingCycle.displayName)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                     Spacer()
                     statusBadge
                 }

@@ -46,32 +46,34 @@ struct InsightsView: View {
     // MARK: - Content
 
     private func content(_ vm: InsightsViewModel) -> some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                if vm.isLoading && vm.categoryTotals.isEmpty {
-                    ProgressView()
-                        .padding(.vertical, 40)
-                } else {
-                    Group {
-                        donutSection(vm)
-                        trendSection(vm)
-                        if vm.period == .month {
-                            budgetSection(vm)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                        }
-                        topMerchantSection(vm)
-                    }
-                    .opacity(vm.isLoading ? 0.55 : 1.0)
-                    .animation(.easeInOut(duration: 0.2), value: vm.isLoading)
-                    .animation(.easeInOut(duration: 0.2), value: vm.period)
-                }
-            }
-        }
-        .safeAreaInset(edge: .top, spacing: 0) {
+        VStack(spacing: 0) {
             periodPicker(vm)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(.bar)
+
+            Divider()
+
+            ScrollView {
+                VStack(spacing: 0) {
+                    if vm.isLoading && vm.categoryTotals.isEmpty {
+                        ProgressView()
+                            .padding(.vertical, 40)
+                    } else {
+                        Group {
+                            donutSection(vm)
+                            trendSection(vm)
+                            if vm.period == .month {
+                                budgetSection(vm)
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                            }
+                            topMerchantSection(vm)
+                        }
+                        .opacity(vm.isLoading ? 0.55 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: vm.isLoading)
+                        .animation(.easeInOut(duration: 0.2), value: vm.period)
+                    }
+                }
+            }
         }
         .onChange(of: vm.period) { _, _ in
             selectedAngleValue = nil
@@ -145,7 +147,7 @@ struct InsightsView: View {
             VStack(spacing: 2) {
                 Text(String(localized: "Total"))
                     .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
                 Text(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())
                     .font(.system(.callout, design: .rounded, weight: .bold))
                     .monospacedDigit()
@@ -272,8 +274,10 @@ struct InsightsView: View {
                 AxisValueLabel {
                     let minor: Int? = value.as(Int.self) ?? value.as(Double.self).map { Int($0) }
                     if let minor {
-                        Text(Money(minorUnits: minor, currencyCode: vm.homeCurrencyCode).formatted())
+                        Text(compactAmount(minor, currency: vm.homeCurrencyCode))
                             .font(.caption2)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                     }
                 }
             }
@@ -300,7 +304,7 @@ struct InsightsView: View {
                 }
             }
         } label: {
-            Label(String(localized: "Budget Progress"), systemImage: "target")
+            Label(String(localized: "Budget Progress"), systemImage: "chart.bar.xaxis")
                 .font(.headline)
         }
         .padding(.horizontal)
@@ -358,7 +362,7 @@ struct InsightsView: View {
                     .padding(.vertical, 4)
             }
         } label: {
-            Text(String(localized: "Top Merchant"))
+            Label(String(localized: "Top Merchant"), systemImage: "trophy")
                 .font(.headline)
         }
         .padding(.horizontal)
@@ -401,6 +405,20 @@ struct InsightsView: View {
                     currencyCode: vm.homeCurrencyCode
                 )
             }
+    }
+
+    private func compactAmount(_ minorUnits: Int, currency: String) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currency
+        formatter.locale = .current
+        formatter.maximumFractionDigits = 0
+        formatter.minimumFractionDigits = 0
+        let places = Money.decimals(for: currency)
+        var divisor = Decimal(1)
+        for _ in 0..<places { divisor *= 10 }
+        let value = Decimal(minorUnits) / divisor
+        return formatter.string(from: value as NSDecimalNumber) ?? "\(minorUnits)"
     }
 
     // MARK: - Budget entry

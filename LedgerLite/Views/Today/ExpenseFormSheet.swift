@@ -91,11 +91,6 @@ struct ExpenseFormSheet: View {
 
                 if case .add = mode {
                     currencyPicker(viewModel)
-                } else {
-                    Text(viewModel.currencyCode)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
                 }
 
                 CategoryPickerStrip(

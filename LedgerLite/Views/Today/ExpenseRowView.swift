@@ -8,6 +8,14 @@ struct ExpenseRowView: View {
         expense.date.formatted(date: .omitted, time: .shortened)
     }
 
+    private var dateLabel: String? {
+        guard !Calendar.current.isDateInToday(expense.date) else { return nil }
+        if Calendar.current.isDateInYesterday(expense.date) {
+            return String(localized: "Yesterday")
+        }
+        return expense.date.formatted(.dateTime.month(.abbreviated).day())
+    }
+
     private var subtitle: String {
         if let merchant = expense.merchant, !merchant.isEmpty { return merchant }
         if let note = expense.note, !note.isEmpty { return note }
@@ -21,9 +29,16 @@ struct ExpenseRowView: View {
                 Text(subtitle)
                     .font(.body)
                     .lineLimit(1)
-                Text(timeText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    if let dateLabel {
+                        Text(dateLabel)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                    Text(timeText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {

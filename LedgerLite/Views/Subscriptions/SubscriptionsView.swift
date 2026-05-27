@@ -156,9 +156,9 @@ struct SubscriptionsView: View {
         .padding(16)
         .background(
             LinearGradient(
-                colors: [Color.accentColor.opacity(0.07), Color(.secondarySystemGroupedBackground)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                colors: [Color.accentColor.opacity(0.09), Color(.secondarySystemGroupedBackground)],
+                startPoint: .top,
+                endPoint: .bottom
             )
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
@@ -168,7 +168,6 @@ struct SubscriptionsView: View {
 
     private func subscriptionRow(_ sub: Subscription, viewModel: SubscriptionsViewModel) -> some View {
         SubscriptionRowView(subscription: sub, notificationsAuthorized: viewModel.notificationsAuthorized)
-            .listRowBackground(Color(.secondarySystemGroupedBackground))
             .contentShape(Rectangle())
             .onTapGesture { viewModel.presentEdit(sub) }
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
@@ -212,14 +211,17 @@ struct SubscriptionsView: View {
         ContentUnavailableView {
             Label(String(localized: "No Subscriptions"), systemImage: "repeat.circle")
         } description: {
-            Text(String(localized: "Track recurring charges so nothing catches you off guard."))
+            Text(String(localized: "Add a subscription manually, or paste a billing email to detect it automatically."))
         } actions: {
-            Button(String(localized: "Add Subscription")) {
-                viewModel.presentAdd()
-            }
-            .buttonStyle(.borderedProminent)
-            Button(String(localized: "Scan for Subscriptions")) {
-                viewModel.presentAutoDetect()
+            VStack(spacing: 10) {
+                Button(String(localized: "Add Subscription")) {
+                    viewModel.presentAdd()
+                }
+                .buttonStyle(.borderedProminent)
+                Button(String(localized: "Scan from email or SMS")) {
+                    viewModel.presentAutoDetect()
+                }
+                .buttonStyle(.bordered)
             }
         }
     }

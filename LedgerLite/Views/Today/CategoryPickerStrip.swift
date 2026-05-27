@@ -40,6 +40,7 @@ private struct CategoryChip: View {
                 Text(category.name)
                     .font(.subheadline)
                     .fontWeight(.medium)
+                    .lineLimit(1)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
@@ -51,6 +52,7 @@ private struct CategoryChip: View {
             )
             .foregroundStyle(isSelected ? Color(hex: category.colorHex) : .primary)
             .clipShape(Capsule())
+            .fixedSize(horizontal: false, vertical: true)
             // A2: separator border unselected (1 pt); full-alpha colour border selected (2 pt)
             .overlay(
                 Capsule()

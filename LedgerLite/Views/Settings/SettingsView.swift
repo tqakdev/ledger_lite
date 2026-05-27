@@ -188,15 +188,22 @@ struct SettingsView: View {
             HStack {
                 Text(String(localized: "Version"))
                 Spacer()
-                Text(appVersion)
-                    .foregroundStyle(.secondary)
+                Button {
+                    UIPasteboard.general.string = appVersion
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(appVersion)
+                            .foregroundStyle(.secondary)
+                        Image(systemName: "doc.on.doc")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .buttonStyle(.plain)
             }
-            .padding(.vertical, 4)
             .accessibilityElement(children: .combine)
-            .onLongPressGesture {
-                UIPasteboard.general.string = appVersion
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
-            }
+            .accessibilityLabel(String(localized: "Version \(appVersion), tap to copy"))
         }
     }
 
