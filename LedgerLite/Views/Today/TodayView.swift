@@ -57,46 +57,47 @@ struct TodayView: View {
         if viewModel.expenses.isEmpty && !viewModel.isLoading {
             emptyState
         } else {
-            VStack(spacing: 0) {
-                todaySummaryCard(viewModel)
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-
-                List {
-                    Section(String(localized: "Expenses")) {
-                        ForEach(viewModel.expenses, id: \.id) { expense in
-                            ExpenseRowView(
-                                expense: expense,
-                                homeCurrencyCode: viewModel.homeCurrencyCode
-                            )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                viewModel.presentEdit(for: expense)
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                    viewModel.deleteExpense(expense)
-                                } label: {
-                                    Label(String(localized: "Delete"), systemImage: "trash")
-                                }
-                            }
-                            .swipeActions(edge: .leading) {
-                                Button {
-                                    viewModel.presentEdit(for: expense)
-                                } label: {
-                                    Label(String(localized: "Edit"), systemImage: "pencil")
-                                }
-                                .tint(.blue)
-                            }
-                        }
-                    }
-                    Section { Color.clear.frame(height: 80) }
+            List {
+                Section {
+                    todaySummaryCard(viewModel)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                 }
-                .listStyle(.insetGrouped)
+                Section(String(localized: "Expenses")) {
+                    ForEach(viewModel.expenses, id: \.id) { expense in
+                        ExpenseRowView(
+                            expense: expense,
+                            homeCurrencyCode: viewModel.homeCurrencyCode
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            viewModel.presentEdit(for: expense)
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                viewModel.deleteExpense(expense)
+                            } label: {
+                                Label(String(localized: "Delete"), systemImage: "trash")
+                            }
+                        }
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                viewModel.presentEdit(for: expense)
+                            } label: {
+                                Label(String(localized: "Edit"), systemImage: "pencil")
+                            }
+                            .tint(.blue)
+                        }
+                    }
+                }
+                Section { Color.clear.frame(height: 80) }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
             }
+            .listStyle(.insetGrouped)
+            .listSectionSpacing(.compact)
         }
     }
 

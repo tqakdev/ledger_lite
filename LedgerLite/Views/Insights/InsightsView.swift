@@ -184,7 +184,7 @@ struct InsightsView: View {
                     .animation(.easeInOut(duration: 0.3), value: vm.periodTotalMinor)
             }
         }
-        .frame(height: 220)
+        .frame(height: 180)
     }
 
     private func callout(item: (category: Category, minorUnits: Int), vm: InsightsViewModel) -> some View {
@@ -381,15 +381,12 @@ struct InsightsView: View {
     private func topMerchantSection(_ vm: InsightsViewModel) -> some View {
         GroupBox {
             if let top = vm.topMerchant {
-                HStack(spacing: 10) {
-                    Image(systemName: "trophy.fill")
-                        .foregroundStyle(.yellow)
-                        .frame(width: 24)
+                HStack(spacing: 4) {
                     Text(top.merchant)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .lineLimit(1)
-                    Spacer(minLength: 4)
+                    Spacer(minLength: 8)
                     Text(Money(minorUnits: top.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -405,7 +402,7 @@ struct InsightsView: View {
                     .padding(.vertical, 4)
             }
         } label: {
-            Label(String(localized: "Top Merchant"), systemImage: "trophy")
+            Label(String(localized: "Top Merchant"), systemImage: "trophy.fill")
                 .font(.headline)
         }
         .padding(.horizontal)

@@ -206,6 +206,8 @@ struct HistoryView: View {
             Text(vm.dayTotalFormatted)
                 .font(.system(.largeTitle, design: .rounded, weight: .bold))
                 .monospacedDigit()
+                .contentTransition(.numericText(value: Double(vm.dayTotalMinor)))
+                .animation(.spring(duration: 0.4, bounce: 0.3), value: vm.dayTotalMinor)
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.tertiary)
@@ -225,40 +227,42 @@ struct HistoryView: View {
     // MARK: - Expense list
 
     private func expenseList(_ vm: HistoryViewModel) -> some View {
-        VStack(spacing: 0) {
-            summaryCard(vm)
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-            List {
-                Section {
-                    ForEach(vm.filteredExpenses, id: \.id) { expense in
-                        ExpenseRowView(
-                            expense: expense,
-                            homeCurrencyCode: vm.homeCurrencyCode
-                        )
-                        .contentShape(Rectangle())
-                        .onTapGesture { vm.presentEdit(for: expense) }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                vm.deleteExpense(expense)
-                            } label: {
-                                Label(String(localized: "Delete"), systemImage: "trash")
-                            }
+        List {
+            Section {
+                summaryCard(vm)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
+            Section(String(localized: "Expenses")) {
+                ForEach(vm.filteredExpenses, id: \.id) { expense in
+                    ExpenseRowView(
+                        expense: expense,
+                        homeCurrencyCode: vm.homeCurrencyCode
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture { vm.presentEdit(for: expense) }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            vm.deleteExpense(expense)
+                        } label: {
+                            Label(String(localized: "Delete"), systemImage: "trash")
                         }
-                        .swipeActions(edge: .leading) {
-                            Button {
-                                vm.presentEdit(for: expense)
-                            } label: {
-                                Label(String(localized: "Edit"), systemImage: "pencil")
-                            }
-                            .tint(.blue)
+                    }
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            vm.presentEdit(for: expense)
+                        } label: {
+                            Label(String(localized: "Edit"), systemImage: "pencil")
                         }
+                        .tint(.blue)
                     }
                 }
             }
-            .listStyle(.insetGrouped)
         }
+        .listStyle(.insetGrouped)
+        .listSectionSpacing(.compact)
     }
 
     // MARK: - Global search results
