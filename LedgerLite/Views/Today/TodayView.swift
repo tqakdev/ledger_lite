@@ -1,9 +1,43 @@
 import SwiftUI
 import SwiftData
 
+// A7: shimmer animation modifier used on the empty-state icon
+private struct ShimmerModifier: ViewModifier {
+    @State private var phase: CGFloat = -1
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.0),
+                        .init(color: .white.opacity(0.7), location: 0.5),
+                        .init(color: .clear, location: 1.0),
+                    ],
+                    startPoint: UnitPoint(x: phase, y: 0.5),
+                    endPoint:   UnitPoint(x: phase + 1, y: 0.5)
+                )
+                .blendMode(.sourceAtop)
+            }
+            .onAppear {
+                phase = -1
+                withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+                    phase = 1
+                }
+            }
+    }
+}
+
+private extension View {
+    func shimmer() -> some View { modifier(ShimmerModifier()) }
+}
+
 struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: TodayViewModel?
+    // C3: error alert state
+    @State private var showError  = false
+    @State private var errorText  = ""
 
     var body: some View {
         NavigationStack {
@@ -15,6 +49,7 @@ struct TodayView: View {
                 }
             }
             .navigationTitle(String(localized: "Today"))
+            .navigationBarTitleDisplayMode(.large)  // A9
         }
         .overlay(alignment: .bottomTrailing) {
             if let viewModel {
@@ -32,16 +67,34 @@ struct TodayView: View {
                 viewModel?.dismissSheet()
             }
         }
+        // C3: error alert
+        .alert(String(localized: "Something went wrong"), isPresented: $showError) {
+            Button(String(localized: "OK"), role: .cancel) {}
+        } message: {
+            Text(errorText)
+        }
+        .onChange(of: viewModel?.errorMessage) { _, msg in
+            if let msg {
+                errorText = msg
+                showError = true
+                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1 error haptic
+            }
+        }
     }
+
+    // MARK: - Content
 
     @ViewBuilder
     private func todayContent(_ viewModel: TodayViewModel) -> some View {
-        if viewModel.expenses.isEmpty {
+        if viewModel.expenses.isEmpty && !viewModel.isLoading {
             emptyState
         } else {
             List {
                 Section {
-                    todaySummary(viewModel)
+                    // A5: standalone styled card; C4: redacted while initial load
+                    todaySummaryCard(viewModel)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 }
                 Section(String(localized: "Expenses")) {
                     ForEach(viewModel.expenses, id: \.id) { expense in
@@ -55,6 +108,7 @@ struct TodayView: View {
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                             Button(role: .destructive) {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
                                 viewModel.deleteExpense(expense)
                             } label: {
                                 Label(String(localized: "Delete"), systemImage: "trash")
@@ -73,16 +127,11 @@ struct TodayView: View {
             }
             .listStyle(.insetGrouped)
         }
-
-        if let error = viewModel.errorMessage {
-            Text(error)
-                .font(.caption)
-                .foregroundStyle(.red)
-                .padding()
-        }
     }
 
-    private func todaySummary(_ viewModel: TodayViewModel) -> some View {
+    // MARK: - Summary card (A5)
+
+    private func todaySummaryCard(_ viewModel: TodayViewModel) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(String(localized: "Today's Total"))
                 .font(.subheadline)
@@ -90,13 +139,33 @@ struct TodayView: View {
             Text(viewModel.todayTotalFormatted)
                 .font(.system(.largeTitle, design: .rounded, weight: .bold))
                 .monospacedDigit()
+            // A5: velocity indicator — only shown when 30-day history exists
+            velocityLabel(viewModel)
             Text(Date.now.formatted(date: .complete, time: .omitted))
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 4)
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        // C4: placeholder skeleton on initial load before any expenses are fetched
+        .redacted(reason: viewModel.isLoading && viewModel.expenses.isEmpty ? .placeholder : [])
     }
+
+    @ViewBuilder
+    private func velocityLabel(_ viewModel: TodayViewModel) -> some View {
+        if viewModel.dailyAverageMinor > 0 {
+            let isAbove = viewModel.todayTotalMinor > viewModel.dailyAverageMinor
+            Text(isAbove
+                 ? String(localized: "↑ above avg")
+                 : String(localized: "↓ below avg"))
+                .font(.caption)
+                .foregroundStyle(isAbove ? .orange : .green)
+        }
+    }
+
+    // MARK: - FAB
 
     private func quickAddFAB(_ viewModel: TodayViewModel) -> some View {
         Button {
@@ -115,18 +184,33 @@ struct TodayView: View {
         .accessibilityLabel(String(localized: "Quick Add"))
     }
 
+    // MARK: - Empty state (A7)
+
     private var emptyState: some View {
-        ContentUnavailableView {
-            Label(String(localized: "No Expenses Today"), systemImage: "tray")
-        } description: {
-            Text(String(localized: "Tap + to log your first expense."))
-        } actions: {
+        VStack(spacing: 20) {
+            Spacer()
+            Image(systemName: "tray")
+                .font(.system(size: 64))
+                .foregroundStyle(.secondary)
+                .shimmer()  // A7: repeating shimmer over the icon
+            VStack(spacing: 8) {
+                Text(String(localized: "No Expenses Today"))
+                    .font(.title2.bold())
+                Text(String(localized: "Your first expense takes 3 seconds."))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
             Button(String(localized: "Quick Add")) {
                 viewModel?.presentQuickAdd()
             }
             .buttonStyle(.borderedProminent)
+            Spacer()
         }
     }
+
+    // MARK: - Helpers
 
     private var sheetBinding: Binding<TodaySheet?> {
         Binding(

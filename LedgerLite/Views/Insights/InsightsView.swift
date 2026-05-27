@@ -6,6 +6,9 @@ struct InsightsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: InsightsViewModel?
     @State private var selectedAngleValue: Int?
+    // C3
+    @State private var showError = false
+    @State private var errorText = ""
 
     var body: some View {
         NavigationStack {
@@ -17,12 +20,26 @@ struct InsightsView: View {
                 }
             }
             .navigationTitle(String(localized: "Insights"))
+            .navigationBarTitleDisplayMode(.large)  // A9
         }
         .onAppear {
             if viewModel == nil {
                 viewModel = InsightsViewModel(context: modelContext)
             }
             Task { await viewModel?.refresh() }
+        }
+        // C3
+        .alert(String(localized: "Something went wrong"), isPresented: $showError) {
+            Button(String(localized: "OK"), role: .cancel) {}
+        } message: {
+            Text(errorText)
+        }
+        .onChange(of: viewModel?.errorMessage) { _, msg in
+            if let msg {
+                errorText = msg
+                showError = true
+                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1 error haptic
+            }
         }
     }
 
@@ -36,7 +53,6 @@ struct InsightsView: View {
                     .padding(.vertical, 12)
 
                 if vm.isLoading && vm.categoryTotals.isEmpty {
-                    // Initial load only — after first data arrives we update in-place.
                     ProgressView()
                         .padding(.vertical, 40)
                 } else {
@@ -49,18 +65,9 @@ struct InsightsView: View {
                         }
                         topMerchantSection(vm)
                     }
-                    // Fade stale content while a period-change refresh is in flight.
                     .opacity(vm.isLoading ? 0.55 : 1.0)
                     .animation(.easeInOut(duration: 0.2), value: vm.isLoading)
-                    // Animate budget section appearing / disappearing on period change.
                     .animation(.easeInOut(duration: 0.2), value: vm.period)
-                }
-
-                if let err = vm.errorMessage {
-                    Text(err)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                        .padding()
                 }
             }
         }
@@ -79,7 +86,6 @@ struct InsightsView: View {
             set: { vm.period = $0 }
         )) {
             ForEach(InsightsViewModel.Period.allCases) { p in
-                // Use shortName so 4 segments fit on SE 3rd-gen (375 pt).
                 Text(p.shortName).tag(p)
             }
         }
@@ -128,6 +134,10 @@ struct InsightsView: View {
             .onChange(of: selectedAngleValue) { _, v in
                 vm.selectedCategory = v.flatMap { categoryForAngle($0, totals: vm.categoryTotals) }
             }
+            // C2: manual accessibility label for donut (Swift Charts doesn't auto-describe it)
+            .accessibilityLabel(
+                String(localized: "\(vm.categoryTotals.count) categories, total \(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())")
+            )
 
             VStack(spacing: 2) {
                 Text(String(localized: "Total"))

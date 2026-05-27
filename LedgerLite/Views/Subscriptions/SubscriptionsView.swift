@@ -5,6 +5,9 @@ struct SubscriptionsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: SubscriptionsViewModel?
     @State private var inactiveSectionExpanded = false
+    // C3
+    @State private var showError = false
+    @State private var errorText = ""
 
     var body: some View {
         NavigationStack {
@@ -16,6 +19,7 @@ struct SubscriptionsView: View {
                 }
             }
             .navigationTitle(String(localized: "Subscriptions"))
+            .navigationBarTitleDisplayMode(.large)  // A9
             .toolbar {
                 if let viewModel {
                     ToolbarItem(placement: .primaryAction) {
@@ -52,6 +56,19 @@ struct SubscriptionsView: View {
             case .autoDetect:
                 AutoDetectSheet()
                     .onDisappear { viewModel?.dismissDestination() }
+            }
+        }
+        // C3
+        .alert(String(localized: "Something went wrong"), isPresented: $showError) {
+            Button(String(localized: "OK"), role: .cancel) {}
+        } message: {
+            Text(errorText)
+        }
+        .onChange(of: viewModel?.errorMessage) { _, msg in
+            if let msg {
+                errorText = msg
+                showError = true
+                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1
             }
         }
     }
@@ -102,13 +119,6 @@ struct SubscriptionsView: View {
                 }
             }
             .listStyle(.insetGrouped)
-
-            if let error = viewModel.errorMessage {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .padding()
-            }
         }
     }
 
@@ -122,8 +132,7 @@ struct SubscriptionsView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 if viewModel.monthlyCostIsLoading {
-                    ProgressView()
-                        .frame(height: 44)
+                    ProgressView().frame(height: 44)
                 } else {
                     Text(Money(minorUnits: viewModel.monthlyCostMinor, currencyCode: viewModel.homeCurrencyCode).formatted())
                         .font(.system(.largeTitle, design: .rounded, weight: .bold))
@@ -147,6 +156,7 @@ struct SubscriptionsView: View {
             .onTapGesture { viewModel.presentEdit(sub) }
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                 Button(role: .destructive) {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
                     viewModel.deleteSubscription(sub)
                 } label: {
                     Label(String(localized: "Delete"), systemImage: "trash")

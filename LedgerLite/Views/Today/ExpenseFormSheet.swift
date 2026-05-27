@@ -16,6 +16,9 @@ struct ExpenseFormSheet: View {
 
     @State private var viewModel: ExpenseFormViewModel?
     @FocusState private var focusedField: ExpenseFormField?
+    // C3: error alert
+    @State private var showError  = false
+    @State private var errorText  = ""
 
     var body: some View {
         NavigationStack {
@@ -30,9 +33,7 @@ struct ExpenseFormSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "Cancel")) {
-                        dismiss()
-                    }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     if let viewModel {
@@ -46,9 +47,7 @@ struct ExpenseFormSheet: View {
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button(String(localized: "Done")) {
-                        focusedField = nil
-                    }
+                    Button(String(localized: "Done")) { focusedField = nil }
                 }
             }
         }
@@ -62,17 +61,32 @@ struct ExpenseFormSheet: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
+        .presentationCornerRadius(24)  // A8
+        // C3
+        .alert(String(localized: "Something went wrong"), isPresented: $showError) {
+            Button(String(localized: "OK"), role: .cancel) {}
+        } message: {
+            Text(errorText)
+        }
+        .onChange(of: viewModel?.errorMessage) { _, msg in
+            if let msg {
+                errorText = msg
+                showError = true
+                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1 error haptic
+            }
+        }
     }
+
+    // MARK: - Form content
 
     @ViewBuilder
     private func formContent(_ viewModel: ExpenseFormViewModel) -> some View {
         ScrollView {
             VStack(spacing: 16) {
+                // A1: redesigned amount field
                 amountField(viewModel)
 
                 if case .add = mode {
-                    // Currency is intentionally hidden in edit mode — changing it after creation
-                    // would require re-fetching the exchange rate and recalculating the home-currency amount.
                     currencyPicker(viewModel)
                 }
 
@@ -84,45 +98,113 @@ struct ExpenseFormSheet: View {
                     )
                 )
 
-                Divider()
-
-                VStack(spacing: 8) {
-                    TextField(String(localized: "Merchant"), text: merchantBinding(viewModel))
-                        .textFieldStyle(.roundedBorder)
-                        .focused($focusedField, equals: .merchant)
-                        .submitLabel(.next)
-                        .onSubmit { focusedField = .note }
-
-                    TextField(String(localized: "Note"), text: noteBinding(viewModel))
-                        .textFieldStyle(.roundedBorder)
-                        .focused($focusedField, equals: .note)
-                        .submitLabel(.done)
-                        .onSubmit { focusedField = nil }
-                }
-                .padding(.horizontal)
-
-                if let error = viewModel.errorMessage {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
+                // A3 + A4: grouped merchant / note / date container
+                detailsGroup(viewModel)
             }
             .padding(.bottom, 8)
         }
         .scrollDismissesKeyboard(.interactively)
     }
 
+    // MARK: - A1: Amount field
+
     private func amountField(_ viewModel: ExpenseFormViewModel) -> some View {
-        TextField("0", text: amountBinding(viewModel))
-            .font(.system(size: 40, weight: .semibold, design: .rounded))
-            .monospacedDigit()
-            .multilineTextAlignment(.center)
-            .keyboardType(.decimalPad)
-            .focused($focusedField, equals: .amount)
-            .padding(.vertical, 12)
-            .accessibilityLabel(String(localized: "Amount"))
-            .accessibilityValue(viewModel.formattedAmount())
+        HStack(alignment: .firstTextBaseline, spacing: 2) {
+            // Currency symbol sits left of the number, styled secondary so it doesn't compete
+            Text(Self.currencySymbol(for: viewModel.currencyCode))
+                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                .foregroundStyle(.secondary)
+
+            ZStack {
+                // Styled placeholder — only shown when field is empty so cursor never sits on it
+                if viewModel.amountString.isEmpty {
+                    Text("0")
+                        .font(.system(size: 40, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.tertiary)
+                        .monospacedDigit()
+                        .allowsHitTesting(false)
+                }
+                TextField("", text: amountBinding(viewModel))
+                    .font(.system(size: 40, weight: .semibold, design: .rounded))
+                    .monospacedDigit()
+                    .multilineTextAlignment(.center)
+                    .keyboardType(.decimalPad)
+                    .focused($focusedField, equals: .amount)
+                    .contentTransition(.numericText())
+                    .animation(.smooth(duration: 0.15), value: viewModel.amountString)
+                    // Hide cursor when empty so it doesn't overlap the styled "0" placeholder
+                    .tint(viewModel.amountString.isEmpty ? .clear : .accentColor)
+                    .frame(minWidth: 56)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        // Subtle scale-in when first digit is entered
+        .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
+        .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
+        .padding(.vertical, 12)
+        .accessibilityLabel(String(localized: "Amount"))
+        .accessibilityValue(viewModel.formattedAmount())
     }
+
+    // A3 + A4: merchant, note, and date in a single grouped container
+    private func detailsGroup(_ viewModel: ExpenseFormViewModel) -> some View {
+        VStack(spacing: 0) {
+            // Merchant row
+            HStack(spacing: 12) {
+                Image(systemName: "building.2")
+                    .foregroundStyle(.secondary)
+                    .frame(width: 20)
+                TextField(String(localized: "Merchant"), text: merchantBinding(viewModel))
+                    .textFieldStyle(.plain)
+                    .focused($focusedField, equals: .merchant)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .note }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            Divider().padding(.leading, 16)
+
+            // Note row
+            HStack(spacing: 12) {
+                Image(systemName: "note.text")
+                    .foregroundStyle(.secondary)
+                    .frame(width: 20)
+                TextField(String(localized: "Note"), text: noteBinding(viewModel))
+                    .textFieldStyle(.plain)
+                    .focused($focusedField, equals: .note)
+                    .submitLabel(.done)
+                    .onSubmit { focusedField = nil }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            Divider().padding(.leading, 16)
+
+            // A4: Date row — compact picker, date only (time not surfaced in UI)
+            HStack(spacing: 12) {
+                Image(systemName: "calendar")
+                    .foregroundStyle(.secondary)
+                    .frame(width: 20)
+                Text(String(localized: "Date"))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                DatePicker(
+                    String(localized: "Date"),
+                    selection: dateBinding(viewModel),
+                    displayedComponents: .date
+                )
+                .labelsHidden()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal)
+    }
+
+    // MARK: - Currency picker
 
     @ViewBuilder
     private func currencyPicker(_ viewModel: ExpenseFormViewModel) -> some View {
@@ -138,32 +220,32 @@ struct ExpenseFormSheet: View {
         }
     }
 
+    // MARK: - Save
+
     private func save(_ viewModel: ExpenseFormViewModel) async {
         if await viewModel.save() {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1 success haptic
             onComplete()
             dismiss()
         }
     }
 
+    // MARK: - Bindings
+
     private func amountBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {
-        Binding(
-            get: { viewModel.amountString },
-            set: { viewModel.setAmount($0) }
-        )
+        Binding(get: { viewModel.amountString }, set: { viewModel.setAmount($0) })
     }
 
     private func merchantBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {
-        Binding(
-            get: { viewModel.merchant },
-            set: { viewModel.merchant = $0 }
-        )
+        Binding(get: { viewModel.merchant }, set: { viewModel.merchant = $0 })
     }
 
     private func noteBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {
-        Binding(
-            get: { viewModel.note },
-            set: { viewModel.note = $0 }
-        )
+        Binding(get: { viewModel.note }, set: { viewModel.note = $0 })
+    }
+
+    private func dateBinding(_ viewModel: ExpenseFormViewModel) -> Binding<Date> {
+        Binding(get: { viewModel.date }, set: { viewModel.date = $0 })
     }
 
     private func currencyBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {
@@ -171,13 +253,20 @@ struct ExpenseFormSheet: View {
             get: { viewModel.currencyCode },
             set: { newCode in
                 if newCode != viewModel.currencyCode {
-                    // Currency change resets the amount — different currencies have different
-                    // minor-unit scales (JPY vs USD) so keeping the number would be misleading.
                     viewModel.currencyCode = newCode
                     viewModel.setAmount("")
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 }
             }
         )
+    }
+
+    // MARK: - Helpers
+
+    private static func currencySymbol(for code: String) -> String {
+        let fmt = NumberFormatter()
+        fmt.numberStyle = .currency
+        fmt.currencyCode = code
+        return fmt.currencySymbol ?? code
     }
 }

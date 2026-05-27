@@ -25,9 +25,11 @@ enum TodaySheet: Identifiable {
 final class TodayViewModel {
     var expenses: [Expense] = []
     var todayTotalMinor: Int = 0
+    var dailyAverageMinor: Int = 0     // A5: 30-day daily average in home-currency minor units
     var homeCurrencyCode: String = UserPreferences.homeCurrencyCode
     var activeSheet: TodaySheet?
     var errorMessage: String?
+    var isLoading: Bool = false         // C4
 
     private let expenseRepository: ExpenseRepository
     private let modelContext: ModelContext
@@ -42,15 +44,18 @@ final class TodayViewModel {
     }
 
     func refresh() {
+        isLoading = true
         homeCurrencyCode = UserPreferences.homeCurrencyCode
         do {
             expenses = try expenseRepository.fetchToday()
             todayTotalMinor = totalInHomeCurrency(expenses)
+            dailyAverageMinor = computeDailyAverage()
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
             AppLogger.ui.error("Today refresh failed: \(error)")
         }
+        isLoading = false
     }
 
     func deleteExpense(_ expense: Expense) {
@@ -93,5 +98,30 @@ final class TodayViewModel {
         }
         let rounded = accumulated.rounded(scale: 0)
         return NSDecimalNumber(decimal: rounded).intValue
+    }
+
+    // A5: fetch last 30 days of expenses and return the sum ÷ 30 in home-currency minor units.
+    private func computeDailyAverage() -> Int {
+        guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) else { return 0 }
+        do {
+            let all = try expenseRepository.fetchAll()
+            let recent = all.filter { $0.date >= thirtyDaysAgo }
+            guard !recent.isEmpty else { return 0 }
+            let homePlaces = Money.decimals(for: homeCurrencyCode)
+            var sum = Decimal(0)
+            for e in recent {
+                if e.currencyCode == e.homeCurrencyAtEntry {
+                    sum += Decimal(e.amountMinor)
+                } else {
+                    sum += e.money.decimalValue * e.exchangeRateToHome * Decimal.powerOfTen(homePlaces)
+                }
+            }
+            let rounded = sum.rounded(scale: 0)
+            let totalMinor = NSDecimalNumber(decimal: rounded).intValue
+            return totalMinor / 30
+        } catch {
+            AppLogger.ui.error("Daily average failed: \(error)")
+            return 0
+        }
     }
 }

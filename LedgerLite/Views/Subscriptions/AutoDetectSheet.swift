@@ -37,6 +37,7 @@ struct AutoDetectSheet: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
+        .presentationCornerRadius(24)  // A8
     }
 
     // MARK: - Phase A: paste zone

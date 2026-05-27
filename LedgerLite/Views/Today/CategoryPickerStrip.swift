@@ -1,5 +1,6 @@
 import SwiftUI
 
+// A2 + A10: chip styling, haptic, symmetric padding, scroll snapping
 struct CategoryPickerStrip: View {
     let categories: [Category]
     @Binding var selected: Category?
@@ -12,12 +13,16 @@ struct CategoryPickerStrip: View {
                         category: category,
                         isSelected: selected?.id == category.id
                     ) {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         selected = category
                     }
                 }
             }
+            // A10: allow chips to snap cleanly so they don't stop mid-chip
+            .scrollTargetLayout()
             .padding(.horizontal)
         }
+        .scrollTargetBehavior(.viewAligned)
     }
 }
 
@@ -37,15 +42,26 @@ private struct CategoryChip: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(isSelected ? Color(hex: category.colorHex).opacity(0.25) : Color(.secondarySystemFill))
+            // A2: tertiarySystemFill for unselected (reads in both light/dark); 0.18 for selected
+            .background(
+                isSelected
+                    ? Color(hex: category.colorHex).opacity(0.18)
+                    : Color(.tertiarySystemFill)
+            )
             .foregroundStyle(isSelected ? Color(hex: category.colorHex) : .primary)
             .clipShape(Capsule())
+            // A2: separator border unselected (1 pt); full-alpha colour border selected (2 pt)
             .overlay(
                 Capsule()
-                    .strokeBorder(isSelected ? Color(hex: category.colorHex) : .clear, lineWidth: 2)
+                    .strokeBorder(
+                        isSelected ? Color(hex: category.colorHex) : Color(.separator),
+                        lineWidth: isSelected ? 2 : 1
+                    )
             )
         }
         .buttonStyle(.plain)
+        // C2: full accessibility label with selection state
+        .accessibilityLabel(String(localized: "\(category.name), \(isSelected ? "selected" : "not selected")"))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

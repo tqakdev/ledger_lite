@@ -17,6 +17,9 @@ struct SubscriptionFormSheet: View {
 
     @State private var viewModel: SubscriptionFormViewModel?
     @FocusState private var focusedField: SubscriptionFormField?
+    // C3
+    @State private var showError = false
+    @State private var errorText = ""
 
     var body: some View {
         NavigationStack {
@@ -59,6 +62,20 @@ struct SubscriptionFormSheet: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
+        .presentationCornerRadius(24)  // A8
+        // C3
+        .alert(String(localized: "Something went wrong"), isPresented: $showError) {
+            Button(String(localized: "OK"), role: .cancel) {}
+        } message: {
+            Text(errorText)
+        }
+        .onChange(of: viewModel?.errorMessage) { _, msg in
+            if let msg {
+                errorText = msg
+                showError = true
+                UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1 error haptic
+            }
+        }
     }
 
     @ViewBuilder
@@ -69,13 +86,6 @@ struct SubscriptionFormSheet: View {
                 categorySection(viewModel)
                 Divider()
                 detailsSection(viewModel)
-
-                if let error = viewModel.errorMessage {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                        .padding(.horizontal)
-                }
             }
             .padding(.bottom, 8)
         }
@@ -200,6 +210,7 @@ struct SubscriptionFormSheet: View {
             switch subscription.status {
             case .active:
                 Button(String(localized: "Pause Subscription")) {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
                     subscription.status = .paused
                     try? modelContext.save()
                     onComplete()
@@ -209,6 +220,7 @@ struct SubscriptionFormSheet: View {
 
             case .paused:
                 Button(String(localized: "Resume Subscription")) {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
                     subscription.status = .active
                     try? modelContext.save()
                     onComplete()
@@ -222,6 +234,7 @@ struct SubscriptionFormSheet: View {
 
             if subscription.status != .cancelled {
                 Button(String(localized: "Cancel Subscription"), role: .destructive) {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
                     subscription.status = .cancelled
                     try? modelContext.save()
                     onComplete()
@@ -237,6 +250,7 @@ struct SubscriptionFormSheet: View {
 
     private func save(_ viewModel: SubscriptionFormViewModel) async {
         if await viewModel.save() {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1 success haptic
             onComplete()
             dismiss()
         }
@@ -245,10 +259,7 @@ struct SubscriptionFormSheet: View {
     // MARK: - Bindings
 
     private func amountBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
-        Binding(
-            get: { viewModel.amountString },
-            set: { viewModel.setAmount($0) }
-        )
+        Binding(get: { viewModel.amountString }, set: { viewModel.setAmount($0) })
     }
 
     private func currencyBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
@@ -264,23 +275,14 @@ struct SubscriptionFormSheet: View {
     }
 
     private func nameBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
-        Binding(
-            get: { viewModel.name },
-            set: { viewModel.name = $0 }
-        )
+        Binding(get: { viewModel.name }, set: { viewModel.name = $0 })
     }
 
     private func notesBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
-        Binding(
-            get: { viewModel.notes },
-            set: { viewModel.notes = $0 }
-        )
+        Binding(get: { viewModel.notes }, set: { viewModel.notes = $0 })
     }
 
     private func nextDateBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<Date> {
-        Binding(
-            get: { viewModel.nextBillingDate },
-            set: { viewModel.nextBillingDate = $0 }
-        )
+        Binding(get: { viewModel.nextBillingDate }, set: { viewModel.nextBillingDate = $0 })
     }
 }
