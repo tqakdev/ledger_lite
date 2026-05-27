@@ -12,12 +12,22 @@ struct LedgerLiteApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .task { seedCategoriesIfNeeded() }
+                .task { await appDidLaunch() }
         }
         .modelContainer(container)
     }
 
     // MARK: - Private
+
+    @MainActor
+    private func appDidLaunch() async {
+        seedCategoriesIfNeeded()
+        do {
+            try await SubscriptionService(context: container.mainContext).generatePendingExpenses()
+        } catch {
+            AppLogger.subscriptions.error("Pending expense generation failed on launch: \(error)")
+        }
+    }
 
     @MainActor
     private func seedCategoriesIfNeeded() {

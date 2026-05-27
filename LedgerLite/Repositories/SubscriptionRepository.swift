@@ -29,8 +29,16 @@ final class SubscriptionRepository {
         try context.save()
     }
 
+    func update(_ subscription: Subscription) throws {
+        try context.save()
+    }
+
     func delete(_ subscription: Subscription) throws {
         context.delete(subscription)
+        try context.save()
+    }
+
+    func savePendingChanges() throws {
         try context.save()
     }
 }

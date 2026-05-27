@@ -1,0 +1,286 @@
+import SwiftUI
+import SwiftData
+
+private enum SubscriptionFormField: Hashable {
+    case name
+    case amount
+    case customDays
+    case notes
+}
+
+struct SubscriptionFormSheet: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+
+    let mode: SubscriptionFormMode
+    let onComplete: () -> Void
+
+    @State private var viewModel: SubscriptionFormViewModel?
+    @FocusState private var focusedField: SubscriptionFormField?
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if let viewModel {
+                    formContent(viewModel)
+                } else {
+                    ProgressView()
+                }
+            }
+            .navigationTitle(mode.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(String(localized: "Cancel")) { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    if let viewModel {
+                        Button(String(localized: "Save")) {
+                            focusedField = nil
+                            Task { await save(viewModel) }
+                        }
+                        .fontWeight(.semibold)
+                        .disabled(!viewModel.canSave)
+                    }
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(String(localized: "Done")) { focusedField = nil }
+                }
+            }
+        }
+        .onAppear {
+            if viewModel == nil {
+                let vm = SubscriptionFormViewModel(mode: mode, context: modelContext)
+                vm.loadCategories()
+                viewModel = vm
+            }
+            focusedField = .name
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+    }
+
+    @ViewBuilder
+    private func formContent(_ viewModel: SubscriptionFormViewModel) -> some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                amountSection(viewModel)
+                categorySection(viewModel)
+                Divider()
+                detailsSection(viewModel)
+
+                if let error = viewModel.errorMessage {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .padding(.horizontal)
+                }
+            }
+            .padding(.bottom, 8)
+        }
+        .scrollDismissesKeyboard(.interactively)
+    }
+
+    // MARK: - Amount section
+
+    private func amountSection(_ viewModel: SubscriptionFormViewModel) -> some View {
+        VStack(spacing: 8) {
+            TextField("0", text: amountBinding(viewModel))
+                .font(.system(size: 40, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+                .multilineTextAlignment(.center)
+                .keyboardType(.decimalPad)
+                .focused($focusedField, equals: .amount)
+                .padding(.vertical, 8)
+                .accessibilityLabel(String(localized: "Amount"))
+
+            Picker(String(localized: "Currency"), selection: currencyBinding(viewModel)) {
+                ForEach(Constants.App.supportedCurrencies, id: \.self) { code in
+                    Text(code).tag(code)
+                }
+            }
+            .pickerStyle(.menu)
+            .onChange(of: viewModel.currencyCode) { _, _ in
+                focusedField = .amount
+            }
+        }
+    }
+
+    // MARK: - Category section
+
+    private func categorySection(_ viewModel: SubscriptionFormViewModel) -> some View {
+        CategoryPickerStrip(
+            categories: viewModel.categories,
+            selected: Binding(
+                get: { viewModel.selectedCategory },
+                set: { viewModel.selectedCategory = $0 }
+            )
+        )
+    }
+
+    // MARK: - Details section
+
+    @ViewBuilder
+    private func detailsSection(_ viewModel: SubscriptionFormViewModel) -> some View {
+        VStack(spacing: 12) {
+            TextField(String(localized: "Name"), text: nameBinding(viewModel))
+                .textFieldStyle(.roundedBorder)
+                .focused($focusedField, equals: .name)
+                .submitLabel(.next)
+                .onSubmit { focusedField = .amount }
+                .padding(.horizontal)
+
+            billingCycleSection(viewModel)
+
+            DatePicker(
+                String(localized: "Next Billing Date"),
+                selection: nextDateBinding(viewModel),
+                displayedComponents: .date
+            )
+            .padding(.horizontal)
+
+            TextField(String(localized: "Notes (optional)"), text: notesBinding(viewModel))
+                .textFieldStyle(.roundedBorder)
+                .focused($focusedField, equals: .notes)
+                .submitLabel(.done)
+                .onSubmit { focusedField = nil }
+                .padding(.horizontal)
+
+            if case .edit(let sub) = mode {
+                statusActionsSection(viewModel, subscription: sub)
+            }
+        }
+    }
+
+    // MARK: - Billing cycle
+
+    @ViewBuilder
+    private func billingCycleSection(_ viewModel: SubscriptionFormViewModel) -> some View {
+        VStack(spacing: 8) {
+            Picker(String(localized: "Billing Cycle"), selection: Binding(
+                get: { viewModel.billingCycle },
+                set: { viewModel.billingCycle = $0 }
+            )) {
+                Text(String(localized: "Weekly")).tag(BillingCycle.weekly)
+                Text(String(localized: "Monthly")).tag(BillingCycle.monthly)
+                Text(String(localized: "Yearly")).tag(BillingCycle.yearly)
+                Text(String(localized: "Custom")).tag(BillingCycle.customDays(30))
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+
+            if case .customDays = viewModel.billingCycle {
+                HStack {
+                    Text(String(localized: "Every"))
+                        .foregroundStyle(.secondary)
+                    TextField("30", text: Binding(
+                        get: { viewModel.customDays },
+                        set: { viewModel.customDays = $0 }
+                    ))
+                    .textFieldStyle(.roundedBorder)
+                    .keyboardType(.numberPad)
+                    .focused($focusedField, equals: .customDays)
+                    .frame(width: 72)
+                    Text(String(localized: "days"))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal)
+            }
+        }
+    }
+
+    // MARK: - Status actions (edit mode only)
+
+    @ViewBuilder
+    private func statusActionsSection(_ viewModel: SubscriptionFormViewModel, subscription: Subscription) -> some View {
+        VStack(spacing: 8) {
+            Divider().padding(.top, 4)
+
+            switch subscription.status {
+            case .active:
+                Button(String(localized: "Pause Subscription")) {
+                    subscription.status = .paused
+                    try? modelContext.save()
+                    onComplete()
+                    dismiss()
+                }
+                .foregroundStyle(.orange)
+
+            case .paused:
+                Button(String(localized: "Resume Subscription")) {
+                    subscription.status = .active
+                    try? modelContext.save()
+                    onComplete()
+                    dismiss()
+                }
+                .foregroundStyle(.green)
+
+            case .cancelled:
+                EmptyView()
+            }
+
+            if subscription.status != .cancelled {
+                Button(String(localized: "Cancel Subscription"), role: .destructive) {
+                    subscription.status = .cancelled
+                    try? modelContext.save()
+                    onComplete()
+                    dismiss()
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 4)
+    }
+
+    // MARK: - Save
+
+    private func save(_ viewModel: SubscriptionFormViewModel) async {
+        if await viewModel.save() {
+            onComplete()
+            dismiss()
+        }
+    }
+
+    // MARK: - Bindings
+
+    private func amountBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
+        Binding(
+            get: { viewModel.amountString },
+            set: { viewModel.setAmount($0) }
+        )
+    }
+
+    private func currencyBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
+        Binding(
+            get: { viewModel.currencyCode },
+            set: { newCode in
+                if newCode != viewModel.currencyCode {
+                    viewModel.setCurrency(newCode)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                }
+            }
+        )
+    }
+
+    private func nameBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
+        Binding(
+            get: { viewModel.name },
+            set: { viewModel.name = $0 }
+        )
+    }
+
+    private func notesBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
+        Binding(
+            get: { viewModel.notes },
+            set: { viewModel.notes = $0 }
+        )
+    }
+
+    private func nextDateBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<Date> {
+        Binding(
+            get: { viewModel.nextBillingDate },
+            set: { viewModel.nextBillingDate = $0 }
+        )
+    }
+}
