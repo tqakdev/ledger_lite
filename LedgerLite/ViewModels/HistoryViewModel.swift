@@ -123,8 +123,10 @@ final class HistoryViewModel {
     }
 
     func deleteExpense(_ expense: Expense) {
+        let id = expense.id
         do {
             try expenseRepository.delete(expense)
+            SpotlightService.deindex(id)
             refresh()
         } catch {
             errorMessage = error.localizedDescription

@@ -287,6 +287,14 @@ struct HistoryView: View {
                                     Label(String(localized: "Delete"), systemImage: "trash")
                                 }
                             }
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    vm.presentEdit(for: expense)
+                                } label: {
+                                    Label(String(localized: "Edit"), systemImage: "pencil")
+                                }
+                                .tint(.blue)
+                            }
                         }
                     }
                 }
