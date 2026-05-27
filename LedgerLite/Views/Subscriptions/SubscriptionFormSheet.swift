@@ -306,11 +306,15 @@ struct SubscriptionFormSheet: View {
 
     // MARK: - Helpers
 
+    private static var symbolCache: [String: String] = [:]
     private static func currencySymbol(for code: String) -> String {
+        if let cached = symbolCache[code] { return cached }
         let fmt = NumberFormatter()
         fmt.numberStyle = .currency
         fmt.currencyCode = code
-        return fmt.currencySymbol ?? code
+        let symbol = fmt.currencySymbol ?? code
+        symbolCache[code] = symbol
+        return symbol
     }
 
     // MARK: - Bindings

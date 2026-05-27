@@ -407,13 +407,21 @@ struct InsightsView: View {
             }
     }
 
+    private static var compactFormatters: [String: NumberFormatter] = [:]
     private func compactAmount(_ minorUnits: Int, currency: String) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currency
-        formatter.locale = .current
-        formatter.maximumFractionDigits = 0
-        formatter.minimumFractionDigits = 0
+        let formatter: NumberFormatter
+        if let cached = Self.compactFormatters[currency] {
+            formatter = cached
+        } else {
+            let fmt = NumberFormatter()
+            fmt.numberStyle = .currency
+            fmt.currencyCode = currency
+            fmt.locale = .current
+            fmt.maximumFractionDigits = 0
+            fmt.minimumFractionDigits = 0
+            Self.compactFormatters[currency] = fmt
+            formatter = fmt
+        }
         let places = Money.decimals(for: currency)
         var divisor = Decimal(1)
         for _ in 0..<places { divisor *= 10 }

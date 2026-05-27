@@ -136,9 +136,6 @@ struct ExpenseFormSheet: View {
                     .multilineTextAlignment(.trailing)
                     .keyboardType(.decimalPad)
                     .focused($focusedField, equals: .amount)
-                    .contentTransition(.numericText())
-                    .animation(.smooth(duration: 0.15), value: viewModel.amountString)
-                    // Hide cursor when empty so it doesn't overlap the styled "0" placeholder
                     .tint(viewModel.amountString.isEmpty ? .clear : .accentColor)
                     .fixedSize()
             }
@@ -285,10 +282,14 @@ struct ExpenseFormSheet: View {
         return nil
     }
 
+    private static var symbolCache: [String: String] = [:]
     private static func currencySymbol(for code: String) -> String {
+        if let cached = symbolCache[code] { return cached }
         let fmt = NumberFormatter()
         fmt.numberStyle = .currency
         fmt.currencyCode = code
-        return fmt.currencySymbol ?? code
+        let symbol = fmt.currencySymbol ?? code
+        symbolCache[code] = symbol
+        return symbol
     }
 }

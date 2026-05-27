@@ -104,8 +104,13 @@ final class TodayViewModel {
     private func computeDailyAverage() -> Int {
         guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) else { return 0 }
         do {
-            let all = try expenseRepository.fetchAll()
-            let recent = all.filter { $0.date >= thirtyDaysAgo }
+            let since = thirtyDaysAgo
+            let recent = try modelContext.fetch(
+                FetchDescriptor<Expense>(
+                    predicate: #Predicate { $0.date >= since },
+                    sortBy: []
+                )
+            )
             guard !recent.isEmpty else { return 0 }
             let homePlaces = Money.decimals(for: homeCurrencyCode)
             var sum = Decimal(0)
