@@ -4,8 +4,9 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
 
-    // B1: reactive home-currency display — @AppStorage syncs with UserPreferences (same key)
-    @AppStorage("homeCurrencyCode") private var homeCurrencyCode = Constants.App.homeCurrencyDefault
+    // B1: reactive home-currency display — shares App Group suite with UserPreferences + widget
+    @AppStorage("homeCurrencyCode", store: UserDefaults(suiteName: Constants.App.appGroupIdentifier))
+    private var homeCurrencyCode = Constants.App.homeCurrencyDefault
 
     // B4: notification state
     @State private var notificationsAuthorized = false
@@ -248,7 +249,8 @@ struct SettingsView: View {
 
 private struct HomeCurrencyPickerView: View {
     @Environment(\.modelContext) private var modelContext
-    @AppStorage("homeCurrencyCode") private var selected = Constants.App.homeCurrencyDefault
+    @AppStorage("homeCurrencyCode", store: UserDefaults(suiteName: Constants.App.appGroupIdentifier))
+    private var selected = Constants.App.homeCurrencyDefault
 
     var body: some View {
         List(Constants.App.supportedCurrencies, id: \.self) { code in

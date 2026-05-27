@@ -3,7 +3,8 @@ import SwiftData
 
 struct BudgetsSettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @AppStorage("homeCurrencyCode") private var homeCurrencyCode = Constants.App.homeCurrencyDefault
+    @AppStorage("homeCurrencyCode", store: UserDefaults(suiteName: Constants.App.appGroupIdentifier))
+    private var homeCurrencyCode = Constants.App.homeCurrencyDefault
     @State private var categories: [Category] = []
 
     var body: some View {

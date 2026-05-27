@@ -13,8 +13,18 @@ struct LedgerLiteApp: App {
         WindowGroup {
             ContentView()
                 .task { await appDidLaunch() }
+                .onOpenURL { url in handleDeepLink(url) }
         }
         .modelContainer(container)
+    }
+
+    @MainActor
+    private func handleDeepLink(_ url: URL) {
+        AppLogger.ui.info("Deep link: \(url)")
+        NotificationCenter.default.post(
+            name: Notification.Name("LedgerLiteDeepLink"),
+            object: url
+        )
     }
 
     // MARK: - Private

@@ -63,6 +63,17 @@ targets:
     platform: iOS
     sources:
       - path: LedgerLiteWidget
+      - path: LedgerLite/Models
+        excludes:
+          - SubscriptionCandidate.swift  # references SubscriptionDetector (Services), not needed in widget
+      - path: LedgerLite/Utilities
+        excludes:
+          - PreviewContainer.swift   # preview-only; not needed in widget target
+      - path: LedgerLite/Services/WidgetDataService.swift
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+      - sdk: SwiftData.framework
     info:
       path: LedgerLiteWidget/Info.plist
       properties:
