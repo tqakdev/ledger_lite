@@ -23,6 +23,7 @@ struct CategoryPickerStrip: View {
             .padding(.horizontal, 16)
         }
         .scrollTargetBehavior(.viewAligned)
+        .padding(.vertical, 4)
     }
 }
 
@@ -40,8 +41,8 @@ private struct CategoryChip: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
             // A2: tertiarySystemFill for unselected (reads in both light/dark); 0.18 for selected
             .background(
                 isSelected

@@ -128,9 +128,14 @@ struct SubscriptionsView: View {
     private func monthlyCostCard(_ viewModel: SubscriptionsViewModel) -> some View {
         Section {
             VStack(alignment: .leading, spacing: 4) {
-                Text(String(localized: "Est. Monthly Cost"))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    Image(systemName: "calendar.circle.fill")
+                        .foregroundStyle(Color.accentColor)
+                        .font(.subheadline)
+                    Text(String(localized: "Est. Monthly Cost"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
                 if viewModel.monthlyCostIsLoading {
                     ProgressView().frame(height: 44)
                 } else {
@@ -147,12 +152,12 @@ struct SubscriptionsView: View {
             .padding()
             .background(
                 LinearGradient(
-                    colors: [Color(.secondarySystemGroupedBackground), Color(.secondarySystemGroupedBackground).opacity(0.92)],
+                    colors: [Color.accentColor.opacity(0.08), Color(.secondarySystemGroupedBackground)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
             .listRowBackground(Color.clear)
         }
@@ -162,6 +167,7 @@ struct SubscriptionsView: View {
 
     private func subscriptionRow(_ sub: Subscription, viewModel: SubscriptionsViewModel) -> some View {
         SubscriptionRowView(subscription: sub, notificationsAuthorized: viewModel.notificationsAuthorized)
+            .listRowBackground(Color(.secondarySystemGroupedBackground))
             .contentShape(Rectangle())
             .onTapGesture { viewModel.presentEdit(sub) }
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {

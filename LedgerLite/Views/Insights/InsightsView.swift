@@ -49,7 +49,7 @@ struct InsightsView: View {
         ScrollView {
             VStack(spacing: 0) {
                 periodPicker(vm)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 16)
                     .padding(.vertical, 12)
 
                 if vm.isLoading && vm.categoryTotals.isEmpty {
@@ -149,6 +149,8 @@ struct InsightsView: View {
                     .monospacedDigit()
                     .minimumScaleFactor(0.5)
                     .frame(maxWidth: 120)
+                    .contentTransition(.numericText())
+                    .animation(.easeInOut(duration: 0.3), value: vm.periodTotalMinor)
             }
         }
         .frame(height: 220)

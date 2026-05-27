@@ -35,6 +35,7 @@ private extension View {
 struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: TodayViewModel?
+    @State private var fabVisible = false
     // C3: error alert state
     @State private var showError  = false
     @State private var errorText  = ""
@@ -102,6 +103,7 @@ struct TodayView: View {
                                 expense: expense,
                                 homeCurrencyCode: viewModel.homeCurrencyCode
                             )
+                            .listRowBackground(Color(.secondarySystemGroupedBackground))
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 viewModel.presentEdit(for: expense)
@@ -151,12 +153,12 @@ struct TodayView: View {
         .padding()
         .background(
             LinearGradient(
-                colors: [Color(.secondarySystemGroupedBackground), Color(.secondarySystemGroupedBackground).opacity(0.92)],
+                colors: [Color.accentColor.opacity(0.08), Color(.secondarySystemGroupedBackground)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         // C4: placeholder skeleton on initial load before any expenses are fetched
         .redacted(reason: viewModel.isLoading && viewModel.expenses.isEmpty ? .placeholder : [])
     }
@@ -194,6 +196,9 @@ struct TodayView: View {
         .padding(.trailing, 20)
         .padding(.bottom, 20)
         .accessibilityLabel(String(localized: "Quick Add"))
+        .scaleEffect(fabVisible ? 1.0 : 0.01)
+        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: fabVisible)
+        .onAppear { fabVisible = true }
     }
 
     // MARK: - Empty state (A7)

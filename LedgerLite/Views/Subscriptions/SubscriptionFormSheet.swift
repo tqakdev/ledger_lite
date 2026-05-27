@@ -58,7 +58,10 @@ struct SubscriptionFormSheet: View {
                 vm.loadCategories()
                 viewModel = vm
             }
-            focusedField = .name
+            // Delay so the sheet animation settles before the keyboard appears
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                focusedField = .name
+            }
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
