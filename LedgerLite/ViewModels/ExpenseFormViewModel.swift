@@ -42,9 +42,6 @@ final class ExpenseFormViewModel {
     var merchantSuggestions: [String] = []
     private var recentMerchants: [String] = []
 
-    // Calculator
-    var calcExpression: String = ""
-
     // Recurring templates
     var templates: [ExpenseTemplate] = []
 
@@ -105,25 +102,6 @@ final class ExpenseFormViewModel {
             .filter { seen.insert($0.lowercased()).inserted }
             .prefix(5)
             .map { $0 }
-    }
-
-    // MARK: - Calculator
-
-    func appendCalculatorOperator(_ op: String) {
-        guard minorUnits > 0 || !calcExpression.isEmpty else { return }
-        calcExpression += amountString + op
-        amountString = ""
-        minorUnits = 0
-    }
-
-    func evaluateCalculator() {
-        let full = calcExpression + amountString
-        guard !full.isEmpty else { return }
-        if let (display, units) = AmountInputParser(currencyCode: currencyCode, locale: .current).evaluate(full) {
-            amountString = display
-            minorUnits = units
-        }
-        calcExpression = ""
     }
 
     // MARK: - Templates

@@ -12,6 +12,7 @@ enum Constants {
             "HKD", "SGD", "NZD", "SEK", "NOK", "DKK", "MXN", "BRL",
             "INR", "KRW", "TRY", "ZAR", "SAR", "AED", "THB", "MYR",
             "IDR", "PLN", "CZK", "HUF", "ILS", "PHP", "BGN", "RON",
+            "KZT",
         ]
     }
 

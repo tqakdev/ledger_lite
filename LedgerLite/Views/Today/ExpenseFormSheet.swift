@@ -49,33 +49,6 @@ struct ExpenseFormSheet: View {
                     }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
-                    if let vm = viewModel, focusedField == .amount {
-                        Button { vm.appendCalculatorOperator("+") } label: {
-                            Text("+").font(.title3).frame(minWidth: 32)
-                        }
-                        Button { vm.appendCalculatorOperator("-") } label: {
-                            Text("−").font(.title3).frame(minWidth: 32)
-                        }
-                        Button { vm.appendCalculatorOperator("*") } label: {
-                            Text("×").font(.title3).frame(minWidth: 32)
-                        }
-                        Button { vm.appendCalculatorOperator("/") } label: {
-                            Text("÷").font(.title3).frame(minWidth: 32)
-                        }
-                        Button { vm.evaluateCalculator() } label: {
-                            Text("=").font(.title3.bold()).frame(minWidth: 32)
-                        }
-                        .tint(Color.accentColor)
-                        if !vm.calcExpression.isEmpty {
-                            Button {
-                                vm.calcExpression = ""
-                                vm.amountString = ""
-                                vm.minorUnits = 0
-                            } label: {
-                                Text("C").font(.subheadline).foregroundStyle(.red)
-                            }
-                        }
-                    }
                     Spacer()
                     Button(String(localized: "Done")) { focusedField = nil }
                 }
@@ -242,18 +215,7 @@ struct ExpenseFormSheet: View {
 
     private func amountField(_ viewModel: ExpenseFormViewModel) -> some View {
         let symbol = Self.currencySymbol(for: viewModel.currencyCode)
-        return VStack(spacing: 4) {
-            if !viewModel.calcExpression.isEmpty {
-                Text(viewModel.calcExpression)
-                    .font(.system(size: 14, weight: .regular, design: .rounded))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-            }
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
+        return HStack(alignment: .firstTextBaseline, spacing: 4) {
             Text(symbol)
                 .font(.system(size: 20, weight: .bold, design: .rounded))
                 .foregroundStyle(.secondary)
@@ -280,11 +242,10 @@ struct ExpenseFormSheet: View {
                     .fixedSize()
             }
         }
-            .frame(maxWidth: .infinity, alignment: .center)
-            // Subtle scale-in when first digit is entered
-            .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
-            .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
-        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        // Subtle scale-in when first digit is entered
+        .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
+        .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
         .padding(.vertical, 12)
         .background(
             LinearGradient(
@@ -293,7 +254,6 @@ struct ExpenseFormSheet: View {
                 endPoint: .bottom
             )
         )
-        .animation(.easeInOut(duration: 0.2), value: viewModel.calcExpression.isEmpty)
         .accessibilityLabel(String(localized: "Amount"))
         .accessibilityValue(viewModel.formattedAmount())
     }
