@@ -150,3 +150,48 @@ struct CurrencyConversionTests {
         #expect(vm.periodTotalMinor == 2000)
     }
 }
+
+// MARK: - Top merchant
+
+@Suite("InsightsViewModel — top merchant")
+@MainActor
+struct TopMerchantTests {
+
+    init() {
+        UserDefaults.standard.set("USD", forKey: "homeCurrencyCode")
+    }
+
+    @Test("returns the merchant with the highest cumulative spend")
+    func returnsTopSpender() async throws {
+        let container = try InsightsTestHarness.makeContainer()
+
+        let e1 = InsightsTestHarness.makeExpense(amountMinor: 5000, date: Date())
+        e1.merchant = "Starbucks"
+        let e2 = InsightsTestHarness.makeExpense(amountMinor: 3000, date: Date())
+        e2.merchant = "Uber"
+        let e3 = InsightsTestHarness.makeExpense(amountMinor: 2000, date: Date())
+        e3.merchant = "Starbucks"
+        container.mainContext.insert(e1)
+        container.mainContext.insert(e2)
+        container.mainContext.insert(e3)
+
+        let vm = InsightsViewModel(context: container.mainContext)
+        vm.period = .allTime
+        await vm.refresh()
+
+        #expect(vm.topMerchant?.merchant == "Starbucks")
+        #expect(vm.topMerchant?.minorUnits == 7000)
+    }
+
+    @Test("returns nil when no expenses have a merchant set")
+    func returnsNilWithNoMerchants() async throws {
+        let container = try InsightsTestHarness.makeContainer()
+        container.mainContext.insert(InsightsTestHarness.makeExpense(amountMinor: 1000, date: Date()))
+
+        let vm = InsightsViewModel(context: container.mainContext)
+        vm.period = .allTime
+        await vm.refresh()
+
+        #expect(vm.topMerchant == nil)
+    }
+}

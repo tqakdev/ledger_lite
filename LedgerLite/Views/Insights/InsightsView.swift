@@ -35,15 +35,25 @@ struct InsightsView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 12)
 
-                if vm.isLoading {
+                if vm.isLoading && vm.categoryTotals.isEmpty {
+                    // Initial load only — after first data arrives we update in-place.
                     ProgressView()
                         .padding(.vertical, 40)
                 } else {
-                    donutSection(vm)
-                    trendSection(vm)
-                    if vm.period == .month {
-                        budgetSection(vm)
+                    Group {
+                        donutSection(vm)
+                        trendSection(vm)
+                        if vm.period == .month {
+                            budgetSection(vm)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+                        topMerchantSection(vm)
                     }
+                    // Fade stale content while a period-change refresh is in flight.
+                    .opacity(vm.isLoading ? 0.55 : 1.0)
+                    .animation(.easeInOut(duration: 0.2), value: vm.isLoading)
+                    // Animate budget section appearing / disappearing on period change.
+                    .animation(.easeInOut(duration: 0.2), value: vm.period)
                 }
 
                 if let err = vm.errorMessage {
@@ -69,7 +79,8 @@ struct InsightsView: View {
             set: { vm.period = $0 }
         )) {
             ForEach(InsightsViewModel.Period.allCases) { p in
-                Text(p.displayName).tag(p)
+                // Use shortName so 4 segments fit on SE 3rd-gen (375 pt).
+                Text(p.shortName).tag(p)
             }
         }
         .pickerStyle(.segmented)
@@ -143,11 +154,14 @@ struct InsightsView: View {
             Text(item.category.name)
                 .font(.subheadline)
                 .fontWeight(.medium)
-            Spacer()
-            Text(String(localized: "\(pct)%  ·  \(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())"))
+                .lineLimit(1)
+            Spacer(minLength: 4)
+            Text("\(pct)%  ·  \(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
         .padding(10)
         .background(Color.secondary.opacity(0.1))
@@ -285,14 +299,52 @@ struct InsightsView: View {
                 Text(entry.category.name)
                     .font(.subheadline)
                 Spacer()
-                Text(String(localized: "\(Money(minorUnits: entry.spentMinor, currencyCode: entry.currencyCode).formatted()) / \(Money(minorUnits: entry.budgetMinor, currencyCode: entry.currencyCode).formatted())"))
+                Text("\(Money(minorUnits: entry.spentMinor, currencyCode: entry.currencyCode).formatted()) / \(Money(minorUnits: entry.budgetMinor, currencyCode: entry.currencyCode).formatted())")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
             ProgressView(value: entry.clampedProgress)
                 .tint(entry.progressColor)
         }
+    }
+
+    // MARK: - Top merchant section
+
+    private func topMerchantSection(_ vm: InsightsViewModel) -> some View {
+        GroupBox {
+            if let top = vm.topMerchant {
+                HStack(spacing: 10) {
+                    Image(systemName: "trophy.fill")
+                        .foregroundStyle(.yellow)
+                        .frame(width: 24)
+                    Text(top.merchant)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
+                    Spacer(minLength: 4)
+                    Text(Money(minorUnits: top.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+            } else {
+                Text(String(localized: "No merchant data in this period"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 4)
+            }
+        } label: {
+            Text(String(localized: "Top Merchant"))
+                .font(.headline)
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 20)
     }
 
     // MARK: - Helpers

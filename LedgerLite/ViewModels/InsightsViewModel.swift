@@ -23,6 +23,16 @@ final class InsightsViewModel {
             case .allTime: return String(localized: "All Time")
             }
         }
+
+        // Compact label used inside the segmented picker — fits 4 segments on SE (375pt).
+        var shortName: String {
+            switch self {
+            case .week:    return String(localized: "Week")
+            case .month:   return String(localized: "Month")
+            case .year:    return String(localized: "Year")
+            case .allTime: return String(localized: "All Time")
+            }
+        }
     }
 
     // MARK: - Outputs
@@ -36,6 +46,7 @@ final class InsightsViewModel {
     var allCategories: [Category] = []
     var isLoading: Bool = false
     var errorMessage: String?
+    var topMerchant: (merchant: String, minorUnits: Int)? = nil
 
     // MARK: - Dependencies
 
@@ -69,6 +80,7 @@ final class InsightsViewModel {
             categoryTotals   = makeCategoryTotals(filtered)
             dailyTotals      = makeGroupedTotals(filtered, period: period)
             periodTotalMinor = makePeriodTotal(filtered)
+            topMerchant      = makeTopMerchant(filtered)
         } catch {
             errorMessage = error.localizedDescription
             AppLogger.data.error("InsightsViewModel refresh failed: \(error)")
@@ -153,5 +165,18 @@ final class InsightsViewModel {
         let rounded = d.rounded(scale: places)
         let minor   = (rounded * Decimal.powerOfTen(places)).rounded(scale: 0)
         return (minor as NSDecimalNumber).intValue
+    }
+
+    private func makeTopMerchant(_ expenses: [Expense]) -> (merchant: String, minorUnits: Int)? {
+        var groups: [String: Decimal] = [:]
+        for e in expenses {
+            guard let m = e.merchant, !m.trimmingCharacters(in: .whitespaces).isEmpty else { continue }
+            groups[m, default: 0] += homeDecimal(e)
+        }
+        guard !groups.isEmpty else { return nil }
+        let places = Money.decimals(for: homeCurrencyCode)
+        return groups
+            .map { (merchant: $0.key, minorUnits: toMinor($0.value, places: places)) }
+            .max(by: { $0.minorUnits < $1.minorUnits })
     }
 }
