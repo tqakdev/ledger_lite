@@ -19,9 +19,12 @@ struct HistoryView: View {
                 }
             }
             .navigationTitle(String(localized: "History"))
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if let vm = viewModel, !vm.isGlobalSearch {
+                    ToolbarItem(placement: .principal) {
+                        dateNavBar(vm)
+                    }
                     ToolbarItem(placement: .primaryAction) {
                         Button {
                             pickerDate = vm.selectedDate
@@ -88,14 +91,7 @@ struct HistoryView: View {
     @ViewBuilder
     private func content(_ vm: HistoryViewModel) -> some View {
         @Bindable var vm = vm
-        VStack(spacing: 0) {
-            if !vm.isGlobalSearch {
-                dateNavBar(vm)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                Divider()
-                categoryFilterStrip(vm)
-            }
+        Group {
             if vm.isGlobalSearch {
                 globalSearchResults(vm)
             } else if vm.isLoading && vm.expenses.isEmpty {
@@ -116,34 +112,35 @@ struct HistoryView: View {
     // MARK: - Date navigation bar
 
     private func dateNavBar(_ vm: HistoryViewModel) -> some View {
-        HStack {
+        HStack(spacing: 4) {
             Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 vm.previousDay()
             } label: {
                 Image(systemName: "chevron.left")
-                    .font(.title3.weight(.semibold))
-                    .frame(width: 44, height: 44)
+                    .font(.body.weight(.semibold))
+                    .frame(width: 44, height: 36)
+                    .contentShape(Rectangle())
             }
-            Spacer()
-            VStack(spacing: 2) {
+            VStack(spacing: 1) {
                 Text(dateHeading(vm.selectedDate))
                     .font(.headline)
                 if !Calendar.current.isDateInToday(vm.selectedDate) &&
                    !Calendar.current.isDateInYesterday(vm.selectedDate) {
                     Text(vm.selectedDate.formatted(.dateTime.year()))
-                        .font(.caption)
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
             }
-            Spacer()
+            .frame(minWidth: 90)
             Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 vm.nextDay()
             } label: {
                 Image(systemName: "chevron.right")
-                    .font(.title3.weight(.semibold))
-                    .frame(width: 44, height: 44)
+                    .font(.body.weight(.semibold))
+                    .frame(width: 44, height: 36)
+                    .contentShape(Rectangle())
             }
             .disabled(vm.isToday)
             .opacity(vm.isToday ? 0.3 : 1.0)
@@ -156,10 +153,10 @@ struct HistoryView: View {
         return date.formatted(.dateTime.month(.wide).day())
     }
 
-    // MARK: - Category filter strip
+    // MARK: - Category filter strip (inline, for use as a List row)
 
     @ViewBuilder
-    private func categoryFilterStrip(_ vm: HistoryViewModel) -> some View {
+    private func categoryFilterRow(_ vm: HistoryViewModel) -> some View {
         let present = vm.categories.filter { cat in
             vm.expenses.contains { $0.category?.id == cat.id }
         }
@@ -188,7 +185,6 @@ struct HistoryView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
             }
-            Divider()
         }
     }
 
@@ -199,35 +195,24 @@ struct HistoryView: View {
         let label = count == 1
             ? String(localized: "1 expense")
             : String(localized: "\(count) expenses")
-        return VStack(alignment: .leading, spacing: 4) {
-            Text(String(localized: "Day Total"))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Text(vm.dayTotalFormatted)
-                .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                .monospacedDigit()
-                .contentTransition(.numericText(value: Double(vm.dayTotalMinor)))
-                .animation(.spring(duration: 0.4, bounce: 0.3), value: vm.dayTotalMinor)
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(
-            LinearGradient(
-                colors: [Color.accentColor.opacity(0.10), Color(.secondarySystemGroupedBackground)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+        return SummaryCard(
+            title: String(localized: "Day Total"),
+            amount: vm.dayTotalFormatted,
+            amountMinor: vm.dayTotalMinor,
+            subtitle: label
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     // MARK: - Expense list
 
     private func expenseList(_ vm: HistoryViewModel) -> some View {
         List {
+            Section {
+                categoryFilterRow(vm)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
             Section {
                 summaryCard(vm)
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
@@ -263,6 +248,7 @@ struct HistoryView: View {
         }
         .listStyle(.insetGrouped)
         .listSectionSpacing(.compact)
+        .refreshable { vm.refresh() }
     }
 
     // MARK: - Global search results

@@ -1,5 +1,80 @@
 import SwiftUI
 
+// MARK: - Shared summary card used across Today, History, and Subscriptions tabs
+
+struct SummaryCard<Supplement: View>: View {
+    let title: String
+    let icon: String?
+    let amount: String
+    let amountMinor: Int
+    let isLoading: Bool
+    let subtitle: String
+    @ViewBuilder let supplement: () -> Supplement
+
+    init(
+        title: String,
+        icon: String? = nil,
+        amount: String,
+        amountMinor: Int,
+        isLoading: Bool = false,
+        subtitle: String,
+        @ViewBuilder supplement: @escaping () -> Supplement
+    ) {
+        self.title = title
+        self.icon = icon
+        self.amount = amount
+        self.amountMinor = amountMinor
+        self.isLoading = isLoading
+        self.subtitle = subtitle
+        self.supplement = supplement
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                if let icon {
+                    Image(systemName: icon)
+                        .foregroundStyle(Color.accentColor)
+                        .font(.subheadline)
+                }
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            if isLoading {
+                ProgressView().frame(height: 44)
+            } else {
+                Text(amount)
+                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    .monospacedDigit()
+                    .contentTransition(.numericText(value: Double(amountMinor)))
+                    .animation(.spring(duration: 0.4, bounce: 0.3), value: amountMinor)
+            }
+            supplement()
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(
+            LinearGradient(
+                colors: [Color.accentColor.opacity(0.10), Color(.secondarySystemGroupedBackground)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+extension SummaryCard where Supplement == EmptyView {
+    init(title: String, icon: String? = nil, amount: String, amountMinor: Int, isLoading: Bool = false, subtitle: String) {
+        self.init(title: title, icon: icon, amount: amount, amountMinor: amountMinor, isLoading: isLoading, subtitle: subtitle, supplement: { EmptyView() })
+    }
+}
+
 struct ContentView: View {
     @State private var selectedTab: Int = 0
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
@@ -29,6 +104,9 @@ struct ContentView: View {
                 SettingsView()
                     .tabItem { Label(String(localized: "Settings"), systemImage: "gear") }
                     .tag(4)
+            }
+            .onChange(of: selectedTab) { _, _ in
+                UISelectionFeedbackGenerator().selectionChanged()
             }
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("LedgerLiteDeepLink"))) { note in
                 guard let url = note.object as? URL else { return }

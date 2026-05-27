@@ -39,6 +39,8 @@ struct SubscriptionRowView: View {
                         Text(subscription.money.formatted())
                             .font(.body)
                             .monospacedDigit()
+                            .contentTransition(.numericText(value: Double(subscription.money.minorUnits)))
+                            .animation(.spring(duration: 0.3, bounce: 0.2), value: subscription.money.minorUnits)
                         if let homeMinor = homeAmountMinor,
                            !homeCurrencyCode.isEmpty,
                            subscription.currencyCode != homeCurrencyCode {
@@ -99,6 +101,10 @@ struct SubscriptionRowView: View {
                         }
                     }
             }
+            .padding(.horizontal, daysUntil <= 2 ? 6 : 0)
+            .padding(.vertical, daysUntil <= 2 ? 2 : 0)
+            .background(daysUntil <= 2 ? Color.orange.opacity(0.1) : Color.clear)
+            .clipShape(Capsule())
         case .paused:
             Text(String(localized: "Paused"))
                 .font(.caption)

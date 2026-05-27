@@ -78,89 +78,65 @@ struct SubscriptionsView: View {
         if viewModel.subscriptions.isEmpty {
             emptyState(viewModel)
         } else {
-            VStack(spacing: 0) {
-                monthlyCostCard(viewModel)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-                    .padding(.bottom, 4)
+            List {
+                Section {
+                    monthlyCostCard(viewModel)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
 
-                List {
-                    Section(String(localized: "Active")) {
-                        if viewModel.activeSubscriptions.isEmpty {
-                            Text(String(localized: "No active subscriptions"))
-                                .foregroundStyle(.secondary)
-                                .font(.subheadline)
-                        } else {
-                            ForEach(viewModel.activeSubscriptions, id: \.id) { sub in
-                                subscriptionRow(sub, viewModel: viewModel)
-                            }
-                        }
-                    }
-
-                    if !viewModel.inactiveSubscriptions.isEmpty {
-                        Section(isExpanded: $inactiveSectionExpanded) {
-                            ForEach(viewModel.inactiveSubscriptions, id: \.id) { sub in
-                                subscriptionRow(sub, viewModel: viewModel)
-                            }
-                        } header: {
-                            Button {
-                                withAnimation { inactiveSectionExpanded.toggle() }
-                            } label: {
-                                HStack {
-                                    Text(String(localized: "Inactive"))
-                                        .font(.headline)
-                                        .foregroundStyle(.primary)
-                                    Spacer()
-                                    Image(systemName: inactiveSectionExpanded ? "chevron.up" : "chevron.down")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            .buttonStyle(.plain)
+                Section(String(localized: "Active (\(viewModel.activeSubscriptions.count))")) {
+                    if viewModel.activeSubscriptions.isEmpty {
+                        Text(String(localized: "No active subscriptions"))
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    } else {
+                        ForEach(viewModel.activeSubscriptions, id: \.id) { sub in
+                            subscriptionRow(sub, viewModel: viewModel)
                         }
                     }
                 }
-                .listStyle(.insetGrouped)
-                .listSectionSpacing(.compact)
+
+                if !viewModel.inactiveSubscriptions.isEmpty {
+                    Section(isExpanded: $inactiveSectionExpanded) {
+                        ForEach(viewModel.inactiveSubscriptions, id: \.id) { sub in
+                            subscriptionRow(sub, viewModel: viewModel)
+                        }
+                    } header: {
+                        Button {
+                            withAnimation { inactiveSectionExpanded.toggle() }
+                        } label: {
+                            HStack {
+                                Text(String(localized: "Inactive"))
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                Image(systemName: inactiveSectionExpanded ? "chevron.up" : "chevron.down")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
+            .listStyle(.insetGrouped)
+            .listSectionSpacing(.compact)
         }
     }
 
     // MARK: - Monthly cost card
 
     private func monthlyCostCard(_ viewModel: SubscriptionsViewModel) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Image(systemName: "calendar.circle.fill")
-                    .foregroundStyle(Color.accentColor)
-                    .font(.subheadline)
-                Text(String(localized: "Est. Monthly Cost"))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            if viewModel.monthlyCostIsLoading {
-                ProgressView().frame(height: 44)
-            } else {
-                Text(Money(minorUnits: viewModel.monthlyCostMinor, currencyCode: viewModel.homeCurrencyCode).formatted())
-                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                    .monospacedDigit()
-                    .contentTransition(.numericText(value: Double(viewModel.monthlyCostMinor)))
-                    .animation(.spring(duration: 0.3, bounce: 0.2), value: viewModel.monthlyCostMinor)
-            }
-            Text(String(localized: "Active subscriptions only"))
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(
-            LinearGradient(
-                colors: [Color.accentColor.opacity(0.10), Color(.secondarySystemGroupedBackground)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+        SummaryCard(
+            title: String(localized: "Est. Monthly Cost"),
+            icon: "calendar.circle.fill",
+            amount: Money(minorUnits: viewModel.monthlyCostMinor, currencyCode: viewModel.homeCurrencyCode).formatted(),
+            amountMinor: viewModel.monthlyCostMinor,
+            isLoading: viewModel.monthlyCostIsLoading,
+            subtitle: String(localized: "Active subscriptions only")
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     // MARK: - Row

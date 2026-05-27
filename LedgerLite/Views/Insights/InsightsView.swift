@@ -75,11 +75,13 @@ struct InsightsView: View {
     private func content(_ vm: InsightsViewModel) -> some View {
         @Bindable var vm = vm
         VStack(spacing: 0) {
-            periodPicker(vm)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-
-            Divider()
+            VStack(spacing: 0) {
+                periodPicker(vm)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                Divider()
+            }
+            .background(.bar)
 
             ScrollView {
                 VStack(spacing: 0) {
@@ -96,9 +98,11 @@ struct InsightsView: View {
                             }
                             topMerchantSection(vm)
                         }
+                        .id(vm.period)
+                        .transition(.opacity)
                         .opacity(vm.isLoading ? 0.55 : 1.0)
                         .animation(.easeInOut(duration: 0.2), value: vm.isLoading)
-                        .animation(.easeInOut(duration: 0.2), value: vm.period)
+                        .animation(.easeInOut(duration: 0.25), value: vm.period)
                     }
                 }
             }
@@ -147,7 +151,6 @@ struct InsightsView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .padding(.top, 4)
     }
 
     private func donutChart(_ vm: InsightsViewModel) -> some View {
@@ -172,17 +175,39 @@ struct InsightsView: View {
             )
 
             VStack(spacing: 2) {
-                Text(String(localized: "Total"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())
-                    .font(.system(.callout, design: .rounded, weight: .bold))
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.5)
-                    .frame(maxWidth: 120)
-                    .contentTransition(.numericText(value: Double(vm.periodTotalMinor)))
-                    .animation(.easeInOut(duration: 0.3), value: vm.periodTotalMinor)
+                if let sel = vm.selectedCategory,
+                   let item = vm.categoryTotals.first(where: { $0.category.id == sel.id }) {
+                    let pct = vm.periodTotalMinor > 0
+                        ? Int(round(Double(item.minorUnits) / Double(vm.periodTotalMinor) * 100))
+                        : 0
+                    Text(item.category.name)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .frame(maxWidth: 120)
+                    Text(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
+                        .font(.system(.callout, design: .rounded, weight: .bold))
+                        .monospacedDigit()
+                        .minimumScaleFactor(0.5)
+                        .frame(maxWidth: 120)
+                    Text("\(pct)%")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(String(localized: "Total"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())
+                        .font(.system(.callout, design: .rounded, weight: .bold))
+                        .monospacedDigit()
+                        .minimumScaleFactor(0.5)
+                        .frame(maxWidth: 120)
+                        .contentTransition(.numericText(value: Double(vm.periodTotalMinor)))
+                        .animation(.easeInOut(duration: 0.3), value: vm.periodTotalMinor)
+                }
             }
+            .animation(.easeInOut(duration: 0.2), value: vm.selectedCategory?.id)
         }
         .frame(height: 180)
     }
