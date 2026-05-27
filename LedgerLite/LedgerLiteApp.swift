@@ -7,6 +7,7 @@ struct LedgerLiteApp: App {
     private let container: ModelContainer
 
     init() {
+        _ = MetricManager.shared   // register MetricKit subscriber before first scene activates
         container = Self.makeContainer()
     }
 

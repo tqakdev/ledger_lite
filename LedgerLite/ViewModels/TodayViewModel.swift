@@ -56,6 +56,7 @@ final class TodayViewModel {
             AppLogger.ui.error("Today refresh failed: \(error)")
         }
         isLoading = false
+        BudgetAlertService(context: modelContext).checkBudgets()
     }
 
     func deleteExpense(_ expense: Expense) {

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 
 private enum ExpenseFormField: Hashable {
     case amount
@@ -14,6 +15,7 @@ struct ExpenseFormSheet: View {
     let mode: ExpenseFormMode
     let onComplete: () -> Void
 
+    @Environment(\.requestReview) private var requestReview
     @State private var viewModel: ExpenseFormViewModel?
     @FocusState private var focusedField: ExpenseFormField?
     @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
@@ -239,8 +241,18 @@ struct ExpenseFormSheet: View {
     private func save(_ viewModel: ExpenseFormViewModel) async {
         if await viewModel.save() {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1 success haptic
+            if case .add = mode { maybeRequestReview() }
             onComplete()
             dismiss()
+        }
+    }
+
+    private func maybeRequestReview() {
+        let key = "expenseSaveCount"
+        let count = UserDefaults.standard.integer(forKey: key) + 1
+        UserDefaults.standard.set(count, forKey: key)
+        if count == 10 || count == 50 || count == 200 {
+            requestReview()
         }
     }
 

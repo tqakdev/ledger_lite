@@ -53,10 +53,12 @@ final class InsightsViewModel {
 
     private let expenseRepository: ExpenseRepository
     private let categoryRepository: CategoryRepository
+    private let modelContext: ModelContext
 
     // MARK: - Init
 
     init(context: ModelContext) {
+        self.modelContext  = context
         expenseRepository  = ExpenseRepository(context: context)
         categoryRepository = CategoryRepository(context: context)
     }
@@ -76,8 +78,18 @@ final class InsightsViewModel {
 
         do {
             allCategories = (try? categoryRepository.fetchAll()) ?? []
-            let all       = try expenseRepository.fetchAll()
-            let filtered  = filter(all, period: period, referenceDate: referenceDate)
+            let filtered: [Expense]
+            if period == .allTime {
+                filtered = try expenseRepository.fetchAll()
+            } else {
+                let since = periodStart(for: period, referenceDate: referenceDate)
+                filtered = try modelContext.fetch(
+                    FetchDescriptor<Expense>(
+                        predicate: #Predicate { $0.date >= since },
+                        sortBy: []
+                    )
+                )
+            }
             periodExpenses   = filtered
             categoryTotals   = makeCategoryTotals(filtered)
             dailyTotals      = makeGroupedTotals(filtered, period: period)
@@ -86,6 +98,28 @@ final class InsightsViewModel {
         } catch {
             errorMessage = error.localizedDescription
             AppLogger.data.error("InsightsViewModel refresh failed: \(error)")
+        }
+    }
+
+    // Returns the earliest date included in the given period. Used by both the
+    // predicated fetch and filter() so both paths stay consistent.
+    func periodStart(for period: Period, referenceDate: Date) -> Date {
+        let cal = Calendar.current
+        switch period {
+        case .week:
+            let weekday = cal.component(.weekday, from: referenceDate)
+            let offset  = (weekday - cal.firstWeekday + 7) % 7
+            return cal.startOfDay(for: cal.date(byAdding: .day, value: -offset, to: referenceDate)!)
+        case .month:
+            var comps = cal.dateComponents([.year, .month], from: referenceDate)
+            comps.day = 1
+            return cal.date(from: comps)!
+        case .year:
+            var comps = cal.dateComponents([.year], from: referenceDate)
+            comps.month = 1; comps.day = 1
+            return cal.date(from: comps)!
+        case .allTime:
+            return Date.distantPast
         }
     }
 

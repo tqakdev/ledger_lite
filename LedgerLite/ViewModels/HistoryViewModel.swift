@@ -37,10 +37,27 @@ final class HistoryViewModel {
         self.expenseRepository = ExpenseRepository(context: context)
     }
 
+    var isGlobalSearch: Bool { !searchText.isEmpty }
+
     var filteredExpenses: [Expense] {
         guard !searchText.isEmpty else { return expenses }
         let q = searchText.lowercased()
         return expenses.filter {
+            ($0.merchant?.lowercased().contains(q) ?? false) ||
+            ($0.note?.lowercased().contains(q) ?? false) ||
+            ($0.category?.name.lowercased().contains(q) ?? false)
+        }
+    }
+
+    var searchResults: [Expense] = []
+
+    func performGlobalSearch() {
+        guard !searchText.isEmpty else { searchResults = []; return }
+        let q = searchText.lowercased()
+        guard let all = try? modelContext.fetch(
+            FetchDescriptor<Expense>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        ) else { return }
+        searchResults = all.filter {
             ($0.merchant?.lowercased().contains(q) ?? false) ||
             ($0.note?.lowercased().contains(q) ?? false) ||
             ($0.category?.name.lowercased().contains(q) ?? false)

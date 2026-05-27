@@ -43,11 +43,15 @@ struct HistoryView: View {
 
     private func content(_ vm: HistoryViewModel) -> some View {
         VStack(spacing: 0) {
-            dateNavBar(vm)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-            Divider()
-            if vm.isLoading && vm.expenses.isEmpty {
+            if !vm.isGlobalSearch {
+                dateNavBar(vm)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                Divider()
+            }
+            if vm.isGlobalSearch {
+                globalSearchResults(vm)
+            } else if vm.isLoading && vm.expenses.isEmpty {
                 ProgressView().frame(maxHeight: .infinity)
             } else if vm.filteredExpenses.isEmpty {
                 emptyState(vm).frame(maxHeight: .infinity)
@@ -57,8 +61,9 @@ struct HistoryView: View {
         }
         .searchable(
             text: Binding(get: { vm.searchText }, set: { vm.searchText = $0 }),
-            prompt: String(localized: "Search expenses")
+            prompt: String(localized: "Search all expenses")
         )
+        .onChange(of: vm.searchText) { _, _ in vm.performGlobalSearch() }
         .sheet(item: sheetBinding(vm)) { sheet in
             ExpenseFormSheet(mode: sheet.formMode) { vm.dismissSheet() }
         }
@@ -173,6 +178,39 @@ struct HistoryView: View {
                 }
             }
             .listStyle(.insetGrouped)
+        }
+    }
+
+    // MARK: - Global search results
+
+    private func globalSearchResults(_ vm: HistoryViewModel) -> some View {
+        Group {
+            if vm.searchResults.isEmpty {
+                ContentUnavailableView.search(text: vm.searchText)
+                    .frame(maxHeight: .infinity)
+            } else {
+                List {
+                    Section(String(localized: "\(vm.searchResults.count) result\(vm.searchResults.count == 1 ? "" : "s")")) {
+                        ForEach(vm.searchResults, id: \.id) { expense in
+                            ExpenseRowView(
+                                expense: expense,
+                                homeCurrencyCode: vm.homeCurrencyCode
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture { vm.presentEdit(for: expense) }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    vm.deleteExpense(expense)
+                                } label: {
+                                    Label(String(localized: "Delete"), systemImage: "trash")
+                                }
+                            }
+                        }
+                    }
+                }
+                .listStyle(.insetGrouped)
+            }
         }
     }
 

@@ -27,9 +27,13 @@ struct SettingsView: View {
     @State private var showCannotDisableAlert  = false
     @State private var showDeniedAlert         = false
 
-    // B5: CSV export
-    @State private var isExporting   = false
+    // B5: CSV export / import
+    @State private var isExporting      = false
     @State private var csvExportURL: URL?
+    @State private var isImporting      = false
+    @State private var showImportPicker = false
+    @State private var importResultText: String?
+    @State private var showImportResult = false
 
     // C3: error alert
     @State private var showError = false
@@ -80,6 +84,19 @@ struct SettingsView: View {
             Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
             Text(String(localized: "Go to Settings → Notifications → LedgerLite to turn off billing reminders."))
+        }
+        .fileImporter(
+            isPresented: $showImportPicker,
+            allowedContentTypes: [.commaSeparatedText],
+            allowsMultipleSelection: false
+        ) { result in
+            guard let url = try? result.get().first else { return }
+            Task { await importCSV(from: url) }
+        }
+        .alert(String(localized: "Import Complete"), isPresented: $showImportResult) {
+            Button(String(localized: "OK"), role: .cancel) {}
+        } message: {
+            Text(importResultText ?? "")
         }
         .alert(String(localized: "Biometrics Unavailable"), isPresented: $showBiometricUnavailableAlert) {
             Button(String(localized: "OK"), role: .cancel) {}
@@ -219,13 +236,20 @@ struct SettingsView: View {
             } label: {
                 HStack {
                     Label(String(localized: "Export CSV"), systemImage: "square.and.arrow.up")
-                    if isExporting {
-                        Spacer()
-                        ProgressView()
-                    }
+                    if isExporting { Spacer(); ProgressView() }
                 }
             }
             .disabled(isExporting)
+
+            Button {
+                showImportPicker = true
+            } label: {
+                HStack {
+                    Label(String(localized: "Import CSV"), systemImage: "square.and.arrow.down")
+                    if isImporting { Spacer(); ProgressView() }
+                }
+            }
+            .disabled(isImporting)
         }
     }
 
@@ -299,6 +323,121 @@ struct SettingsView: View {
 
     private func csvEscape(_ s: String) -> String {
         "\"" + s.replacingOccurrences(of: "\"", with: "\"\"") + "\""
+    }
+
+    // MARK: - CSV import
+
+    private func importCSV(from url: URL) async {
+        isImporting = true
+        defer { isImporting = false }
+
+        guard url.startAccessingSecurityScopedResource() else {
+            errorText = String(localized: "Could not access the selected file.")
+            showError = true
+            return
+        }
+        defer { url.stopAccessingSecurityScopedResource() }
+
+        do {
+            let content = try String(contentsOf: url, encoding: .utf8)
+            let lines = content.components(separatedBy: .newlines)
+                .map { $0.trimmingCharacters(in: CharacterSet(charactersIn: "\r")) }
+                .filter { !$0.isEmpty }
+            guard lines.count > 1 else {
+                importResultText = String(localized: "The file contains no expense rows.")
+                showImportResult = true
+                return
+            }
+
+            let categories = (try? CategoryRepository(context: modelContext).fetchAll()) ?? []
+            var imported = 0
+
+            for line in lines.dropFirst() {
+                let fields = csvParseLine(line)
+                guard fields.count >= 7 else { continue }
+                let dateStr    = fields[0]
+                let merchant   = fields[1].isEmpty ? nil : fields[1]
+                let catName    = fields[2]
+                let amtStr     = fields[3]
+                let currency   = fields[4]
+                let homeAmtStr = fields[5]
+                let homeCurr   = fields[6]
+
+                let iso = ISO8601DateFormatter()
+                iso.formatOptions = [.withFullDate]
+                guard let date = iso.date(from: dateStr) else { continue }
+                guard let amtDecimal  = Decimal(string: amtStr),  amtDecimal  > 0 else { continue }
+                guard let homeDecimal = Decimal(string: homeAmtStr) else { continue }
+
+                let places     = Money.decimals(for: currency)
+                let homePlaces = Money.decimals(for: homeCurr)
+
+                func toMinor(_ d: Decimal, places p: Int) -> Int {
+                    let v = (d * Decimal.powerOfTen(p)).rounded(scale: 0)
+                    return NSDecimalNumber(decimal: v).intValue
+                }
+
+                let amtMinor  = toMinor(amtDecimal,  places: places)
+                guard amtMinor > 0 else { continue }
+                let homeMinor = toMinor(homeDecimal, places: homePlaces)
+                let rate: Decimal = (currency == homeCurr || amtDecimal == Decimal(0))
+                    ? Decimal(1) : (homeDecimal / amtDecimal)
+
+                let category = categories.first { $0.name == catName }
+                let expense  = Expense(
+                    amountMinor: amtMinor,
+                    currencyCode: currency,
+                    exchangeRateToHome: rate,
+                    homeCurrencyAtEntry: homeCurr,
+                    date: date,
+                    merchant: merchant,
+                    source: .manual
+                )
+                expense.category = category
+                _ = homeMinor  // stored in exchangeRateToHome; kept for future use
+                modelContext.insert(expense)
+                imported += 1
+            }
+
+            try modelContext.save()
+            let plural = imported == 1
+                ? String(localized: "Imported 1 expense.")
+                : String(localized: "Imported \(imported) expenses.")
+            importResultText = plural
+            showImportResult = true
+            AppLogger.data.info("CSV import: \(imported) expenses added")
+        } catch {
+            errorText = error.localizedDescription
+            showError  = true
+            AppLogger.data.error("CSV import failed: \(error)")
+        }
+    }
+
+    private func csvParseLine(_ line: String) -> [String] {
+        var fields: [String] = []
+        var current = ""
+        var inQuotes = false
+        var i = line.startIndex
+        while i < line.endIndex {
+            let ch = line[i]
+            if ch == "\"" {
+                let next = line.index(after: i)
+                if inQuotes && next < line.endIndex && line[next] == "\"" {
+                    current.append("\"")
+                    i = line.index(after: next)
+                    continue
+                }
+                inQuotes.toggle()
+            } else if ch == "," && !inQuotes {
+                fields.append(current)
+                current = ""
+            } else {
+                current.append(ch)
+            }
+            i = line.index(after: i)
+        }
+        fields.append(current)
+        return fields
     }
 }
 
