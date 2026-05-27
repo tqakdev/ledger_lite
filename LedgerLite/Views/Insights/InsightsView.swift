@@ -6,6 +6,7 @@ struct InsightsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: InsightsViewModel?
     @State private var selectedAngleValue: Int?
+    @State private var showDrillDown = false
     // C3
     @State private var showError = false
     @State private var errorText = ""
@@ -21,6 +22,15 @@ struct InsightsView: View {
             }
             .navigationTitle(String(localized: "Insights"))
             .navigationBarTitleDisplayMode(.large)  // A9
+            .toolbar {
+                if let vm = viewModel, !vm.categoryTotals.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        ShareLink(item: shareText(vm)) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    }
+                }
+            }
         }
         .onAppear {
             if viewModel == nil {
@@ -39,6 +49,18 @@ struct InsightsView: View {
                 errorText = msg
                 showError = true
                 UINotificationFeedbackGenerator().notificationOccurred(.error)  // C1 error haptic
+            }
+        }
+        .sheet(isPresented: $showDrillDown) {
+            if let vm = viewModel, let cat = vm.selectedCategory,
+               let item = vm.categoryTotals.first(where: { $0.category.id == cat.id }) {
+                CategoryDrillDownSheet(
+                    category: cat,
+                    categoryMinorUnits: item.minorUnits,
+                    periodExpenses: vm.periodExpenses,
+                    homeCurrencyCode: vm.homeCurrencyCode,
+                    period: vm.period
+                )
             }
         }
     }
@@ -164,21 +186,28 @@ struct InsightsView: View {
         let pct = vm.periodTotalMinor > 0
             ? Int(round(Double(item.minorUnits) / Double(vm.periodTotalMinor) * 100))
             : 0
-        return HStack(spacing: 8) {
-            Image(systemName: item.category.iconName)
-                .foregroundStyle(Color(hex: item.category.colorHex))
-                .frame(width: 24)
-            Text(item.category.name)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .lineLimit(1)
-            Spacer(minLength: 4)
-            Text("\(pct)%  ·  \(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: item.category.iconName)
+                    .foregroundStyle(Color(hex: item.category.colorHex))
+                    .frame(width: 24)
+                Text(item.category.name)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                Text("\(pct)%  ·  \(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            Button(String(localized: "View Details")) {
+                showDrillDown = true
+            }
+            .font(.caption)
+            .foregroundStyle(Color.accentColor)
         }
         .padding(10)
         .background(Color(.secondarySystemFill))
@@ -372,10 +401,21 @@ struct InsightsView: View {
     // MARK: - Helpers
 
     private var emptyLabel: some View {
-        Text(String(localized: "No expenses in this period"))
+        VStack(spacing: 12) {
+            Text(String(localized: "No expenses in this period"))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+            Button(String(localized: "Add an Expense")) {
+                NotificationCenter.default.post(
+                    name: Notification.Name("LedgerLiteDeepLink"),
+                    object: URL(string: "ledgerlite://today")
+                )
+            }
             .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, minHeight: 120)
+            .buttonStyle(.bordered)
+        }
+        .frame(maxWidth: .infinity, minHeight: 120)
     }
 
     private func sectorOpacity(_ category: Category, selected: Category?) -> Double {
@@ -429,6 +469,27 @@ struct InsightsView: View {
         return formatter.string(from: value as NSDecimalNumber) ?? "\(minorUnits)"
     }
 
+    // MARK: - Share text
+
+    private func shareText(_ vm: InsightsViewModel) -> String {
+        var lines: [String] = [
+            "LedgerLite — \(vm.period.displayName)",
+            "Total: \(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())",
+            ""
+        ]
+        for item in vm.categoryTotals {
+            let pct = vm.periodTotalMinor > 0
+                ? Int(round(Double(item.minorUnits) / Double(vm.periodTotalMinor) * 100))
+                : 0
+            lines.append("• \(item.category.name): \(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted()) (\(pct)%)")
+        }
+        if let top = vm.topMerchant {
+            lines.append("")
+            lines.append("Top merchant: \(top.merchant) (\(Money(minorUnits: top.minorUnits, currencyCode: vm.homeCurrencyCode).formatted()))")
+        }
+        return lines.joined(separator: "\n")
+    }
+
     // MARK: - Budget entry
 
     private struct BudgetEntry {
@@ -448,6 +509,80 @@ struct InsightsView: View {
             if ratio >= 0.80 { return .orange }
             return .green
         }
+    }
+}
+
+// MARK: - Category Drill-Down Sheet
+
+private struct CategoryDrillDownSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let category: Category
+    let categoryMinorUnits: Int
+    let periodExpenses: [Expense]
+    let homeCurrencyCode: String
+    let period: InsightsViewModel.Period
+
+    private var expenses: [Expense] {
+        periodExpenses
+            .filter { $0.category?.id == category.id }
+            .sorted { $0.date > $1.date }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    HStack {
+                        Text(String(localized: "Total"))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(Money(minorUnits: categoryMinorUnits, currencyCode: homeCurrencyCode).formatted())
+                            .fontWeight(.semibold)
+                            .monospacedDigit()
+                    }
+                    .font(.subheadline)
+                } header: {
+                    Text(period.displayName)
+                }
+
+                Section {
+                    if expenses.isEmpty {
+                        Text(String(localized: "No expenses"))
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    } else {
+                        ForEach(expenses, id: \.id) { expense in
+                            HStack(spacing: 12) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(expense.merchant ?? String(localized: "Unnamed"))
+                                        .font(.subheadline)
+                                        .lineLimit(1)
+                                    Text(expense.date.formatted(.dateTime.month(.abbreviated).day().year()))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Text(expense.money.formatted())
+                                    .font(.subheadline)
+                                    .monospacedDigit()
+                                    .foregroundStyle(.primary)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle(category.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(String(localized: "Done")) { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
 

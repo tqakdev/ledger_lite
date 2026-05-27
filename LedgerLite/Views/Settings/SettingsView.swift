@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import LocalAuthentication
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -7,6 +8,19 @@ struct SettingsView: View {
     // B1: reactive home-currency display — shares App Group suite with UserPreferences + widget
     @AppStorage("homeCurrencyCode", store: UserDefaults(suiteName: Constants.App.appGroupIdentifier))
     private var homeCurrencyCode = Constants.App.homeCurrencyDefault
+
+    // Biometric lock
+    @AppStorage("biometricLockEnabled") private var biometricLockEnabled = false
+    @State private var showBiometricUnavailableAlert = false
+    private var biometricLabel: String {
+        let ctx = LAContext()
+        _ = ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+        switch ctx.biometryType {
+        case .faceID:  return String(localized: "Face ID Lock")
+        case .touchID: return String(localized: "Touch ID Lock")
+        default:       return String(localized: "Biometric Lock")
+        }
+    }
 
     // B4: notification state
     @State private var notificationsAuthorized = false
@@ -34,6 +48,7 @@ struct SettingsView: View {
                 categoriesSection
                 budgetsSection
                 notificationsSection
+                securitySection
                 dataSection
                 aboutSection
             }
@@ -65,6 +80,11 @@ struct SettingsView: View {
             Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
             Text(String(localized: "Go to Settings → Notifications → LedgerLite to turn off billing reminders."))
+        }
+        .alert(String(localized: "Biometrics Unavailable"), isPresented: $showBiometricUnavailableAlert) {
+            Button(String(localized: "OK"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "Face ID or Touch ID is not set up on this device. Enable it in Settings → Face ID & Passcode."))
         }
         // B4: "permission denied" alert
         .alert(String(localized: "Notifications Denied"), isPresented: $showDeniedAlert) {
@@ -156,6 +176,34 @@ struct SettingsView: View {
             Text(notificationsAuthorized
                  ? String(localized: "Active — notified 2 days before each billing date.")
                  : String(localized: "Reminders are off."))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Security
+
+    private var securitySection: some View {
+        Section(String(localized: "Security")) {
+            Toggle(isOn: $biometricLockEnabled) {
+                Label {
+                    Text(biometricLabel)
+                } icon: {
+                    settingsIcon("faceid", color: .indigo)
+                }
+            }
+            .onChange(of: biometricLockEnabled) { _, enabled in
+                guard enabled else { return }
+                let ctx = LAContext()
+                var err: NSError?
+                if !ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &err) {
+                    biometricLockEnabled = false
+                    showBiometricUnavailableAlert = true
+                }
+            }
+            Text(biometricLockEnabled
+                 ? String(localized: "App locks when sent to background.")
+                 : String(localized: "Protect your data with Face ID or Touch ID."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

@@ -47,6 +47,7 @@ final class InsightsViewModel {
     var isLoading: Bool = false
     var errorMessage: String?
     var topMerchant: (merchant: String, minorUnits: Int)? = nil
+    var periodExpenses: [Expense] = []
 
     // MARK: - Dependencies
 
@@ -77,6 +78,7 @@ final class InsightsViewModel {
             allCategories = (try? categoryRepository.fetchAll()) ?? []
             let all       = try expenseRepository.fetchAll()
             let filtered  = filter(all, period: period, referenceDate: referenceDate)
+            periodExpenses   = filtered
             categoryTotals   = makeCategoryTotals(filtered)
             dailyTotals      = makeGroupedTotals(filtered, period: period)
             periodTotalMinor = makePeriodTotal(filtered)

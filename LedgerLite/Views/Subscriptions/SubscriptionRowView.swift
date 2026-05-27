@@ -4,6 +4,7 @@ struct SubscriptionRowView: View {
     let subscription: Subscription
     let notificationsAuthorized: Bool
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var pulsing = false
 
     private var daysUntil: Int {
@@ -82,7 +83,7 @@ struct SubscriptionRowView: View {
                     .foregroundStyle(daysUntil <= 2 ? .orange : .secondary)
                     .scaleEffect(pulsing && daysUntil <= 2 ? 1.08 : 1.0)
                     .onAppear {
-                        guard daysUntil <= 2 else { return }
+                        guard daysUntil <= 2, !reduceMotion else { return }
                         withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
                             pulsing = true
                         }

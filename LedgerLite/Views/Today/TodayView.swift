@@ -3,28 +3,32 @@ import SwiftData
 
 // A7: shimmer animation modifier used on the empty-state icon
 private struct ShimmerModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var phase: CGFloat = -1
 
     func body(content: Content) -> some View {
-        content
-            .overlay {
-                LinearGradient(
-                    stops: [
-                        .init(color: .clear, location: 0.0),
-                        .init(color: Color(.systemBackground).opacity(0.7), location: 0.5),
-                        .init(color: .clear, location: 1.0),
-                    ],
-                    startPoint: UnitPoint(x: phase, y: 0.5),
-                    endPoint:   UnitPoint(x: phase + 1, y: 0.5)
-                )
-                .blendMode(.sourceAtop)
-            }
-            .onAppear {
-                phase = -1
-                withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
-                    phase = 1
+        guard !reduceMotion else { return AnyView(content) }
+        return AnyView(
+            content
+                .overlay {
+                    LinearGradient(
+                        stops: [
+                            .init(color: .clear, location: 0.0),
+                            .init(color: Color(.systemBackground).opacity(0.7), location: 0.5),
+                            .init(color: .clear, location: 1.0),
+                        ],
+                        startPoint: UnitPoint(x: phase, y: 0.5),
+                        endPoint:   UnitPoint(x: phase + 1, y: 0.5)
+                    )
+                    .blendMode(.sourceAtop)
                 }
-            }
+                .onAppear {
+                    phase = -1
+                    withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+                        phase = 1
+                    }
+                }
+        )
     }
 }
 
@@ -184,23 +188,33 @@ struct TodayView: View {
     // MARK: - FAB
 
     private func quickAddFAB(_ viewModel: TodayViewModel) -> some View {
-        Button {
+        FABView(isVisible: $fabVisible) {
             viewModel.presentQuickAdd()
-        } label: {
-            Image(systemName: "plus")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.white)
-                .frame(width: 60, height: 60)
-                .background(Color.accentColor)
-                .clipShape(Circle())
-                .shadow(color: Color.accentColor.opacity(0.35), radius: 10, x: 0, y: 5)
         }
-        .padding(.trailing, 20)
-        .padding(.bottom, 20)
-        .accessibilityLabel(String(localized: "Add expense"))
-        .scaleEffect(fabVisible ? 1.0 : 0.01)
-        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: fabVisible)
-        .onAppear { fabVisible = true }
+    }
+
+    private struct FABView: View {
+        @Environment(\.accessibilityReduceMotion) private var reduceMotion
+        @Binding var isVisible: Bool
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                Image(systemName: "plus")
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 60, height: 60)
+                    .background(Color.accentColor)
+                    .clipShape(Circle())
+                    .shadow(color: Color.accentColor.opacity(0.35), radius: 10, x: 0, y: 5)
+            }
+            .padding(.trailing, 20)
+            .padding(.bottom, 20)
+            .accessibilityLabel(String(localized: "Add expense"))
+            .scaleEffect(reduceMotion ? 1.0 : (isVisible ? 1.0 : 0.01))
+            .animation(reduceMotion ? nil : .spring(response: 0.4, dampingFraction: 0.6), value: isVisible)
+            .onAppear { isVisible = true }
+        }
     }
 
     // MARK: - Empty state (A7)
