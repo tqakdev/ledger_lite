@@ -7,6 +7,8 @@ struct InsightsView: View {
     @State private var viewModel: InsightsViewModel?
     @State private var selectedAngleValue: Int?
     @State private var showDrillDown = false
+    @State private var showShareSheet = false
+    @State private var shareItems: [Any] = []
     // C3
     @State private var showError = false
     @State private var errorText = ""
@@ -25,11 +27,16 @@ struct InsightsView: View {
             .toolbar {
                 if let vm = viewModel, !vm.categoryTotals.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
-                        ShareLink(item: shareText(vm)) {
+                        Button {
+                            shareInsightsSummary(vm)
+                        } label: {
                             Image(systemName: "square.and.arrow.up")
                         }
                     }
                 }
+            }
+            .sheet(isPresented: $showShareSheet) {
+                InsightsActivitySheet(items: shareItems)
             }
         }
         .onAppear {
@@ -478,7 +485,22 @@ struct InsightsView: View {
         return formatter.string(from: value as NSDecimalNumber) ?? "\(minorUnits)"
     }
 
-    // MARK: - Share text
+    // MARK: - Share image
+
+    @MainActor
+    private func shareInsightsSummary(_ vm: InsightsViewModel) {
+        let card = SummaryShareCardView(vm: vm)
+        let renderer = ImageRenderer(content: card.frame(width: 360))
+        renderer.scale = UIScreen.main.scale
+        if let image = renderer.uiImage {
+            shareItems = [image]
+        } else {
+            shareItems = [shareText(vm)]
+        }
+        showShareSheet = true
+    }
+
+    // MARK: - Share text (fallback)
 
     private func shareText(_ vm: InsightsViewModel) -> String {
         var lines: [String] = [
@@ -519,6 +541,86 @@ struct InsightsView: View {
             return .green
         }
     }
+}
+
+// MARK: - Summary Share Card
+
+private struct SummaryShareCardView: View {
+    let vm: InsightsViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Image(systemName: "chart.pie.fill")
+                    .foregroundStyle(Color.accentColor)
+                Text("LedgerLite")
+                    .font(.headline)
+                Spacer()
+                Text(vm.period.displayName)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(String(localized: "Total"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())
+                    .font(.system(.title2, design: .rounded, weight: .bold))
+                    .monospacedDigit()
+            }
+
+            if !vm.categoryTotals.isEmpty {
+                Divider()
+                VStack(spacing: 8) {
+                    ForEach(vm.categoryTotals.prefix(5), id: \.category.id) { item in
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(Color(hex: item.category.colorHex))
+                                .frame(width: 8, height: 8)
+                            Text(item.category.name)
+                                .font(.subheadline)
+                            Spacer()
+                            let pct = vm.periodTotalMinor > 0
+                                ? Int(round(Double(item.minorUnits) / Double(vm.periodTotalMinor) * 100))
+                                : 0
+                            Text("\(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())  \(pct)%")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
+                    }
+                }
+            }
+
+            if let top = vm.topMerchant {
+                Divider()
+                HStack(spacing: 6) {
+                    Image(systemName: "trophy.fill").foregroundStyle(.yellow)
+                    Text(top.merchant).font(.subheadline).fontWeight(.medium).lineLimit(1)
+                    Spacer()
+                    Text(Money(minorUnits: top.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
+                        .font(.subheadline).foregroundStyle(.secondary).monospacedDigit()
+                }
+            }
+        }
+        .padding(20)
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)
+    }
+}
+
+// MARK: - Activity Sheet (Insights)
+
+private struct InsightsActivitySheet: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Category Drill-Down Sheet

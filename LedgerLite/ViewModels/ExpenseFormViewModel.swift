@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import CoreSpotlight
 
 enum ExpenseFormMode: Identifiable {
     case add
@@ -36,6 +37,16 @@ final class ExpenseFormViewModel {
     var categories: [Category] = []
     var isSaving = false
     var errorMessage: String?
+
+    // Merchant autocomplete
+    var merchantSuggestions: [String] = []
+    private var recentMerchants: [String] = []
+
+    // Calculator
+    var calcExpression: String = ""
+
+    // Recurring templates
+    var templates: [ExpenseTemplate] = []
 
     private let expenseRepository: ExpenseRepository
     private let categoryRepository: CategoryRepository
@@ -76,9 +87,69 @@ final class ExpenseFormViewModel {
             if selectedCategory == nil {
                 selectedCategory = categories.first(where: { $0.name == "Other" }) ?? categories.first
             }
+            loadRecentMerchants()
+            templates = ExpenseTemplateService.load()
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    // MARK: - Merchant autocomplete
+
+    func updateMerchantSuggestions(prefix: String) {
+        guard !prefix.isEmpty else { merchantSuggestions = []; return }
+        let lower = prefix.lowercased()
+        var seen = Set<String>()
+        merchantSuggestions = recentMerchants
+            .filter { $0.lowercased().hasPrefix(lower) && $0.lowercased() != lower }
+            .filter { seen.insert($0.lowercased()).inserted }
+            .prefix(5)
+            .map { $0 }
+    }
+
+    // MARK: - Calculator
+
+    func appendCalculatorOperator(_ op: String) {
+        guard minorUnits > 0 || !calcExpression.isEmpty else { return }
+        calcExpression += amountString + op
+        amountString = ""
+        minorUnits = 0
+    }
+
+    func evaluateCalculator() {
+        let full = calcExpression + amountString
+        guard !full.isEmpty else { return }
+        if let (display, units) = AmountInputParser(currencyCode: currencyCode, locale: .current).evaluate(full) {
+            amountString = display
+            minorUnits = units
+        }
+        calcExpression = ""
+    }
+
+    // MARK: - Templates
+
+    func applyTemplate(_ template: ExpenseTemplate) {
+        merchant = template.merchantName
+        note = template.note
+        currencyCode = template.currencyCode
+        minorUnits = template.amountMinor
+        amountString = AmountInputParser(currencyCode: template.currencyCode, locale: .current)
+            .format(minorUnits: template.amountMinor)
+        if let cat = categories.first(where: { $0.name == template.categoryName }) {
+            selectedCategory = cat
+        }
+    }
+
+    func saveAsTemplate() {
+        guard !merchant.isEmpty, minorUnits > 0 else { return }
+        ExpenseTemplateService.add(ExpenseTemplate(
+            merchantName: merchant,
+            amountMinor: minorUnits,
+            currencyCode: currencyCode,
+            categoryName: selectedCategory?.name ?? "",
+            note: note
+        ))
+        templates = ExpenseTemplateService.load()
     }
 
     /// Parses a raw TextField string, updates `amountString` (sanitized) and `minorUnits`.
@@ -115,6 +186,16 @@ final class ExpenseFormViewModel {
 
     // MARK: - Private
 
+    private func loadRecentMerchants() {
+        let recent = (try? expenseRepository.fetchAll()) ?? []
+        var seen = Set<String>()
+        recentMerchants = recent
+            .compactMap { $0.merchant }
+            .filter { seen.insert($0.lowercased()).inserted }
+            .prefix(200)
+            .map { $0 }
+    }
+
     private func addExpense(category: Category) async throws {
         var exchangeRate = Decimal(1)
         var needsRefresh = false
@@ -146,6 +227,7 @@ final class ExpenseFormViewModel {
         )
         expense.category = category
         try expenseRepository.add(expense)
+        SpotlightService.index(expense)
         AppLogger.ui.info("Added expense \(self.minorUnits) \(self.currencyCode)")
     }
 
@@ -156,6 +238,7 @@ final class ExpenseFormViewModel {
         expense.merchant = merchant.isEmpty ? nil : merchant
         expense.date = date
         try expenseRepository.update(expense)
+        SpotlightService.index(expense)
         AppLogger.ui.info("Updated expense \(expense.id)")
     }
 

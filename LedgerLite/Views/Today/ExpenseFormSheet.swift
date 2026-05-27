@@ -49,6 +49,33 @@ struct ExpenseFormSheet: View {
                     }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
+                    if let vm = viewModel, focusedField == .amount {
+                        Button { vm.appendCalculatorOperator("+") } label: {
+                            Text("+").font(.title3).frame(minWidth: 32)
+                        }
+                        Button { vm.appendCalculatorOperator("-") } label: {
+                            Text("−").font(.title3).frame(minWidth: 32)
+                        }
+                        Button { vm.appendCalculatorOperator("*") } label: {
+                            Text("×").font(.title3).frame(minWidth: 32)
+                        }
+                        Button { vm.appendCalculatorOperator("/") } label: {
+                            Text("÷").font(.title3).frame(minWidth: 32)
+                        }
+                        Button { vm.evaluateCalculator() } label: {
+                            Text("=").font(.title3.bold()).frame(minWidth: 32)
+                        }
+                        .tint(Color.accentColor)
+                        if !vm.calcExpression.isEmpty {
+                            Button {
+                                vm.calcExpression = ""
+                                vm.amountString = ""
+                                vm.minorUnits = 0
+                            } label: {
+                                Text("C").font(.subheadline).foregroundStyle(.red)
+                            }
+                        }
+                    }
                     Spacer()
                     Button(String(localized: "Done")) { focusedField = nil }
                 }
@@ -89,6 +116,11 @@ struct ExpenseFormSheet: View {
     private func formContent(_ viewModel: ExpenseFormViewModel) -> some View {
         ScrollView {
             VStack(spacing: 16) {
+                // Recurring template chips (add mode only)
+                if case .add = mode, !viewModel.templates.isEmpty {
+                    templateStrip(viewModel)
+                }
+
                 // A1: redesigned amount field
                 amountField(viewModel)
 
@@ -110,13 +142,118 @@ struct ExpenseFormSheet: View {
             .padding(.bottom, 8)
         }
         .scrollDismissesKeyboard(.interactively)
+        // Merchant suggestion bar sits just above the keyboard
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if focusedField == .merchant, !viewModel.merchantSuggestions.isEmpty {
+                merchantSuggestionBar(viewModel)
+            }
+        }
+        .onChange(of: viewModel.merchant) { _, prefix in
+            viewModel.updateMerchantSuggestions(prefix: prefix)
+        }
+    }
+
+    // MARK: - Template strip
+
+    @ViewBuilder
+    private func templateStrip(_ viewModel: ExpenseFormViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 0) {
+                Text(String(localized: "Quick Add"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, 16)
+                Spacer()
+                if !viewModel.merchant.isEmpty, viewModel.minorUnits > 0, case .add = mode {
+                    Button(String(localized: "Save")) {
+                        viewModel.saveAsTemplate()
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    }
+                    .font(.caption)
+                    .padding(.trailing, 16)
+                }
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(viewModel.templates) { template in
+                        Button {
+                            viewModel.applyTemplate(template)
+                            focusedField = nil
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(template.merchantName)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .lineLimit(1)
+                                Text(Money(minorUnits: template.amountMinor, currencyCode: template.currencyCode).formatted())
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(.secondarySystemGroupedBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        }
+                        .buttonStyle(.plain)
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                ExpenseTemplateService.delete(id: template.id)
+                                viewModel.templates = ExpenseTemplateService.load()
+                            } label: {
+                                Label(String(localized: "Delete"), systemImage: "trash")
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+        .padding(.top, 4)
+    }
+
+    // MARK: - Merchant suggestion bar
+
+    private func merchantSuggestionBar(_ viewModel: ExpenseFormViewModel) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(viewModel.merchantSuggestions, id: \.self) { suggestion in
+                    Button(suggestion) {
+                        viewModel.merchant = suggestion
+                        viewModel.merchantSuggestions = []
+                        focusedField = .note
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    }
+                    .font(.subheadline)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(.secondarySystemFill))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+        .background(.ultraThinMaterial)
     }
 
     // MARK: - A1: Amount field
 
     private func amountField(_ viewModel: ExpenseFormViewModel) -> some View {
         let symbol = Self.currencySymbol(for: viewModel.currencyCode)
-        return HStack(alignment: .firstTextBaseline, spacing: 4) {
+        return VStack(spacing: 4) {
+            if !viewModel.calcExpression.isEmpty {
+                Text(viewModel.calcExpression)
+                    .font(.system(size: 14, weight: .regular, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
             Text(symbol)
                 .font(.system(size: 20, weight: .bold, design: .rounded))
                 .foregroundStyle(.secondary)
@@ -143,10 +280,11 @@ struct ExpenseFormSheet: View {
                     .fixedSize()
             }
         }
-        .frame(maxWidth: .infinity, alignment: .center)
-        // Subtle scale-in when first digit is entered
-        .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
-        .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
+            .frame(maxWidth: .infinity, alignment: .center)
+            // Subtle scale-in when first digit is entered
+            .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
+            .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
+        }
         .padding(.vertical, 12)
         .background(
             LinearGradient(
@@ -155,6 +293,7 @@ struct ExpenseFormSheet: View {
                 endPoint: .bottom
             )
         )
+        .animation(.easeInOut(duration: 0.2), value: viewModel.calcExpression.isEmpty)
         .accessibilityLabel(String(localized: "Amount"))
         .accessibilityValue(viewModel.formattedAmount())
     }

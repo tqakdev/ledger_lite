@@ -35,9 +35,64 @@ struct LedgerLiteTodayWidgetEntryView: View {
 
     var body: some View {
         switch widgetFamily {
-        case .systemMedium: mediumView
-        default:            smallView
+        case .systemMedium:         mediumView
+        case .accessoryRectangular: accessoryRectangularView
+        case .accessoryCircular:    accessoryCircularView
+        default:                    smallView
         }
+    }
+
+    // MARK: Lock screen — circular
+
+    private var accessoryCircularView: some View {
+        ZStack {
+            AccessoryWidgetBackground()
+            if let summary = entry.summary {
+                VStack(spacing: 0) {
+                    Image(systemName: "dollarsign")
+                        .font(.caption2.weight(.semibold))
+                    Text(Money(minorUnits: summary.totalMinor, currencyCode: summary.currencyCode)
+                            .formatted())
+                        .font(.system(.caption2, design: .rounded, weight: .bold))
+                        .monospacedDigit()
+                        .minimumScaleFactor(0.4)
+                        .lineLimit(1)
+                }
+            } else {
+                Image(systemName: "dollarsign.circle")
+                    .font(.title3)
+            }
+        }
+        .widgetURL(URL(string: "ledgerlite://today")!)
+    }
+
+    // MARK: Lock screen — rectangular
+
+    private var accessoryRectangularView: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(String(localized: "Today's Total"))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            if let summary = entry.summary {
+                Text(Money(minorUnits: summary.totalMinor, currencyCode: summary.currencyCode).formatted())
+                    .font(.system(.headline, design: .rounded, weight: .bold))
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.65)
+                    .lineLimit(1)
+                let count = summary.expenses.count
+                Text(count == 1
+                     ? String(localized: "1 expense")
+                     : String(localized: "\(count) expenses"))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("$0.00")
+                    .font(.headline.bold())
+                    .redacted(reason: .placeholder)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .widgetURL(URL(string: "ledgerlite://today")!)
     }
 
     // MARK: Small
@@ -184,7 +239,7 @@ struct LedgerLiteTodayWidget: Widget {
         }
         .configurationDisplayName(String(localized: "Today's Spending"))
         .description(String(localized: "See today's expenses at a glance."))
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular])
     }
 }
 

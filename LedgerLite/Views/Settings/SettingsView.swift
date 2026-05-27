@@ -29,7 +29,7 @@ struct SettingsView: View {
 
     // B5: CSV export / import
     @State private var isExporting      = false
-    @State private var csvExportURL: URL?
+    @State private var exportItems: [Any] = []
     @State private var isImporting      = false
     @State private var showImportPicker = false
     @State private var importResultText: String?
@@ -68,12 +68,10 @@ struct SettingsView: View {
         }
         // B5: share sheet
         .sheet(isPresented: Binding(
-            get: { csvExportURL != nil },
-            set: { if !$0 { csvExportURL = nil } }
+            get: { !exportItems.isEmpty },
+            set: { if !$0 { exportItems = [] } }
         )) {
-            if let url = csvExportURL {
-                ActivitySheet(url: url)
-            }
+            ActivitySheet(items: exportItems)
         }
         // C3: generic error
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
@@ -325,10 +323,12 @@ struct SettingsView: View {
         isExporting = true
         defer { isExporting = false }
         do {
-            let expenses = try ExpenseRepository(context: modelContext).fetchAll()
-            var lines = ["Date,Merchant,Category,Amount,Currency,HomeAmount,HomeCurrency"]
             let iso = ISO8601DateFormatter()
             iso.formatOptions = [.withFullDate]
+
+            // Expenses
+            let expenses = try ExpenseRepository(context: modelContext).fetchAll()
+            var expenseLines = ["Date,Merchant,Category,Amount,Currency,HomeAmount,HomeCurrency"]
             for e in expenses {
                 let date       = csvEscape(iso.string(from: e.date))
                 let merchant   = csvEscape(e.merchant ?? "")
@@ -339,13 +339,28 @@ struct SettingsView: View {
                     .rounded(scale: Money.decimals(for: e.homeCurrencyAtEntry))
                     .description
                 let homeCurr   = e.homeCurrencyAtEntry
-                lines.append("\(date),\(merchant),\(category),\(amount),\(currency),\(homeAmount),\(homeCurr)")
+                expenseLines.append("\(date),\(merchant),\(category),\(amount),\(currency),\(homeAmount),\(homeCurr)")
             }
-            let csv = lines.joined(separator: "\n")
-            let url = FileManager.default.temporaryDirectory
+            let expensesURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent("LedgerLite_Expenses.csv")
-            try csv.write(to: url, atomically: true, encoding: .utf8)
-            csvExportURL = url
+            try expenseLines.joined(separator: "\n").write(to: expensesURL, atomically: true, encoding: .utf8)
+
+            // Subscriptions
+            let subscriptions = try SubscriptionRepository(context: modelContext).fetchAll()
+            var subLines = ["Name,Amount,Currency,BillingCycle,NextBillingDate,Status"]
+            for s in subscriptions {
+                let name    = csvEscape(s.name)
+                let amount  = s.money.decimalValue.description
+                let cycle   = csvEscape(s.billingCycle.rawValue)
+                let nextDate = csvEscape(iso.string(from: s.nextBillingDate))
+                let status  = csvEscape(s.status.rawValue)
+                subLines.append("\(name),\(amount),\(s.currencyCode),\(cycle),\(nextDate),\(status)")
+            }
+            let subscriptionsURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent("LedgerLite_Subscriptions.csv")
+            try subLines.joined(separator: "\n").write(to: subscriptionsURL, atomically: true, encoding: .utf8)
+
+            exportItems = [expensesURL, subscriptionsURL]
         } catch {
             errorText = error.localizedDescription
             showError  = true
@@ -532,10 +547,10 @@ private struct HomeCurrencyPickerView: View {
 // MARK: - B5: UIActivityViewController wrapper
 
 private struct ActivitySheet: UIViewControllerRepresentable {
-    let url: URL
+    let items: [Any]
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}

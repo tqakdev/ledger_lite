@@ -85,13 +85,17 @@ targets:
         UIRequiresFullScreen: true
         ITSAppUsesNonExemptEncryption: false
         NSFaceIDUsageDescription: "Used to lock LedgerLite and protect your financial data."
+        NSUserActivityTypes:
+          - com.apple.corespotlightitem
     entitlements:
       path: LedgerLite/Resources/LedgerLite.entitlements
       properties:
-        # TODO: Phase 7.5 + paid Apple Developer Program — add iCloud.com.enes.ledgerlite
-        # (Personal Team cannot use iCloud capability on device).
-        # Register group.com.enes.ledgerlite at
-        # https://developer.apple.com/account/resources/identifiers/list/applicationGroup
+        # iCloud sync (Phase 7.5) — uncomment after upgrading to paid Apple Developer Account:
+        # com.apple.developer.icloud-services:
+        #   - CloudKit
+        # com.apple.developer.icloud-container-identifiers:
+        #   - iCloud.com.enes.ledgerlite
+        # Then change cloudKitDatabase: .none → .private in LedgerLiteApp.makeContainer().
         com.apple.security.application-groups:
           - group.com.enes.ledgerlite
     settings:

@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import SQLite3
 import UserNotifications
+import CoreSpotlight
 
 @main
 struct LedgerLiteApp: App {
@@ -18,6 +19,10 @@ struct LedgerLiteApp: App {
             ContentView()
                 .task { await appDidLaunch() }
                 .onOpenURL { url in handleDeepLink(url) }
+                .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                    // Spotlight tap — route to Today tab so the user can find the expense
+                    handleDeepLink(URL(string: "ledgerlite://today")!)
+                }
         }
         .modelContainer(container)
     }
@@ -65,15 +70,16 @@ struct LedgerLiteApp: App {
             ExchangeRateCache.self,
         ])
 
-        // TODO: Phase 7.5 — add a MigrationPlan here before enabling CloudKit sync
+        // Migration plan ensures future CloudKit / schema migrations are non-destructive.
+        // To enable iCloud sync: add CloudKit entitlements (paid Apple Developer account required),
+        // then change cloudKitDatabase: .none → .private below.
         if let groupURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: Constants.App.appGroupIdentifier) {
             let storeURL = groupURL.appendingPathComponent("LedgerLite.store")
             Self.enableWAL(at: storeURL)
-            // cloudKitDatabase: .none until Phase 7.5 — entitlements are present but sync is not wired yet.
             let config = ModelConfiguration(schema: schema, url: storeURL, cloudKitDatabase: .none)
             do {
-                return try ModelContainer(for: schema, configurations: [config])
+                return try ModelContainer(for: schema, migrationPlan: LedgerLiteMigrationPlan.self, configurations: [config])
             } catch {
                 AppLogger.data.error("ModelContainer (App Group) init failed: \(error)")
                 // Fall through to default location
@@ -85,7 +91,7 @@ struct LedgerLiteApp: App {
         // Default location: works without provisioning, but widget can't access this store.
         do {
             let config = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
-            return try ModelContainer(for: schema, configurations: [config])
+            return try ModelContainer(for: schema, migrationPlan: LedgerLiteMigrationPlan.self, configurations: [config])
         } catch {
             fatalError("ModelContainer init failed entirely: \(error)")
         }

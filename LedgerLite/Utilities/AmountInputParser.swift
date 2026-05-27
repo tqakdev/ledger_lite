@@ -76,7 +76,57 @@ struct AmountInputParser {
         return "\(intPart)\(sep)\(fracStr)"
     }
 
+    // MARK: - Calculator
+
+    /// Evaluates a left-to-right arithmetic expression (e.g. "10.50+5" or "20×3").
+    /// Operators: + - * / × ÷. Returns nil for empty, negative, or malformed input.
+    func evaluate(_ expression: String) -> (display: String, minorUnits: Int)? {
+        let opSet: Set<Character> = ["+", "-", "*", "/", "×", "÷"]
+        var tokens: [String] = []
+        var current = ""
+        for ch in expression {
+            if opSet.contains(ch) {
+                if !current.isEmpty { tokens.append(current); current = "" }
+                tokens.append(String(ch))
+            } else {
+                current.append(ch)
+            }
+        }
+        if !current.isEmpty { tokens.append(current) }
+
+        guard !tokens.isEmpty, let firstStr = tokens.first,
+              var result = decimalFromToken(firstStr) else { return nil }
+
+        var i = 1
+        while i + 1 < tokens.count {
+            let op = tokens[i]
+            guard let rhs = decimalFromToken(tokens[i + 1]) else { break }
+            switch op {
+            case "+":        result = result + rhs
+            case "-":        result = result - rhs
+            case "*", "×":   result = result * rhs
+            case "/", "÷":   guard rhs != 0 else { break }; result = result / rhs
+            default:         break
+            }
+            i += 2
+        }
+
+        guard result > 0 else { return nil }
+        let multiplier = Decimal(pow10(places))
+        var product = result * multiplier
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &product, 0, .plain)
+        let minor = min(NSDecimalNumber(decimal: rounded).intValue, 999_999_999)
+        guard minor > 0 else { return nil }
+        return (format(minorUnits: minor), minor)
+    }
+
     // MARK: - Private
+
+    private func decimalFromToken(_ s: String) -> Decimal? {
+        let normalized = sep == "." ? s : s.replacingOccurrences(of: String(sep), with: ".")
+        return Decimal(string: normalized)
+    }
 
     private func pow10(_ exp: Int) -> Int {
         guard exp > 0 else { return 1 }
