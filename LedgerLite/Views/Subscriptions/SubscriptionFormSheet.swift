@@ -92,6 +92,7 @@ struct SubscriptionFormSheet: View {
             .padding(.bottom, 8)
         }
         .scrollDismissesKeyboard(.interactively)
+        .scrollBounceBehavior(.basedOnSize)
     }
 
     // MARK: - Amount section
@@ -126,7 +127,7 @@ struct SubscriptionFormSheet: View {
             }
             .frame(maxWidth: .infinity, alignment: .center)
             .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
-            .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
+            .animation(.spring(duration: 0.3, bounce: 0.5), value: viewModel.minorUnits > 0)
             .padding(.vertical, 12)
             .background(
                 LinearGradient(
@@ -152,26 +153,22 @@ struct SubscriptionFormSheet: View {
     // MARK: - Category section
 
     private func categorySection(_ viewModel: SubscriptionFormViewModel) -> some View {
-        CategoryPickerStrip(
-            categories: viewModel.categories,
-            selected: Binding(
-                get: { viewModel.selectedCategory },
-                set: { viewModel.selectedCategory = $0 }
-            )
-        )
+        @Bindable var vm = viewModel
+        return CategoryPickerStrip(categories: vm.categories, selected: $vm.selectedCategory)
     }
 
     // MARK: - Details section
 
     @ViewBuilder
     private func detailsSection(_ viewModel: SubscriptionFormViewModel) -> some View {
+        @Bindable var vm = viewModel
         VStack(spacing: 12) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Image(systemName: "tag")
                         .foregroundStyle(.secondary)
                         .frame(width: 20)
-                    TextField(String(localized: "Name"), text: nameBinding(viewModel))
+                    TextField(String(localized: "Name"), text: $vm.name)
                         .textFieldStyle(.plain)
                         .focused($focusedField, equals: .name)
                         .submitLabel(.next)
@@ -184,11 +181,11 @@ struct SubscriptionFormSheet: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal)
 
-            billingCycleSection(viewModel)
+            billingCycleSection(vm)
 
             DatePicker(
                 String(localized: "Next Billing Date"),
-                selection: nextDateBinding(viewModel),
+                selection: $vm.nextBillingDate,
                 displayedComponents: .date
             )
             .padding(.horizontal)
@@ -198,7 +195,7 @@ struct SubscriptionFormSheet: View {
                     Image(systemName: "note.text")
                         .foregroundStyle(.secondary)
                         .frame(width: 20)
-                    TextField(String(localized: "Notes (optional)"), text: notesBinding(viewModel))
+                    TextField(String(localized: "Notes (optional)"), text: $vm.notes)
                         .textFieldStyle(.plain)
                         .focused($focusedField, equals: .notes)
                         .submitLabel(.done)
@@ -221,11 +218,9 @@ struct SubscriptionFormSheet: View {
 
     @ViewBuilder
     private func billingCycleSection(_ viewModel: SubscriptionFormViewModel) -> some View {
+        @Bindable var vm = viewModel
         VStack(spacing: 8) {
-            Picker(String(localized: "Billing Cycle"), selection: Binding(
-                get: { viewModel.billingCycle },
-                set: { viewModel.billingCycle = $0 }
-            )) {
+            Picker(String(localized: "Billing Cycle"), selection: $vm.billingCycle) {
                 Text(String(localized: "Weekly")).tag(BillingCycle.weekly)
                 Text(String(localized: "Monthly")).tag(BillingCycle.monthly)
                 Text(String(localized: "Yearly")).tag(BillingCycle.yearly)
@@ -234,18 +229,15 @@ struct SubscriptionFormSheet: View {
             .pickerStyle(.segmented)
             .padding(.horizontal)
 
-            if case .customDays = viewModel.billingCycle {
+            if case .customDays = vm.billingCycle {
                 HStack {
                     Text(String(localized: "Every"))
                         .foregroundStyle(.secondary)
-                    TextField("30", text: Binding(
-                        get: { viewModel.customDays },
-                        set: { viewModel.customDays = $0 }
-                    ))
-                    .textFieldStyle(.roundedBorder)
-                    .keyboardType(.numberPad)
-                    .focused($focusedField, equals: .customDays)
-                    .frame(width: 72)
+                    TextField("30", text: $vm.customDays)
+                        .textFieldStyle(.roundedBorder)
+                        .keyboardType(.numberPad)
+                        .focused($focusedField, equals: .customDays)
+                        .frame(width: 72)
                     Text(String(localized: "days"))
                         .foregroundStyle(.secondary)
                 }
@@ -341,15 +333,4 @@ struct SubscriptionFormSheet: View {
         )
     }
 
-    private func nameBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
-        Binding(get: { viewModel.name }, set: { viewModel.name = $0 })
-    }
-
-    private func notesBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
-        Binding(get: { viewModel.notes }, set: { viewModel.notes = $0 })
-    }
-
-    private func nextDateBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<Date> {
-        Binding(get: { viewModel.nextBillingDate }, set: { viewModel.nextBillingDate = $0 })
-    }
 }

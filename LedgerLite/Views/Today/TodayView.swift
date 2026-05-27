@@ -1,40 +1,6 @@
 import SwiftUI
 import SwiftData
 
-private struct ShimmerModifier: ViewModifier {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var phase: CGFloat = -1
-
-    func body(content: Content) -> some View {
-        guard !reduceMotion else { return AnyView(content) }
-        return AnyView(
-            content
-                .overlay {
-                    LinearGradient(
-                        stops: [
-                            .init(color: .clear, location: 0.0),
-                            .init(color: Color.white.opacity(0.55), location: 0.5),
-                            .init(color: .clear, location: 1.0),
-                        ],
-                        startPoint: UnitPoint(x: phase, y: 0.5),
-                        endPoint:   UnitPoint(x: phase + 1, y: 0.5)
-                    )
-                    .blendMode(.sourceAtop)
-                }
-                .onAppear {
-                    phase = -1
-                    withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
-                        phase = 1
-                    }
-                }
-        )
-    }
-}
-
-private extension View {
-    func shimmer() -> some View { modifier(ShimmerModifier()) }
-}
-
 struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: TodayViewModel?
@@ -144,7 +110,8 @@ struct TodayView: View {
             Text(viewModel.todayTotalFormatted)
                 .font(.system(.largeTitle, design: .rounded, weight: .bold))
                 .monospacedDigit()
-                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.todayTotalFormatted)
+                .contentTransition(.numericText(value: Double(viewModel.todayTotalMinor)))
+                .animation(.spring(duration: 0.4, bounce: 0.3), value: viewModel.todayTotalMinor)
             velocityLabel(viewModel)
             Text(Date.now.formatted(date: .complete, time: .omitted))
                 .font(.caption)
@@ -206,7 +173,7 @@ struct TodayView: View {
             .padding(.bottom, 20)
             .accessibilityLabel(String(localized: "Add expense"))
             .scaleEffect(reduceMotion ? 1.0 : (isVisible ? 1.0 : 0.01))
-            .animation(reduceMotion ? nil : .spring(response: 0.4, dampingFraction: 0.6), value: isVisible)
+            .animation(reduceMotion ? nil : .spring(duration: 0.4, bounce: 0.4), value: isVisible)
             .onAppear { isVisible = true }
         }
     }
@@ -219,7 +186,7 @@ struct TodayView: View {
             Image(systemName: "tray")
                 .font(.system(size: 64))
                 .foregroundStyle(.secondary)
-                .shimmer()
+                .symbolEffect(.pulse)
             VStack(spacing: 8) {
                 Text(String(localized: "No Expenses Today"))
                     .font(.title2.bold())

@@ -42,7 +42,6 @@ struct InsightsView: View {
             if viewModel == nil {
                 viewModel = InsightsViewModel(context: modelContext)
             }
-            Task { await viewModel?.refresh() }
         }
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
             Button(String(localized: "OK"), role: .cancel) {}
@@ -72,7 +71,9 @@ struct InsightsView: View {
 
     // MARK: - Content
 
+    @ViewBuilder
     private func content(_ vm: InsightsViewModel) -> some View {
+        @Bindable var vm = vm
         VStack(spacing: 0) {
             periodPicker(vm)
                 .padding(.horizontal, 16)
@@ -101,21 +102,20 @@ struct InsightsView: View {
                     }
                 }
             }
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .onChange(of: vm.period) { _, _ in
+        .task(id: vm.period) {
             selectedAngleValue = nil
             vm.selectedCategory = nil
-            Task { await vm.refresh() }
+            await vm.refresh()
         }
     }
 
     // MARK: - Period picker
 
     private func periodPicker(_ vm: InsightsViewModel) -> some View {
-        Picker(String(localized: "Period"), selection: Binding(
-            get: { vm.period },
-            set: { vm.period = $0 }
-        )) {
+        @Bindable var vm = vm
+        return Picker(String(localized: "Period"), selection: $vm.period) {
             ForEach(InsightsViewModel.Period.allCases) { p in
                 Text(p.shortName).tag(p)
             }
@@ -180,7 +180,7 @@ struct InsightsView: View {
                     .monospacedDigit()
                     .minimumScaleFactor(0.5)
                     .frame(maxWidth: 120)
-                    .contentTransition(.numericText())
+                    .contentTransition(.numericText(value: Double(vm.periodTotalMinor)))
                     .animation(.easeInOut(duration: 0.3), value: vm.periodTotalMinor)
             }
         }

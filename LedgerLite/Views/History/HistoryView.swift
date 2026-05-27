@@ -85,7 +85,9 @@ struct HistoryView: View {
 
     // MARK: - Content
 
+    @ViewBuilder
     private func content(_ vm: HistoryViewModel) -> some View {
+        @Bindable var vm = vm
         VStack(spacing: 0) {
             if !vm.isGlobalSearch {
                 dateNavBar(vm)
@@ -104,12 +106,9 @@ struct HistoryView: View {
                 expenseList(vm)
             }
         }
-        .searchable(
-            text: Binding(get: { vm.searchText }, set: { vm.searchText = $0 }),
-            prompt: String(localized: "Search all expenses")
-        )
+        .searchable(text: $vm.searchText, prompt: String(localized: "Search all expenses"))
         .onChange(of: vm.searchText) { _, _ in vm.performGlobalSearch() }
-        .sheet(item: sheetBinding(vm)) { sheet in
+        .sheet(item: $vm.activeSheet) { sheet in
             ExpenseFormSheet(mode: sheet.formMode) { vm.dismissSheet() }
         }
     }
@@ -320,14 +319,6 @@ struct HistoryView: View {
         }
     }
 
-    // MARK: - Helpers
-
-    private func sheetBinding(_ vm: HistoryViewModel) -> Binding<HistorySheet?> {
-        Binding(
-            get: { vm.activeSheet },
-            set: { vm.activeSheet = $0 }
-        )
-    }
 }
 
 #if DEBUG

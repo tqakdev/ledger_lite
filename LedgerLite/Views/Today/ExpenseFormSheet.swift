@@ -85,40 +85,37 @@ struct ExpenseFormSheet: View {
 
     @ViewBuilder
     private func formContent(_ viewModel: ExpenseFormViewModel) -> some View {
+        @Bindable var vm = viewModel
         ScrollView {
             VStack(spacing: 16) {
-                // Recurring template chips (add mode only)
-                if case .add = mode, !viewModel.templates.isEmpty {
-                    templateStrip(viewModel)
+                if case .add = mode, !vm.templates.isEmpty {
+                    templateStrip(vm)
                 }
 
-                amountField(viewModel)
+                amountField(vm)
 
                 if case .add = mode {
-                    currencyPicker(viewModel)
+                    currencyPicker(vm)
                 }
 
                 CategoryPickerStrip(
-                    categories: viewModel.categories,
-                    selected: Binding(
-                        get: { viewModel.selectedCategory },
-                        set: { viewModel.selectedCategory = $0 }
-                    )
+                    categories: vm.categories,
+                    selected: $vm.selectedCategory
                 )
 
-                detailsGroup(viewModel)
+                detailsGroup(vm)
             }
             .padding(.bottom, 8)
         }
         .scrollDismissesKeyboard(.interactively)
-        // Merchant suggestion bar sits just above the keyboard
+        .scrollBounceBehavior(.basedOnSize)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if focusedField == .merchant, !viewModel.merchantSuggestions.isEmpty {
-                merchantSuggestionBar(viewModel)
+            if focusedField == .merchant, !vm.merchantSuggestions.isEmpty {
+                merchantSuggestionBar(vm)
             }
         }
-        .onChange(of: viewModel.merchant) { _, prefix in
-            viewModel.updateMerchantSuggestions(prefix: prefix)
+        .onChange(of: vm.merchant) { _, prefix in
+            vm.updateMerchantSuggestions(prefix: prefix)
         }
     }
 
@@ -255,13 +252,13 @@ struct ExpenseFormSheet: View {
     }
 
     private func detailsGroup(_ viewModel: ExpenseFormViewModel) -> some View {
-        VStack(spacing: 0) {
-            // Merchant row
+        @Bindable var vm = viewModel
+        return VStack(spacing: 0) {
             HStack(spacing: 12) {
                 Image(systemName: "building.2.fill")
                     .foregroundStyle(.secondary)
                     .frame(width: 20)
-                TextField(String(localized: "Merchant"), text: merchantBinding(viewModel))
+                TextField(String(localized: "Merchant"), text: $vm.merchant)
                     .textFieldStyle(.plain)
                     .focused($focusedField, equals: .merchant)
                     .submitLabel(.next)
@@ -272,12 +269,11 @@ struct ExpenseFormSheet: View {
 
             Divider().padding(.leading, 16)
 
-            // Note row
             HStack(spacing: 12) {
                 Image(systemName: "note.text")
                     .foregroundStyle(.secondary)
                     .frame(width: 20)
-                TextField(String(localized: "Note"), text: noteBinding(viewModel))
+                TextField(String(localized: "Note"), text: $vm.note)
                     .textFieldStyle(.plain)
                     .focused($focusedField, equals: .note)
                     .submitLabel(.done)
@@ -292,7 +288,7 @@ struct ExpenseFormSheet: View {
                 Image(systemName: "calendar")
                     .foregroundStyle(.secondary)
                     .frame(width: 20)
-                if let hint = dateHint(viewModel.date) {
+                if let hint = dateHint(vm.date) {
                     Text(hint)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -300,7 +296,7 @@ struct ExpenseFormSheet: View {
                 Spacer()
                 DatePicker(
                     String(localized: "Date"),
-                    selection: dateBinding(viewModel),
+                    selection: $vm.date,
                     displayedComponents: .date
                 )
                 .labelsHidden()
@@ -353,18 +349,6 @@ struct ExpenseFormSheet: View {
 
     private func amountBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {
         Binding(get: { viewModel.amountString }, set: { viewModel.setAmount($0) })
-    }
-
-    private func merchantBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {
-        Binding(get: { viewModel.merchant }, set: { viewModel.merchant = $0 })
-    }
-
-    private func noteBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {
-        Binding(get: { viewModel.note }, set: { viewModel.note = $0 })
-    }
-
-    private func dateBinding(_ viewModel: ExpenseFormViewModel) -> Binding<Date> {
-        Binding(get: { viewModel.date }, set: { viewModel.date = $0 })
     }
 
     private func currencyBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {

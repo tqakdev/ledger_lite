@@ -25,11 +25,11 @@ enum TodaySheet: Identifiable {
 final class TodayViewModel {
     var expenses: [Expense] = []
     var todayTotalMinor: Int = 0
-    var dailyAverageMinor: Int = 0     // A5: 30-day daily average in home-currency minor units
+    var dailyAverageMinor: Int = 0
     var homeCurrencyCode: String = UserPreferences.homeCurrencyCode
     var activeSheet: TodaySheet?
     var errorMessage: String?
-    var isLoading: Bool = false         // C4
+    var isLoading: Bool = false
 
     private let expenseRepository: ExpenseRepository
     private let modelContext: ModelContext
@@ -48,7 +48,7 @@ final class TodayViewModel {
         homeCurrencyCode = UserPreferences.homeCurrencyCode
         do {
             expenses = try expenseRepository.fetchToday()
-            todayTotalMinor = totalInHomeCurrency(expenses)
+            todayTotalMinor = expenses.totalInHomeCurrency(homeCurrencyCode)
             dailyAverageMinor = computeDailyAverage()
             errorMessage = nil
         } catch {
@@ -85,25 +85,6 @@ final class TodayViewModel {
 
     // MARK: - Private
 
-    /// Sums expenses in home-currency minor units.
-    /// Accumulates raw Decimal before rounding once at the end — avoids per-row rounding drift.
-    private func totalInHomeCurrency(_ expenses: [Expense]) -> Int {
-        let homePlaces = Money.decimals(for: homeCurrencyCode)
-        var accumulated = Decimal(0)
-        for expense in expenses {
-            if expense.currencyCode == expense.homeCurrencyAtEntry {
-                accumulated += Decimal(expense.amountMinor)
-            } else {
-                let srcDecimal = expense.money.decimalValue
-                let homeMinorDecimal = srcDecimal * expense.exchangeRateToHome * Decimal.powerOfTen(homePlaces)
-                accumulated += homeMinorDecimal
-            }
-        }
-        let rounded = accumulated.rounded(scale: 0)
-        return NSDecimalNumber(decimal: rounded).intValue
-    }
-
-    // A5: fetch last 30 days of expenses and return the sum ÷ 30 in home-currency minor units.
     private func computeDailyAverage() -> Int {
         guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) else { return 0 }
         do {

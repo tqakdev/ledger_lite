@@ -56,3 +56,20 @@ final class Expense {
         self.needsRateRefresh = needsRateRefresh
     }
 }
+
+extension Array where Element == Expense {
+    /// Converts each expense to home-currency minor units and sums them.
+    /// Accumulates as Decimal before a single final rounding to avoid per-row drift.
+    func totalInHomeCurrency(_ currencyCode: String) -> Int {
+        let places = Money.decimals(for: currencyCode)
+        var sum = Decimal(0)
+        for expense in self {
+            if expense.currencyCode == expense.homeCurrencyAtEntry {
+                sum += Decimal(expense.amountMinor)
+            } else {
+                sum += expense.money.decimalValue * expense.exchangeRateToHome * Decimal.powerOfTen(places)
+            }
+        }
+        return NSDecimalNumber(decimal: sum.rounded(scale: 0)).intValue
+    }
+}

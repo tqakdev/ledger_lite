@@ -113,7 +113,7 @@ final class HistoryViewModel {
                     sortBy: [SortDescriptor(\.date, order: .reverse)]
                 )
             )
-            dayTotalMinor = totalInHomeCurrency(expenses)
+            dayTotalMinor = expenses.totalInHomeCurrency(homeCurrencyCode)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -142,19 +142,4 @@ final class HistoryViewModel {
         refresh()
     }
 
-    private func totalInHomeCurrency(_ expenses: [Expense]) -> Int {
-        let homePlaces = Money.decimals(for: homeCurrencyCode)
-        var accumulated = Decimal(0)
-        for expense in expenses {
-            if expense.currencyCode == expense.homeCurrencyAtEntry {
-                accumulated += Decimal(expense.amountMinor)
-            } else {
-                let srcDecimal = expense.money.decimalValue
-                let homeMinorDecimal = srcDecimal * expense.exchangeRateToHome * Decimal.powerOfTen(homePlaces)
-                accumulated += homeMinorDecimal
-            }
-        }
-        let rounded = accumulated.rounded(scale: 0)
-        return NSDecimalNumber(decimal: rounded).intValue
-    }
 }

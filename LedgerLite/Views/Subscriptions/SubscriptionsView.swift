@@ -121,6 +121,7 @@ struct SubscriptionsView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .listSectionSpacing(.compact)
             }
         }
     }
@@ -143,8 +144,8 @@ struct SubscriptionsView: View {
                 Text(Money(minorUnits: viewModel.monthlyCostMinor, currencyCode: viewModel.homeCurrencyCode).formatted())
                     .font(.system(.largeTitle, design: .rounded, weight: .bold))
                     .monospacedDigit()
-                    .contentTransition(.numericText())
-                    .animation(.spring(response: 0.3), value: viewModel.monthlyCostMinor)
+                    .contentTransition(.numericText(value: Double(viewModel.monthlyCostMinor)))
+                    .animation(.spring(duration: 0.3, bounce: 0.2), value: viewModel.monthlyCostMinor)
             }
             Text(String(localized: "Active subscriptions only"))
                 .font(.caption)
