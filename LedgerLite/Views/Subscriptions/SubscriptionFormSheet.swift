@@ -99,11 +99,10 @@ struct SubscriptionFormSheet: View {
 
     private func amountSection(_ viewModel: SubscriptionFormViewModel) -> some View {
         let symbol = Self.currencySymbol(for: viewModel.currencyCode)
-        let symbolSize: CGFloat = symbol.count > 2 ? 20 : 26
         return VStack(spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(symbol)
-                    .font(.system(size: symbolSize, weight: .semibold, design: .rounded))
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
@@ -111,13 +110,13 @@ struct SubscriptionFormSheet: View {
                 ZStack {
                     if viewModel.amountString.isEmpty {
                         Text("0")
-                            .font(.system(size: 56, weight: .bold, design: .rounded))
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
                             .foregroundStyle(.tertiary)
                             .monospacedDigit()
                             .allowsHitTesting(false)
                     }
                     TextField("", text: amountBinding(viewModel))
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .multilineTextAlignment(.trailing)
                         .keyboardType(.decimalPad)
@@ -127,8 +126,7 @@ struct SubscriptionFormSheet: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.top, 16)
-            .padding(.bottom, 8)
+            .padding(.vertical, 12)
             .accessibilityLabel(String(localized: "Amount"))
 
             Picker(String(localized: "Currency"), selection: currencyBinding(viewModel)) {

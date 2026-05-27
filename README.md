@@ -83,7 +83,7 @@ ViewModels → Services → Network. Money is always `Int` (minor units).
 - [x] Phase 7 — Settings + CSV export
 - [ ] Phase 7.5 — CloudKit sync
 - [x] Phase 8 — Widget + Siri / App Intents
-- [ ] Phase 9 — Final polish (App Store prep)
+- [x] Phase 9 — Final polish (App Store prep)
 
 ## Notes
 

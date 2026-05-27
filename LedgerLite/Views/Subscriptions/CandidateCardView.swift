@@ -87,7 +87,7 @@ struct CandidateCardView: View {
             .foregroundStyle(.secondary)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
-            .background(.secondary.opacity(0.12))
+            .background(Color(.secondarySystemFill))
             .clipShape(Capsule())
     }
 

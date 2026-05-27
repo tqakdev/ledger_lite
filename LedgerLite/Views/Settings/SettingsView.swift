@@ -185,9 +185,6 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         Section(String(localized: "About")) {
-            Link(destination: Constants.URLs.privacyPolicy) {
-                Label(String(localized: "Privacy Policy"), systemImage: "hand.raised.fill")
-            }
             HStack {
                 Text(String(localized: "Version"))
                 Spacer()

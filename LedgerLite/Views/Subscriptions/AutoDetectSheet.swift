@@ -91,6 +91,7 @@ struct AutoDetectSheet: View {
             }
             .padding()
         }
+        .scrollDismissesKeyboard(.interactively)
     }
 
     // MARK: - Phase B: candidate review

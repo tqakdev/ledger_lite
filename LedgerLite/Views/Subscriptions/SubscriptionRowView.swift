@@ -46,29 +46,20 @@ struct SubscriptionRowView: View {
             }
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(subscription.name), \(subscription.money.formatted()), \(daysLabel)")
     }
 
     private var categoryIcon: some View {
-        Group {
-            if let cat = subscription.category {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(hex: cat.colorHex).opacity(0.15))
-                        .frame(width: 44, height: 44)
-                    Image(systemName: cat.iconName)
-                        .font(.body)
-                        .foregroundStyle(Color(hex: cat.colorHex))
-                }
-            } else {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.secondary.opacity(0.15))
-                        .frame(width: 44, height: 44)
-                    Image(systemName: "repeat.circle.fill")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                }
-            }
+        let hex  = subscription.category?.colorHex ?? "#BDC3C7"
+        let icon = subscription.category?.iconName  ?? "repeat.circle.fill"
+        return ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color(hex: hex).opacity(0.15))
+                .frame(width: 36, height: 36)
+            Image(systemName: icon)
+                .font(.callout)
+                .foregroundStyle(Color(hex: hex))
         }
     }
 

@@ -68,9 +68,12 @@ struct LedgerLiteTodayWidgetEntryView: View {
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             } else {
-                Text(String(localized: "No data"))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Text("$0.00")
+                    .font(.system(.title3, design: .rounded, weight: .bold))
+                    .redacted(reason: .placeholder)
+                Text("0 expenses")
+                    .font(.caption)
+                    .redacted(reason: .placeholder)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)

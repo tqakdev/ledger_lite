@@ -179,7 +179,7 @@ struct InsightsView: View {
                 .minimumScaleFactor(0.8)
         }
         .padding(10)
-        .background(Color.secondary.opacity(0.1))
+        .background(Color(.secondarySystemFill))
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
@@ -325,6 +325,7 @@ struct InsightsView: View {
             }
             ProgressView(value: entry.clampedProgress)
                 .tint(entry.progressColor)
+                .accessibilityLabel("\(entry.category.name) budget: \(Int(entry.clampedProgress * 100))% used")
         }
     }
 
@@ -370,7 +371,7 @@ struct InsightsView: View {
         Text(String(localized: "No expenses in this period"))
             .font(.subheadline)
             .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, minHeight: 80)
+            .frame(maxWidth: .infinity, minHeight: 120)
     }
 
     private func sectorOpacity(_ category: Category, selected: Category?) -> Double {

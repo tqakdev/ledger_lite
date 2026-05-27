@@ -11,7 +11,7 @@ private struct ShimmerModifier: ViewModifier {
                 LinearGradient(
                     stops: [
                         .init(color: .clear, location: 0.0),
-                        .init(color: .white.opacity(0.7), location: 0.5),
+                        .init(color: Color(.systemBackground).opacity(0.7), location: 0.5),
                         .init(color: .clear, location: 1.0),
                     ],
                     startPoint: UnitPoint(x: phase, y: 0.5),
@@ -195,7 +195,7 @@ struct TodayView: View {
         }
         .padding(.trailing, 20)
         .padding(.bottom, 20)
-        .accessibilityLabel(String(localized: "Quick Add"))
+        .accessibilityLabel(String(localized: "Add expense"))
         .scaleEffect(fabVisible ? 1.0 : 0.01)
         .animation(.spring(response: 0.4, dampingFraction: 0.6), value: fabVisible)
         .onAppear { fabVisible = true }

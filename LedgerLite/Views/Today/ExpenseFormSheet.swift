@@ -118,10 +118,9 @@ struct ExpenseFormSheet: View {
 
     private func amountField(_ viewModel: ExpenseFormViewModel) -> some View {
         let symbol = Self.currencySymbol(for: viewModel.currencyCode)
-        let symbolSize: CGFloat = symbol.count > 2 ? 20 : 26
         return HStack(alignment: .firstTextBaseline, spacing: 4) {
             Text(symbol)
-                .font(.system(size: symbolSize, weight: .semibold, design: .rounded))
+                .font(.system(size: 20, weight: .bold, design: .rounded))
                 .foregroundStyle(.secondary)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
@@ -131,13 +130,13 @@ struct ExpenseFormSheet: View {
                 // Styled placeholder — only shown when field is empty so cursor never sits on it
                 if viewModel.amountString.isEmpty {
                     Text("0")
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
                         .foregroundStyle(.tertiary)
                         .monospacedDigit()
                         .allowsHitTesting(false)
                 }
                 TextField("", text: amountBinding(viewModel))
-                    .font(.system(size: 56, weight: .bold, design: .rounded))
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .multilineTextAlignment(.trailing)
                     .keyboardType(.decimalPad)
@@ -153,8 +152,7 @@ struct ExpenseFormSheet: View {
         // Subtle scale-in when first digit is entered
         .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
         .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
-        .padding(.top, 16)
-        .padding(.bottom, 8)
+        .padding(.vertical, 12)
         .background(
             LinearGradient(
                 colors: [Color.accentColor.opacity(0.07), Color.clear],
