@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import SQLite3
 
 @main
 struct LedgerLiteApp: App {
@@ -65,6 +66,7 @@ struct LedgerLiteApp: App {
         if let groupURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: Constants.App.appGroupIdentifier) {
             let storeURL = groupURL.appendingPathComponent("LedgerLite.store")
+            Self.enableWAL(at: storeURL)
             // cloudKitDatabase: .none until Phase 7.5 — entitlements are present but sync is not wired yet.
             let config = ModelConfiguration(schema: schema, url: storeURL, cloudKitDatabase: .none)
             do {
@@ -84,5 +86,14 @@ struct LedgerLiteApp: App {
         } catch {
             fatalError("ModelContainer init failed entirely: \(error)")
         }
+    }
+
+    /// Sets WAL journal mode before SwiftData opens the store, eliminating the
+    /// "not configured in WAL mode" I/O warning from the SQLite subsystem.
+    private static func enableWAL(at url: URL) {
+        var db: OpaquePointer?
+        guard sqlite3_open_v2(url.path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil) == SQLITE_OK else { return }
+        defer { sqlite3_close(db) }
+        sqlite3_exec(db, "PRAGMA journal_mode=WAL;", nil, nil, nil)
     }
 }

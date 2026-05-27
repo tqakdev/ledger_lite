@@ -140,6 +140,7 @@ struct TodayView: View {
             Text(viewModel.todayTotalFormatted)
                 .font(.system(.largeTitle, design: .rounded, weight: .bold))
                 .monospacedDigit()
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.todayTotalFormatted)
             // A5: velocity indicator — only shown when 30-day history exists
             velocityLabel(viewModel)
             Text(Date.now.formatted(date: .complete, time: .omitted))
@@ -148,7 +149,13 @@ struct TodayView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(
+            LinearGradient(
+                colors: [Color(.secondarySystemGroupedBackground), Color(.secondarySystemGroupedBackground).opacity(0.92)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 16))
         // C4: placeholder skeleton on initial load before any expenses are fetched
         .redacted(reason: viewModel.isLoading && viewModel.expenses.isEmpty ? .placeholder : [])
@@ -158,11 +165,15 @@ struct TodayView: View {
     private func velocityLabel(_ viewModel: TodayViewModel) -> some View {
         if viewModel.dailyAverageMinor > 0 {
             let isAbove = viewModel.todayTotalMinor > viewModel.dailyAverageMinor
-            Text(isAbove
-                 ? String(localized: "↑ above avg")
-                 : String(localized: "↓ below avg"))
-                .font(.caption)
-                .foregroundStyle(isAbove ? .orange : .green)
+            HStack(spacing: 4) {
+                Image(systemName: isAbove ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
+                    .font(.caption)
+                Text(isAbove
+                     ? String(localized: "above avg")
+                     : String(localized: "below avg"))
+                    .font(.caption)
+            }
+            .foregroundStyle(isAbove ? .orange : .green)
         }
     }
 
@@ -175,10 +186,10 @@ struct TodayView: View {
             Image(systemName: "plus")
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(.white)
-                .frame(width: 56, height: 56)
+                .frame(width: 60, height: 60)
                 .background(Color.accentColor)
                 .clipShape(Circle())
-                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.accentColor.opacity(0.35), radius: 10, x: 0, y: 5)
         }
         .padding(.trailing, 20)
         .padding(.bottom, 20)
@@ -197,7 +208,7 @@ struct TodayView: View {
             VStack(spacing: 8) {
                 Text(String(localized: "No Expenses Today"))
                     .font(.title2.bold())
-                Text(String(localized: "Your first expense takes 3 seconds."))
+                Text(String(localized: "Tap the button below to log your first expense."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

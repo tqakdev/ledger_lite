@@ -4,6 +4,8 @@ struct SubscriptionRowView: View {
     let subscription: Subscription
     let notificationsAuthorized: Bool
 
+    @State private var pulsing = false
+
     private var daysUntil: Int {
         let components = Calendar.current.dateComponents(
             [.day],
@@ -50,16 +52,16 @@ struct SubscriptionRowView: View {
         Group {
             if let cat = subscription.category {
                 Image(systemName: cat.iconName)
-                    .font(.callout)
+                    .font(.callout.weight(.medium))
                     .foregroundStyle(.white)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 44, height: 44)
                     .background(Color(hex: cat.colorHex))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
-                Image(systemName: "repeat.circle.fill")
-                    .font(.callout)
+                Image(systemName: "calendar.circle.fill")
+                    .font(.system(size: 44))
                     .foregroundStyle(.secondary)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 44, height: 44)
             }
         }
     }
@@ -76,7 +78,15 @@ struct SubscriptionRowView: View {
                 }
                 Text(daysLabel)
                     .font(.caption)
+                    .monospacedDigit()
                     .foregroundStyle(daysUntil <= 2 ? .orange : .secondary)
+                    .scaleEffect(pulsing && daysUntil <= 2 ? 1.08 : 1.0)
+                    .onAppear {
+                        guard daysUntil <= 2 else { return }
+                        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                            pulsing = true
+                        }
+                    }
             }
         case .paused:
             Text(String(localized: "Paused"))

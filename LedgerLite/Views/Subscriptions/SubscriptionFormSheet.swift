@@ -107,20 +107,22 @@ struct SubscriptionFormSheet: View {
                 ZStack {
                     if viewModel.amountString.isEmpty {
                         Text("0")
-                            .font(.system(size: 40, weight: .semibold, design: .rounded))
+                            .font(.system(size: 56, weight: .semibold, design: .rounded))
                             .foregroundStyle(.tertiary)
                             .monospacedDigit()
                             .allowsHitTesting(false)
                     }
                     TextField("", text: amountBinding(viewModel))
-                        .font(.system(size: 40, weight: .semibold, design: .rounded))
+                        .font(.system(size: 56, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                         .multilineTextAlignment(.center)
                         .keyboardType(.decimalPad)
                         .focused($focusedField, equals: .amount)
                         .tint(viewModel.amountString.isEmpty ? .clear : .accentColor)
+                        .frame(minWidth: 56)
                 }
             }
+            .fixedSize()
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, 8)
             .accessibilityLabel(String(localized: "Amount"))

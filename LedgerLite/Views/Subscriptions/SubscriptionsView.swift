@@ -144,7 +144,17 @@ struct SubscriptionsView: View {
                     .foregroundStyle(.tertiary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 4)
+            .padding()
+            .background(
+                LinearGradient(
+                    colors: [Color(.secondarySystemGroupedBackground), Color(.secondarySystemGroupedBackground).opacity(0.92)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
+            .listRowBackground(Color.clear)
         }
     }
 
@@ -195,12 +205,15 @@ struct SubscriptionsView: View {
         ContentUnavailableView {
             Label(String(localized: "No Subscriptions"), systemImage: "repeat.circle")
         } description: {
-            Text(String(localized: "Tap + to track your first subscription."))
+            Text(String(localized: "Track recurring charges so nothing catches you off guard."))
         } actions: {
             Button(String(localized: "Add Subscription")) {
                 viewModel.presentAdd()
             }
             .buttonStyle(.borderedProminent)
+            Button(String(localized: "Scan for Subscriptions")) {
+                viewModel.presentAutoDetect()
+            }
         }
     }
 

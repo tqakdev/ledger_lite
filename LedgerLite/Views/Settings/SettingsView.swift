@@ -194,7 +194,12 @@ struct SettingsView: View {
                 Text(appVersion)
                     .foregroundStyle(.secondary)
             }
+            .padding(.vertical, 4)
             .accessibilityElement(children: .combine)
+            .onLongPressGesture {
+                UIPasteboard.general.string = appVersion
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            }
         }
     }
 

@@ -55,11 +55,11 @@ struct ExpenseRowView: View {
         let hex  = expense.category?.colorHex ?? "#BDC3C7"
         let icon = expense.category?.iconName  ?? "square.grid.2x2.fill"
         ZStack {
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 12)
                 .fill(Color(hex: hex).opacity(0.15))
-                .frame(width: 40, height: 40)
+                .frame(width: 44, height: 44)
             Image(systemName: icon)
-                .font(.body)
+                .font(.body.weight(.medium))
                 .foregroundStyle(Color(hex: hex))
         }
         .accessibilityHidden(true)

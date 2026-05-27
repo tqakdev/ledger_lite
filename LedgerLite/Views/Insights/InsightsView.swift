@@ -111,7 +111,7 @@ struct InsightsView: View {
                 .animation(.easeInOut(duration: 0.2), value: vm.selectedCategory?.id)
             }
         } label: {
-            Text(String(localized: "Spending by Category"))
+            Label(String(localized: "Spending by Category"), systemImage: "chart.pie.fill")
                 .font(.headline)
         }
         .padding(.horizontal)
@@ -142,12 +142,12 @@ struct InsightsView: View {
 
             VStack(spacing: 2) {
                 Text(String(localized: "Total"))
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
                 Text(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())
                     .font(.system(.callout, design: .rounded, weight: .bold))
                     .monospacedDigit()
-                    .minimumScaleFactor(0.6)
+                    .minimumScaleFactor(0.5)
                     .frame(maxWidth: 120)
             }
         }
@@ -233,7 +233,7 @@ struct InsightsView: View {
                 trendChart(vm)
             }
         } label: {
-            Text(String(localized: "Spending Over Time"))
+            Label(String(localized: "Spending Over Time"), systemImage: "chart.bar.fill")
                 .font(.headline)
         }
         .padding(.horizontal)
@@ -310,7 +310,7 @@ struct InsightsView: View {
                 }
             }
         } label: {
-            Text(String(localized: "Budget Progress"))
+            Label(String(localized: "Budget Progress"), systemImage: "target")
                 .font(.headline)
         }
         .padding(.horizontal)
@@ -367,7 +367,7 @@ struct InsightsView: View {
                     .padding(.vertical, 4)
             }
         } label: {
-            Text(String(localized: "Top Merchant"))
+            Label(String(localized: "Top Merchant"), systemImage: "trophy.fill")
                 .font(.headline)
         }
         .padding(.horizontal)

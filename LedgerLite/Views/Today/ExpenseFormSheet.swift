@@ -122,13 +122,13 @@ struct ExpenseFormSheet: View {
                 // Styled placeholder — only shown when field is empty so cursor never sits on it
                 if viewModel.amountString.isEmpty {
                     Text("0")
-                        .font(.system(size: 40, weight: .semibold, design: .rounded))
+                        .font(.system(size: 56, weight: .semibold, design: .rounded))
                         .foregroundStyle(.tertiary)
                         .monospacedDigit()
                         .allowsHitTesting(false)
                 }
                 TextField("", text: amountBinding(viewModel))
-                    .font(.system(size: 40, weight: .semibold, design: .rounded))
+                    .font(.system(size: 56, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .multilineTextAlignment(.center)
                     .keyboardType(.decimalPad)
@@ -140,11 +140,19 @@ struct ExpenseFormSheet: View {
                     .frame(minWidth: 56)
             }
         }
+        .fixedSize()
         .frame(maxWidth: .infinity, alignment: .center)
         // Subtle scale-in when first digit is entered
         .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
         .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
-        .padding(.vertical, 12)
+        .padding(.vertical, 20)
+        .background(
+            LinearGradient(
+                colors: [Color.accentColor.opacity(0.07), Color.clear],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
         .accessibilityLabel(String(localized: "Amount"))
         .accessibilityValue(viewModel.formattedAmount())
     }
@@ -154,7 +162,7 @@ struct ExpenseFormSheet: View {
         VStack(spacing: 0) {
             // Merchant row
             HStack(spacing: 12) {
-                Image(systemName: "building.2")
+                Image(systemName: "building.2.fill")
                     .foregroundStyle(.secondary)
                     .frame(width: 20)
                 TextField(String(localized: "Merchant"), text: merchantBinding(viewModel))
@@ -189,8 +197,11 @@ struct ExpenseFormSheet: View {
                 Image(systemName: "calendar")
                     .foregroundStyle(.secondary)
                     .frame(width: 20)
-                Text(String(localized: "Date"))
-                    .foregroundStyle(.secondary)
+                if let hint = dateHint(viewModel.date) {
+                    Text(hint)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 DatePicker(
                     String(localized: "Date"),
@@ -265,6 +276,12 @@ struct ExpenseFormSheet: View {
     }
 
     // MARK: - Helpers
+
+    private func dateHint(_ date: Date) -> String? {
+        if Calendar.current.isDateInToday(date) { return String(localized: "Today") }
+        if Calendar.current.isDateInYesterday(date) { return String(localized: "Yesterday") }
+        return nil
+    }
 
     private static func currencySymbol(for code: String) -> String {
         let fmt = NumberFormatter()
