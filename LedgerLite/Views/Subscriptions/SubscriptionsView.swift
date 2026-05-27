@@ -27,6 +27,13 @@ struct SubscriptionsView: View {
                         }
                         .accessibilityLabel(String(localized: "Add Subscription"))
                     }
+                    ToolbarItem(placement: .secondaryAction) {
+                        Button {
+                            viewModel.presentAutoDetect()
+                        } label: {
+                            Label(String(localized: "Scan"), systemImage: "doc.text.magnifyingglass")
+                        }
+                    }
                 }
             }
         }
@@ -40,6 +47,9 @@ struct SubscriptionsView: View {
             SubscriptionFormSheet(mode: sheet.formMode) {
                 viewModel?.dismissSheet()
             }
+        }
+        .sheet(isPresented: autoDetectBinding, onDismiss: { viewModel?.dismissAutoDetect() }) {
+            AutoDetectSheet()
         }
     }
 
@@ -181,12 +191,19 @@ struct SubscriptionsView: View {
         }
     }
 
-    // MARK: - Sheet binding
+    // MARK: - Sheet bindings
 
     private var sheetBinding: Binding<SubscriptionSheet?> {
         Binding(
             get: { viewModel?.activeSheet },
             set: { viewModel?.activeSheet = $0 }
+        )
+    }
+
+    private var autoDetectBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel?.showAutoDetect ?? false },
+            set: { viewModel?.showAutoDetect = $0 }
         )
     }
 }

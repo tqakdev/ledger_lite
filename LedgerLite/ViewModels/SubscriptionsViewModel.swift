@@ -28,6 +28,7 @@ final class SubscriptionsViewModel {
     var monthlyCostIsLoading: Bool = false
     var homeCurrencyCode: String = UserPreferences.homeCurrencyCode
     var activeSheet: SubscriptionSheet?
+    var showAutoDetect: Bool = false
     var errorMessage: String?
     var notificationsAuthorized: Bool = true
 
@@ -137,6 +138,9 @@ final class SubscriptionsViewModel {
     func presentAdd() { activeSheet = .add }
     func presentEdit(_ sub: Subscription) { activeSheet = .edit(sub) }
     func dismissSheet() { activeSheet = nil; refresh() }
+
+    func presentAutoDetect() { showAutoDetect = true }
+    func dismissAutoDetect() { showAutoDetect = false; refresh() }
 
     // MARK: - Private
 
