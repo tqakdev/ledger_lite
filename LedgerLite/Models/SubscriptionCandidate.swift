@@ -8,6 +8,7 @@ struct SubscriptionCandidate: Identifiable, Hashable {
     let billingCycle: BillingCycle
     let confidence: Double
     var isDuplicate: Bool
+    let detectedNextBillingDate: Date?
 
     enum ConfidenceTier { case strong, normal, dim }
 
@@ -28,14 +29,16 @@ struct SubscriptionCandidate: Identifiable, Hashable {
         currencyCode: String,
         billingCycle: BillingCycle,
         confidence: Double,
-        isDuplicate: Bool = false
+        isDuplicate: Bool = false,
+        detectedNextBillingDate: Date? = nil
     ) {
-        self.id         = id
-        self.name       = name
-        self.amountMinor = amountMinor
-        self.currencyCode = currencyCode
-        self.billingCycle = billingCycle
-        self.confidence = min(1.0, max(0.0, confidence))
-        self.isDuplicate = isDuplicate
+        self.id                     = id
+        self.name                   = name
+        self.amountMinor            = amountMinor
+        self.currencyCode           = currencyCode
+        self.billingCycle           = billingCycle
+        self.confidence             = min(1.0, max(0.0, confidence))
+        self.isDuplicate            = isDuplicate
+        self.detectedNextBillingDate = detectedNextBillingDate
     }
 }

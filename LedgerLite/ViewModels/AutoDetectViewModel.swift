@@ -12,6 +12,7 @@ final class AutoDetectViewModel {
     var categories: [Category] = []
     var isSaving: Bool = false
     var errorMessage: String?
+    var hasConfirmedAtLeastOne: Bool = false
 
     /// Set by the scene delegate when a Share Extension payload arrives.
     /// Setting this automatically triggers detection.
@@ -46,6 +47,7 @@ final class AutoDetectViewModel {
     // MARK: - Detection
 
     func runDetection() {
+        hasConfirmedAtLeastOne = false
         let detected = SubscriptionDetector.detect(in: rawText)
         let existingNames = Set(
             ((try? subscriptionRepository.fetchAll()) ?? []).map { $0.name.lowercased() }
@@ -60,8 +62,10 @@ final class AutoDetectViewModel {
 
     // MARK: - Confirmation
 
-    func confirm(_ candidate: SubscriptionCandidate, category: Category?) async {
-        let nextDate = candidate.billingCycle.nextDate(after: Date.utcToday)
+    func confirm(_ candidate: SubscriptionCandidate, category: Category?, nextBillingDate: Date? = nil) async {
+        let nextDate = nextBillingDate
+            ?? candidate.detectedNextBillingDate
+            ?? candidate.billingCycle.nextDate(after: Date.utcToday)
         let sub = Subscription(
             name: candidate.name,
             amountMinor: candidate.amountMinor,
@@ -75,6 +79,7 @@ final class AutoDetectViewModel {
             try subscriptionRepository.add(sub)
             await subscriptionService.scheduleNotification(for: sub)
             dismiss(candidate)
+            hasConfirmedAtLeastOne = true
             AppLogger.subscriptions.info("Confirmed auto-detected subscription: \(sub.name)")
         } catch {
             errorMessage = error.localizedDescription

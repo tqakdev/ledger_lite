@@ -6,7 +6,9 @@ struct SubscriptionRowView: View {
 
     private var daysUntil: Int {
         let components = Calendar.current.dateComponents(
-            [.day], from: Date.utcToday, to: subscription.nextBillingDate.utcStartOfDay
+            [.day],
+            from: Calendar.current.startOfDay(for: Date()),
+            to: Calendar.current.startOfDay(for: subscription.nextBillingDate)
         )
         return max(0, components.day ?? 0)
     }

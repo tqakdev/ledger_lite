@@ -1,21 +1,16 @@
 import Foundation
 import SwiftData
 
-enum SubscriptionSheet: Identifiable {
+enum SubscriptionsDestination: Identifiable {
     case add
     case edit(Subscription)
+    case autoDetect
 
     var id: String {
         switch self {
-        case .add: return "add"
+        case .add:           return "add"
         case .edit(let sub): return "edit-\(sub.id.uuidString)"
-        }
-    }
-
-    var formMode: SubscriptionFormMode {
-        switch self {
-        case .add: return .add
-        case .edit(let sub): return .edit(sub)
+        case .autoDetect:    return "autoDetect"
         }
     }
 }
@@ -27,8 +22,7 @@ final class SubscriptionsViewModel {
     var monthlyCostMinor: Int = 0
     var monthlyCostIsLoading: Bool = false
     var homeCurrencyCode: String = UserPreferences.homeCurrencyCode
-    var activeSheet: SubscriptionSheet?
-    var showAutoDetect: Bool = false
+    var destination: SubscriptionsDestination?
     var errorMessage: String?
     var notificationsAuthorized: Bool = true
 
@@ -133,14 +127,12 @@ final class SubscriptionsViewModel {
         }
     }
 
-    // MARK: - Sheet
+    // MARK: - Navigation
 
-    func presentAdd() { activeSheet = .add }
-    func presentEdit(_ sub: Subscription) { activeSheet = .edit(sub) }
-    func dismissSheet() { activeSheet = nil; refresh() }
-
-    func presentAutoDetect() { showAutoDetect = true }
-    func dismissAutoDetect() { showAutoDetect = false; refresh() }
+    func presentAdd() { destination = .add }
+    func presentEdit(_ sub: Subscription) { destination = .edit(sub) }
+    func presentAutoDetect() { destination = .autoDetect }
+    func dismissDestination() { destination = nil; refresh() }
 
     // MARK: - Private
 

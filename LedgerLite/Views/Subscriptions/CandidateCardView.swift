@@ -6,17 +6,35 @@ struct CandidateCardView: View {
 
     @State private var selectedCategory: Category?
     @State private var isConfirming = false
+    @State private var nextBillingDate: Date = Date()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             headerRow
-            Text(candidate.billingCycle.displayName)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                Text(candidate.billingCycle.displayName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("·")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                Text("\(Int(candidate.confidence * 100))%")
+                    .font(.caption2)
+                    .foregroundStyle(candidate.confidenceTier == .dim ? .tertiary : .secondary)
+                    .monospacedDigit()
+            }
 
             if candidate.isDuplicate {
                 duplicateBadge
             } else {
+                DatePicker(
+                    String(localized: "Next billing"),
+                    selection: $nextBillingDate,
+                    displayedComponents: .date
+                )
+                .font(.caption)
+                .datePickerStyle(.compact)
+
                 CategoryPickerStrip(
                     categories: viewModel.categories,
                     selected: $selectedCategory
@@ -33,6 +51,8 @@ struct CandidateCardView: View {
         .padding(.vertical, 4)
         .opacity(candidate.confidenceTier == .dim ? 0.55 : 1.0)
         .onAppear {
+            nextBillingDate = candidate.detectedNextBillingDate
+                ?? candidate.billingCycle.nextDate(after: Date.utcToday)
             selectedCategory = viewModel.categories.first(where: { $0.name == "Other" })
                 ?? viewModel.categories.first
         }
@@ -58,10 +78,6 @@ struct CandidateCardView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text("\(Int(candidate.confidence * 100))%")
-                .font(.caption2)
-                .foregroundStyle(candidate.confidenceTier == .dim ? .tertiary : .secondary)
-                .monospacedDigit()
         }
     }
 
@@ -86,7 +102,7 @@ struct CandidateCardView: View {
             Button {
                 isConfirming = true
                 Task {
-                    await viewModel.confirm(candidate, category: selectedCategory)
+                    await viewModel.confirm(candidate, category: selectedCategory, nextBillingDate: nextBillingDate)
                     isConfirming = false
                 }
             } label: {

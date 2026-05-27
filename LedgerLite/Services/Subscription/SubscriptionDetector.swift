@@ -80,12 +80,14 @@ enum SubscriptionDetector {
             )
             guard score >= noiseThreshold else { continue }
 
+            let detectedDate = extractNextBillingDate(from: context)
             raw.append(SubscriptionCandidate(
                 name: name,
                 amountMinor: amountMinor,
                 currencyCode: currencyCode,
                 billingCycle: cycle,
-                confidence: score
+                confidence: score,
+                detectedNextBillingDate: detectedDate
             ))
         }
 
@@ -294,6 +296,87 @@ enum SubscriptionDetector {
         if !genericNames.contains(nameLower) { score += 0.05 }
 
         return min(1.0, score)
+    }
+
+    // MARK: - Next billing date extraction (internal for unit-test access)
+
+    /// Scans `text` for a recognisable date string and returns a UTC-midnight Date.
+    /// Supported patterns: ISO 8601 (2026-06-15), "June 15", "Jun 15", "June 15, 2026",
+    /// "15 June", "15 June 2026". When only month+day is found, the year is inferred:
+    /// current year if the date is still in the future, otherwise next year.
+    static func extractNextBillingDate(from text: String) -> Date? {
+        var utcCal = Calendar(identifier: .gregorian)
+        utcCal.timeZone = TimeZone(identifier: "UTC")!
+        let now    = Date()
+        let locale = Locale(identifier: "en_US_POSIX")
+        let utcTZ  = TimeZone(identifier: "UTC")!
+
+        func makeFormatter(_ format: String) -> DateFormatter {
+            let f = DateFormatter()
+            f.dateFormat = format
+            f.locale     = locale
+            f.timeZone   = utcTZ
+            return f
+        }
+
+        // Resolves a parsed date to UTC midnight, inferring year when absent.
+        func utcMidnight(_ date: Date, hasYear: Bool) -> Date? {
+            if hasYear { return utcCal.startOfDay(for: date) }
+            var dc = utcCal.dateComponents([.month, .day], from: date)
+            dc.year   = utcCal.component(.year, from: now)
+            dc.hour   = 0; dc.minute = 0; dc.second = 0
+            if let candidate = utcCal.date(from: dc), candidate > now { return candidate }
+            dc.year = (dc.year ?? 0) + 1
+            return utcCal.date(from: dc)
+        }
+
+        // 1. ISO 8601 — "2026-06-15"
+        if let regex = try? NSRegularExpression(pattern: "\\b(\\d{4}-\\d{2}-\\d{2})\\b"),
+           let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+           let r = Range(match.range(at: 1), in: text),
+           let date = makeFormatter("yyyy-MM-dd").date(from: String(text[r])) {
+            return date
+        }
+
+        // 2. Month-name before day — "June 15, 2026" / "Jun 15, 2026" / "June 15" / "Jun 15"
+        if let regex = try? NSRegularExpression(
+            pattern: "\\b([A-Za-z]{3,9}\\s+\\d{1,2}(?:,\\s*\\d{4})?)\\b"
+        ) {
+            for match in regex.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
+                guard let r = Range(match.range(at: 1), in: text) else { continue }
+                let str = String(text[r])
+                let fmts: [(String, Bool)] = [
+                    ("MMMM d, yyyy", true), ("MMM d, yyyy", true),
+                    ("MMMM d",       false), ("MMM d",       false),
+                ]
+                for (fmt, hasYear) in fmts {
+                    if let date = makeFormatter(fmt).date(from: str) {
+                        return utcMidnight(date, hasYear: hasYear)
+                    }
+                }
+            }
+        }
+
+        // 3. Day before month-name — "15 June 2026" / "15 June" / "15 Jun"
+        if let regex = try? NSRegularExpression(
+            pattern: "\\b(\\d{1,2}\\s+[A-Za-z]{3,9}(?:\\s+\\d{4})?)\\b"
+        ) {
+            for match in regex.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
+                guard let r = Range(match.range(at: 1), in: text) else { continue }
+                let str = String(text[r])
+                let fmts: [(String, Bool)] = [
+                    ("d MMMM yyyy", true), ("d MMM yyyy", true),
+                    ("d MMMM",      false), ("d MMM",      false),
+                ]
+                for (fmt, hasYear) in fmts {
+                    if let date = makeFormatter(fmt).date(from: str) {
+                        return utcMidnight(date, hasYear: hasYear)
+                    }
+                }
+            }
+        }
+
+        return nil
     }
 
     // MARK: - Minor-unit parsing (private)

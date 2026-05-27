@@ -121,6 +121,12 @@ struct AutoDetectSheet: View {
                     viewModel.errorMessage = nil
                 }
             }
+            ToolbarItem(placement: .cancellationAction) {
+                Button(String(localized: "Close")) { dismiss() }
+            }
+        }
+        .onChange(of: viewModel.candidates) { _, newValue in
+            if newValue.isEmpty && viewModel.hasConfirmedAtLeastOne { dismiss() }
         }
     }
 

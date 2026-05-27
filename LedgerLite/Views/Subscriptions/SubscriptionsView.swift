@@ -43,13 +43,16 @@ struct SubscriptionsView: View {
             }
             viewModel?.refresh()
         }
-        .sheet(item: sheetBinding) { sheet in
-            SubscriptionFormSheet(mode: sheet.formMode) {
-                viewModel?.dismissSheet()
+        .sheet(item: destinationBinding) { destination in
+            switch destination {
+            case .add:
+                SubscriptionFormSheet(mode: .add) { viewModel?.dismissDestination() }
+            case .edit(let sub):
+                SubscriptionFormSheet(mode: .edit(sub)) { viewModel?.dismissDestination() }
+            case .autoDetect:
+                AutoDetectSheet()
+                    .onDisappear { viewModel?.dismissDestination() }
             }
-        }
-        .sheet(isPresented: autoDetectBinding, onDismiss: { viewModel?.dismissAutoDetect() }) {
-            AutoDetectSheet()
         }
     }
 
@@ -191,19 +194,12 @@ struct SubscriptionsView: View {
         }
     }
 
-    // MARK: - Sheet bindings
+    // MARK: - Sheet binding
 
-    private var sheetBinding: Binding<SubscriptionSheet?> {
+    private var destinationBinding: Binding<SubscriptionsDestination?> {
         Binding(
-            get: { viewModel?.activeSheet },
-            set: { viewModel?.activeSheet = $0 }
-        )
-    }
-
-    private var autoDetectBinding: Binding<Bool> {
-        Binding(
-            get: { viewModel?.showAutoDetect ?? false },
-            set: { viewModel?.showAutoDetect = $0 }
+            get: { viewModel?.destination },
+            set: { viewModel?.destination = $0 }
         )
     }
 }
