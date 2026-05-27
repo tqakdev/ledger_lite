@@ -23,6 +23,43 @@ settings:
     CURRENT_PROJECT_VERSION: "1"
     DEVELOPMENT_TEAM: ""  # Set in Local.xcconfig (gitignored) — see Local.xcconfig.template
 
+schemes:
+
+  # The LedgerLiteWidget target contains two widget kinds.
+  # Xcode requires _XCWidgetKind to know which one to launch when debugging.
+  # Use "LedgerLiteTodayWidget" scheme for the today widget,
+  # and "LedgerLiteSubscriptionsWidget" for the subscriptions widget.
+
+  LedgerLiteTodayWidget:
+    build:
+      targets:
+        LedgerLiteWidget: all
+    run:
+      config: Debug
+      environmentVariables:
+        _XCWidgetKind: LedgerLiteTodayWidget
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
+  LedgerLiteSubscriptionsWidget:
+    build:
+      targets:
+        LedgerLiteWidget: all
+    run:
+      config: Debug
+      environmentVariables:
+        _XCWidgetKind: LedgerLiteSubscriptionsWidget
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
 targets:
 
   LedgerLite:
