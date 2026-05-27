@@ -109,11 +109,14 @@ struct ExpenseFormSheet: View {
     // MARK: - A1: Amount field
 
     private func amountField(_ viewModel: ExpenseFormViewModel) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 2) {
-            // Currency symbol sits left of the number, styled secondary so it doesn't compete
-            Text(Self.currencySymbol(for: viewModel.currencyCode))
-                .font(.system(size: 28, weight: .semibold, design: .rounded))
+        let symbol = Self.currencySymbol(for: viewModel.currencyCode)
+        let symbolSize: CGFloat = symbol.count > 2 ? 22 : 28
+        return HStack(alignment: .firstTextBaseline, spacing: 2) {
+            Text(symbol)
+                .font(.system(size: symbolSize, weight: .semibold, design: .rounded))
                 .foregroundStyle(.secondary)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
 
             ZStack {
                 // Styled placeholder — only shown when field is empty so cursor never sits on it

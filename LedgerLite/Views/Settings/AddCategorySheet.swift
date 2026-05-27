@@ -30,7 +30,10 @@ struct AddCategorySheet: View {
         "#98D8C8", "#F7DC6F", "#BB8FCE", "#BDC3C7", "#E74C3C", "#3498DB",
     ]
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 6)
+    private var iconColumns: [GridItem] {
+        let count = UIScreen.main.bounds.width < 390 ? 5 : 6
+        return Array(repeating: GridItem(.flexible(), spacing: 10), count: count)
+    }
 
     var body: some View {
         NavigationStack {
@@ -42,6 +45,7 @@ struct AddCategorySheet: View {
                     colorSection
                 }
                 .padding()
+                .padding(.top, 8)
             }
             .navigationTitle(String(localized: "New Category"))
             .navigationBarTitleDisplayMode(.inline)
@@ -111,7 +115,7 @@ struct AddCategorySheet: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(String(localized: "Icon"))
                 .font(.headline)
-            LazyVGrid(columns: columns, spacing: 12) {
+            LazyVGrid(columns: iconColumns, spacing: 12) {
                 ForEach(symbols, id: \.self) { symbol in
                     Button {
                         selectedIcon = symbol
@@ -148,7 +152,7 @@ struct AddCategorySheet: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(String(localized: "Color"))
                 .font(.headline)
-            LazyVGrid(columns: columns, spacing: 12) {
+            LazyVGrid(columns: iconColumns, spacing: 12) {
                 ForEach(colors, id: \.self) { hex in
                     Button {
                         selectedColor = hex

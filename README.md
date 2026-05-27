@@ -77,13 +77,13 @@ ViewModels → Services → Network. Money is always `Int` (minor units).
 - [x] Phase 1 — Data models + Money type
 - [x] Phase 2 — Currency service (Frankfurter + fallback)
 - [x] Phase 3 — Today tab + Quick Add sheet
-- [ ] Phase 4 — Subscriptions tab
-- [ ] Phase 5 — Subscription auto-detection
-- [ ] Phase 6 — Insights tab (Swift Charts)
-- [ ] Phase 7 — Settings + CSV export
+- [x] Phase 4 — Subscriptions tab
+- [x] Phase 5 — Subscription auto-detection
+- [x] Phase 6 — Insights tab (Swift Charts)
+- [x] Phase 7 — Settings + CSV export
 - [ ] Phase 7.5 — CloudKit sync
 - [ ] Phase 8 — Widget + Siri / App Intents
-- [ ] Phase 9 — Polish (empty states, a11y, haptics)
+- [ ] Phase 9 — Final polish (App Store prep)
 
 ## Notes
 

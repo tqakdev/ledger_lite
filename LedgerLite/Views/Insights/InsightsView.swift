@@ -115,7 +115,8 @@ struct InsightsView: View {
                 .font(.headline)
         }
         .padding(.horizontal)
-        .padding(.bottom, 16)
+        .padding(.vertical, 8)
+        .padding(.top, 4)
     }
 
     private func donutChart(_ vm: InsightsViewModel) -> some View {
@@ -124,7 +125,7 @@ struct InsightsView: View {
                 SectorMark(
                     angle: .value(String(localized: "Amount"), item.minorUnits),
                     innerRadius: .ratio(0.56),
-                    angularInset: 1.5
+                    angularInset: vm.categoryTotals.count == 1 ? 0 : 1.5
                 )
                 .foregroundStyle(Color(hex: item.category.colorHex))
                 .opacity(sectorOpacity(item.category, selected: vm.selectedCategory))
@@ -214,6 +215,20 @@ struct InsightsView: View {
         GroupBox {
             if vm.dailyTotals.isEmpty {
                 emptyLabel
+            } else if vm.dailyTotals.count == 1, let item = vm.dailyTotals.first {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(item.date.formatted(date: .abbreviated, time: .omitted))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
+                            .font(.title2.bold())
+                            .monospacedDigit()
+                    }
+                    Spacer()
+                }
+                .padding()
+                .frame(height: 180)
             } else {
                 trendChart(vm)
             }
@@ -222,7 +237,7 @@ struct InsightsView: View {
                 .font(.headline)
         }
         .padding(.horizontal)
-        .padding(.bottom, 16)
+        .padding(.vertical, 8)
     }
 
     private func trendChart(_ vm: InsightsViewModel) -> some View {
@@ -230,7 +245,9 @@ struct InsightsView: View {
         let totals  = vm.dailyTotals
         let avg     = totals.isEmpty ? 0 : totals.reduce(0) { $0 + $1.minorUnits } / totals.count
         let unit: Calendar.Component = byMonth ? .month : .day
-        let xFmt: Date.FormatStyle = byMonth ? .dateTime.month(.abbreviated) : .dateTime.day()
+        let xFmt: Date.FormatStyle = byMonth
+            ? .dateTime.month(.abbreviated)
+            : .dateTime.month(.abbreviated).day()
 
         return Chart {
             ForEach(totals, id: \.date) { item in
@@ -297,7 +314,7 @@ struct InsightsView: View {
                 .font(.headline)
         }
         .padding(.horizontal)
-        .padding(.bottom, 20)
+        .padding(.vertical, 8)
     }
 
     private func budgetRow(_ entry: BudgetEntry) -> some View {
@@ -354,7 +371,7 @@ struct InsightsView: View {
                 .font(.headline)
         }
         .padding(.horizontal)
-        .padding(.bottom, 20)
+        .padding(.vertical, 8)
     }
 
     // MARK: - Helpers

@@ -83,11 +83,15 @@ struct SettingsView: View {
             NavigationLink {
                 HomeCurrencyPickerView()
             } label: {
-                HStack {
-                    Text(String(localized: "Home Currency"))
-                    Spacer()
-                    Text(homeCurrencyCode)
-                        .foregroundStyle(.secondary)
+                Label {
+                    HStack {
+                        Text(String(localized: "Home Currency"))
+                        Spacer()
+                        Text(homeCurrencyCode)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    settingsIcon("dollarsign.circle.fill", color: .green)
                 }
             }
         }
@@ -97,8 +101,14 @@ struct SettingsView: View {
 
     private var categoriesSection: some View {
         Section(String(localized: "Categories")) {
-            NavigationLink(String(localized: "Manage Categories")) {
+            NavigationLink {
                 CategoriesSettingsView()
+            } label: {
+                Label {
+                    Text(String(localized: "Manage Categories"))
+                } icon: {
+                    settingsIcon("tag.fill", color: .blue)
+                }
             }
         }
     }
@@ -107,10 +117,25 @@ struct SettingsView: View {
 
     private var budgetsSection: some View {
         Section(String(localized: "Budgets")) {
-            NavigationLink(String(localized: "Monthly Budgets")) {
+            NavigationLink {
                 BudgetsSettingsView()
+            } label: {
+                Label {
+                    Text(String(localized: "Monthly Budgets"))
+                } icon: {
+                    settingsIcon("chart.bar.fill", color: .orange)
+                }
             }
         }
+    }
+
+    private func settingsIcon(_ systemName: String, color: Color) -> some View {
+        Image(systemName: systemName)
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(.white)
+            .frame(width: 28, height: 28)
+            .background(color)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
     // MARK: - B4: Notifications

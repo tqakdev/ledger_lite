@@ -89,43 +89,44 @@ struct TodayView: View {
         if viewModel.expenses.isEmpty && !viewModel.isLoading {
             emptyState
         } else {
-            List {
-                Section {
-                    // A5: standalone styled card; C4: redacted while initial load
-                    todaySummaryCard(viewModel)
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                }
-                Section(String(localized: "Expenses")) {
-                    ForEach(viewModel.expenses, id: \.id) { expense in
-                        ExpenseRowView(
-                            expense: expense,
-                            homeCurrencyCode: viewModel.homeCurrencyCode
-                        )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            viewModel.presentEdit(for: expense)
-                        }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
-                                viewModel.deleteExpense(expense)
-                            } label: {
-                                Label(String(localized: "Delete"), systemImage: "trash")
-                            }
-                        }
-                        .swipeActions(edge: .leading) {
-                            Button {
+            VStack(spacing: 0) {
+                // A5: card above the list so it has no separator line artefact
+                todaySummaryCard(viewModel)
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+
+                List {
+                    Section(String(localized: "Expenses")) {
+                        ForEach(viewModel.expenses, id: \.id) { expense in
+                            ExpenseRowView(
+                                expense: expense,
+                                homeCurrencyCode: viewModel.homeCurrencyCode
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
                                 viewModel.presentEdit(for: expense)
-                            } label: {
-                                Label(String(localized: "Edit"), systemImage: "pencil")
                             }
-                            .tint(.blue)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()  // C1
+                                    viewModel.deleteExpense(expense)
+                                } label: {
+                                    Label(String(localized: "Delete"), systemImage: "trash")
+                                }
+                            }
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    viewModel.presentEdit(for: expense)
+                                } label: {
+                                    Label(String(localized: "Edit"), systemImage: "pencil")
+                                }
+                                .tint(.blue)
+                            }
                         }
                     }
                 }
+                .listStyle(.insetGrouped)
             }
-            .listStyle(.insetGrouped)
         }
     }
 

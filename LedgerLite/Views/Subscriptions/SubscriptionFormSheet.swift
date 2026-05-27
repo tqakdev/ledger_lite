@@ -95,15 +95,35 @@ struct SubscriptionFormSheet: View {
     // MARK: - Amount section
 
     private func amountSection(_ viewModel: SubscriptionFormViewModel) -> some View {
-        VStack(spacing: 8) {
-            TextField("0", text: amountBinding(viewModel))
-                .font(.system(size: 40, weight: .semibold, design: .rounded))
-                .monospacedDigit()
-                .multilineTextAlignment(.center)
-                .keyboardType(.decimalPad)
-                .focused($focusedField, equals: .amount)
-                .padding(.vertical, 8)
-                .accessibilityLabel(String(localized: "Amount"))
+        let symbol = Self.currencySymbol(for: viewModel.currencyCode)
+        let symbolSize: CGFloat = symbol.count > 2 ? 22 : 28
+        return VStack(spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(symbol)
+                    .font(.system(size: symbolSize, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                ZStack {
+                    if viewModel.amountString.isEmpty {
+                        Text("0")
+                            .font(.system(size: 40, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.tertiary)
+                            .monospacedDigit()
+                            .allowsHitTesting(false)
+                    }
+                    TextField("", text: amountBinding(viewModel))
+                        .font(.system(size: 40, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
+                        .multilineTextAlignment(.center)
+                        .keyboardType(.decimalPad)
+                        .focused($focusedField, equals: .amount)
+                        .tint(viewModel.amountString.isEmpty ? .clear : .accentColor)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 8)
+            .accessibilityLabel(String(localized: "Amount"))
 
             Picker(String(localized: "Currency"), selection: currencyBinding(viewModel)) {
                 ForEach(Constants.App.supportedCurrencies, id: \.self) { code in
@@ -134,12 +154,24 @@ struct SubscriptionFormSheet: View {
     @ViewBuilder
     private func detailsSection(_ viewModel: SubscriptionFormViewModel) -> some View {
         VStack(spacing: 12) {
-            TextField(String(localized: "Name"), text: nameBinding(viewModel))
-                .textFieldStyle(.roundedBorder)
-                .focused($focusedField, equals: .name)
-                .submitLabel(.next)
-                .onSubmit { focusedField = .amount }
-                .padding(.horizontal)
+            // Name — grouped card matching ExpenseFormSheet.detailsGroup style
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    Image(systemName: "tag")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
+                    TextField(String(localized: "Name"), text: nameBinding(viewModel))
+                        .textFieldStyle(.plain)
+                        .focused($focusedField, equals: .name)
+                        .submitLabel(.next)
+                        .onSubmit { focusedField = .amount }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+            }
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal)
 
             billingCycleSection(viewModel)
 
@@ -150,12 +182,24 @@ struct SubscriptionFormSheet: View {
             )
             .padding(.horizontal)
 
-            TextField(String(localized: "Notes (optional)"), text: notesBinding(viewModel))
-                .textFieldStyle(.roundedBorder)
-                .focused($focusedField, equals: .notes)
-                .submitLabel(.done)
-                .onSubmit { focusedField = nil }
-                .padding(.horizontal)
+            // Notes — grouped card
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    Image(systemName: "note.text")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
+                    TextField(String(localized: "Notes (optional)"), text: notesBinding(viewModel))
+                        .textFieldStyle(.plain)
+                        .focused($focusedField, equals: .notes)
+                        .submitLabel(.done)
+                        .onSubmit { focusedField = nil }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+            }
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal)
 
             if case .edit(let sub) = mode {
                 statusActionsSection(viewModel, subscription: sub)
@@ -254,6 +298,15 @@ struct SubscriptionFormSheet: View {
             onComplete()
             dismiss()
         }
+    }
+
+    // MARK: - Helpers
+
+    private static func currencySymbol(for code: String) -> String {
+        let fmt = NumberFormatter()
+        fmt.numberStyle = .currency
+        fmt.currencyCode = code
+        return fmt.currencySymbol ?? code
     }
 
     // MARK: - Bindings

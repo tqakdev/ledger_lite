@@ -20,7 +20,7 @@ struct CategoryPickerStrip: View {
             }
             // A10: allow chips to snap cleanly so they don't stop mid-chip
             .scrollTargetLayout()
-            .padding(.horizontal)
+            .padding(.horizontal, 16)
         }
         .scrollTargetBehavior(.viewAligned)
     }
