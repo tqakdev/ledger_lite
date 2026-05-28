@@ -109,8 +109,7 @@ struct TodayView: View {
     private func todaySummaryCard(_ viewModel: TodayViewModel) -> some View {
         SummaryCard(
             title: String(localized: "Today's Total"),
-            amount: viewModel.todayTotalFormatted,
-            amountMinor: viewModel.todayTotalMinor,
+            money: Money(minorUnits: viewModel.todayTotalMinor, currencyCode: viewModel.homeCurrencyCode),
             subtitle: Date.now.formatted(date: .complete, time: .omitted)
         ) {
             velocityLabel(viewModel)

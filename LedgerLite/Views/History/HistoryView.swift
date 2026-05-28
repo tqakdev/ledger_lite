@@ -195,8 +195,7 @@ struct HistoryView: View {
             : String(localized: "\(count) expenses")
         return SummaryCard(
             title: String(localized: "Day Total"),
-            amount: vm.dayTotalFormatted,
-            amountMinor: vm.dayTotalMinor,
+            money: Money(minorUnits: vm.dayTotalMinor, currencyCode: vm.homeCurrencyCode),
             subtitle: label
         ) {
             if !Calendar.current.isDate(vm.selectedDate, equalTo: Date(), toGranularity: .month) {

@@ -175,8 +175,7 @@ struct SubscriptionsView: View {
         SummaryCard(
             title: String(localized: "Est. Monthly Cost"),
             icon: "calendar.circle.fill",
-            amount: Money(minorUnits: viewModel.monthlyCostMinor, currencyCode: viewModel.homeCurrencyCode).formatted(),
-            amountMinor: viewModel.monthlyCostMinor,
+            money: Money(minorUnits: viewModel.monthlyCostMinor, currencyCode: viewModel.homeCurrencyCode),
             isLoading: viewModel.monthlyCostIsLoading,
             subtitle: String(localized: "Active subscriptions only")
         )

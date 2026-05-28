@@ -5,8 +5,7 @@ import SwiftUI
 struct SummaryCard<Supplement: View>: View {
     let title: String
     let icon: String?
-    let amount: String
-    let amountMinor: Int
+    let money: Money
     let isLoading: Bool
     let subtitle: String
     @ViewBuilder let supplement: () -> Supplement
@@ -14,16 +13,14 @@ struct SummaryCard<Supplement: View>: View {
     init(
         title: String,
         icon: String? = nil,
-        amount: String,
-        amountMinor: Int,
+        money: Money,
         isLoading: Bool = false,
         subtitle: String,
         @ViewBuilder supplement: @escaping () -> Supplement
     ) {
         self.title = title
         self.icon = icon
-        self.amount = amount
-        self.amountMinor = amountMinor
+        self.money = money
         self.isLoading = isLoading
         self.subtitle = subtitle
         self.supplement = supplement
@@ -44,11 +41,9 @@ struct SummaryCard<Supplement: View>: View {
             if isLoading {
                 ProgressView().frame(height: 44)
             } else {
-                Text(amount)
-                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                    .monospacedDigit()
-                    .contentTransition(.numericText(value: Double(amountMinor)))
-                    .animation(.spring(duration: 0.4, bounce: 0.3), value: amountMinor)
+                amountText
+                    .contentTransition(.numericText(value: Double(money.minorUnits)))
+                    .animation(.spring(duration: 0.4, bounce: 0.3), value: money.minorUnits)
             }
             supplement()
             Text(subtitle)
@@ -67,11 +62,23 @@ struct SummaryCard<Supplement: View>: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
+
+    private var amountText: Text {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = money.currencyCode
+        let sym = formatter.currencySymbol ?? money.currencyCode
+        let full = money.formatted()
+        let numStr = full.replacingOccurrences(of: sym, with: "").trimmingCharacters(in: .whitespaces)
+        let symText = Text(sym).font(.system(.title2, design: .rounded, weight: .bold))
+        let numText = Text(numStr).font(.system(.largeTitle, design: .rounded, weight: .bold)).monospacedDigit()
+        return full.hasPrefix(sym) ? symText + numText : numText + Text(" ") + symText
+    }
 }
 
 extension SummaryCard where Supplement == EmptyView {
-    init(title: String, icon: String? = nil, amount: String, amountMinor: Int, isLoading: Bool = false, subtitle: String) {
-        self.init(title: title, icon: icon, amount: amount, amountMinor: amountMinor, isLoading: isLoading, subtitle: subtitle, supplement: { EmptyView() })
+    init(title: String, icon: String? = nil, money: Money, isLoading: Bool = false, subtitle: String) {
+        self.init(title: title, icon: icon, money: money, isLoading: isLoading, subtitle: subtitle, supplement: { EmptyView() })
     }
 }
 
