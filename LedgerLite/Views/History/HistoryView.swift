@@ -225,7 +225,8 @@ struct HistoryView: View {
             }
             Section {
                 summaryCard(vm)
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    .padding(.horizontal, 12)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
             }

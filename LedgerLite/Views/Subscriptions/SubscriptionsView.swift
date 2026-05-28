@@ -124,7 +124,8 @@ struct SubscriptionsView: View {
         List {
             Section {
                 monthlyCostCard(viewModel)
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    .padding(.horizontal, 12)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
             }
@@ -260,13 +261,17 @@ struct SubscriptionsView: View {
 
 // MARK: - Billing Calendar
 
+private struct SelectedBillingDay: Identifiable {
+    let id: Date
+    let subscriptions: [Subscription]
+}
+
 private struct SubscriptionsBillingCalendar: View {
     let activeSubscriptions: [Subscription]
     let homeCurrencyCode: String
     @Binding var displayMonth: Date
 
-    @State private var tappedDaySubscriptions: [Subscription] = []
-    @State private var showDaySheet = false
+    @State private var selectedDay: SelectedBillingDay? = nil
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
 
@@ -291,8 +296,8 @@ private struct SubscriptionsBillingCalendar: View {
             }
             .padding(.top, 4)
         }
-        .sheet(isPresented: $showDaySheet) {
-            BillingDaySheet(subscriptions: tappedDaySubscriptions, homeCurrencyCode: homeCurrencyCode)
+        .sheet(item: $selectedDay) { day in
+            BillingDaySheet(subscriptions: day.subscriptions, homeCurrencyCode: homeCurrencyCode)
         }
     }
 
@@ -385,8 +390,7 @@ private struct SubscriptionsBillingCalendar: View {
 
         return Button {
             guard !billings.isEmpty else { return }
-            tappedDaySubscriptions = billings
-            showDaySheet = true
+            selectedDay = SelectedBillingDay(id: date, subscriptions: billings)
         } label: {
             VStack(spacing: 3) {
                 Text("\(dayNumber)")
