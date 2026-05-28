@@ -58,7 +58,7 @@ final class TodayViewModel {
             AppLogger.ui.error("Today refresh failed: \(error)")
         }
         isLoading = false
-        BudgetAlertService(context: modelContext).checkBudgets()
+        Task { BudgetAlertService(context: modelContext).checkBudgets() }
     }
 
     func deleteExpense(_ expense: Expense) {
@@ -72,13 +72,8 @@ final class TodayViewModel {
         }
     }
 
-    func presentQuickAdd() {
-        activeSheet = .quickAdd
-    }
-
-    func presentEdit(for expense: Expense) {
-        activeSheet = .edit(expense)
-    }
+    func presentQuickAdd() { activeSheet = .quickAdd }
+    func presentEdit(for expense: Expense) { activeSheet = .edit(expense) }
 
     func dismissSheet() {
         activeSheet = nil
@@ -89,12 +84,19 @@ final class TodayViewModel {
 
     private func computeStreak() -> Int {
         let cal = Calendar.current
-        let allExpenses = (try? modelContext.fetch(
-            FetchDescriptor<Expense>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        let today = cal.startOfDay(for: Date())
+        // Cap the look-back at 366 days — no realistic streak exceeds a year
+        guard let cutoff = cal.date(byAdding: .day, value: -366, to: today) else { return 0 }
+        let since = cutoff
+        let fetched = (try? modelContext.fetch(
+            FetchDescriptor<Expense>(
+                predicate: #Predicate { $0.date >= since },
+                sortBy: []
+            )
         )) ?? []
-        let expenseDays = Set(allExpenses.map { cal.startOfDay(for: $0.date) })
+        let expenseDays = Set(fetched.map { cal.startOfDay(for: $0.date) })
         var streak = 0
-        var checkDate = cal.startOfDay(for: Date())
+        var checkDate = today
         while expenseDays.contains(checkDate) {
             streak += 1
             guard let prev = cal.date(byAdding: .day, value: -1, to: checkDate) else { break }

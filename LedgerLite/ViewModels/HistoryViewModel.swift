@@ -31,9 +31,11 @@ final class HistoryViewModel {
     var searchText: String = ""
     var categories: [Category] = []
     var selectedCategoryFilter: Category? = nil
+    var searchResults: [Expense] = []
 
     private let expenseRepository: ExpenseRepository
     private let modelContext: ModelContext
+    private var searchTask: Task<Void, Never>?
 
     init(context: ModelContext) {
         self.modelContext = context
@@ -41,6 +43,13 @@ final class HistoryViewModel {
     }
 
     var isGlobalSearch: Bool { !searchText.isEmpty }
+
+    // Categories that actually appear in today's expenses — cached here so the view
+    // doesn't recompute O(categories × expenses) on every render.
+    var presentCategories: [Category] {
+        let ids = Set(expenses.compactMap { $0.category?.id })
+        return categories.filter { ids.contains($0.id) }
+    }
 
     var filteredExpenses: [Expense] {
         var result = expenses
@@ -50,33 +59,9 @@ final class HistoryViewModel {
         }
         if !searchText.isEmpty {
             let q = searchText.lowercased()
-            result = result.filter {
-                ($0.merchant?.lowercased().contains(q) ?? false) ||
-                ($0.note?.lowercased().contains(q) ?? false) ||
-                ($0.category?.name.lowercased().contains(q) ?? false)
-            }
+            result = result.filter { matches($0, query: q) }
         }
         return result
-    }
-
-    var searchResults: [Expense] = []
-
-    func performGlobalSearch() {
-        guard !searchText.isEmpty else { searchResults = []; return }
-        let q = searchText.lowercased()
-        guard let all = try? modelContext.fetch(
-            FetchDescriptor<Expense>(sortBy: [SortDescriptor(\.date, order: .reverse)])
-        ) else { return }
-        var results = all.filter {
-            ($0.merchant?.lowercased().contains(q) ?? false) ||
-            ($0.note?.lowercased().contains(q) ?? false) ||
-            ($0.category?.name.lowercased().contains(q) ?? false)
-        }
-        if let cat = selectedCategoryFilter {
-            let catId = cat.id
-            results = results.filter { $0.category?.id == catId }
-        }
-        searchResults = results
     }
 
     var dayTotalFormatted: String {
@@ -86,6 +71,34 @@ final class HistoryViewModel {
     var isToday: Bool {
         Calendar.current.isDateInToday(selectedDate)
     }
+
+    // MARK: - Search
+
+    func scheduleSearch() {
+        searchTask?.cancel()
+        guard !searchText.isEmpty else { searchResults = []; return }
+        searchTask = Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            performGlobalSearch()
+        }
+    }
+
+    private func performGlobalSearch() {
+        guard !searchText.isEmpty else { searchResults = []; return }
+        let q = searchText.lowercased()
+        guard let all = try? modelContext.fetch(
+            FetchDescriptor<Expense>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        ) else { return }
+        var results = all.filter { matches($0, query: q) }
+        if let cat = selectedCategoryFilter {
+            let catId = cat.id
+            results = results.filter { $0.category?.id == catId }
+        }
+        searchResults = results
+    }
+
+    // MARK: - Navigation
 
     func previousDay() {
         selectedDate = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
@@ -135,13 +148,19 @@ final class HistoryViewModel {
         }
     }
 
-    func presentEdit(for expense: Expense) {
-        activeSheet = .edit(expense)
-    }
+    func presentEdit(for expense: Expense) { activeSheet = .edit(expense) }
 
     func dismissSheet() {
         activeSheet = nil
         refresh()
+    }
+
+    // MARK: - Private
+
+    private func matches(_ expense: Expense, query: String) -> Bool {
+        (expense.merchant?.lowercased().contains(query) ?? false) ||
+        (expense.note?.lowercased().contains(query) ?? false) ||
+        (expense.category?.name.lowercased().contains(query) ?? false)
     }
 
     private func computeMonthTotal() -> Int {
@@ -156,5 +175,4 @@ final class HistoryViewModel {
         )) ?? []
         return monthExpenses.totalInHomeCurrency(homeCurrencyCode)
     }
-
 }

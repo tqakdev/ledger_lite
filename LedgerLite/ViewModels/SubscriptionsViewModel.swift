@@ -71,10 +71,10 @@ final class SubscriptionsViewModel {
             var next = sub.nextBillingDate
             while next < today {
                 switch sub.billingCycle {
-                case .weekly:           next = cal.date(byAdding: .day,   value: 7,  to: next) ?? next
-                case .monthly:          next = cal.date(byAdding: .month, value: 1,  to: next) ?? next
-                case .yearly:           next = cal.date(byAdding: .year,  value: 1,  to: next) ?? next
-                case .customDays(let n): next = cal.date(byAdding: .day,  value: n,  to: next) ?? next
+                case .weekly:            next = cal.date(byAdding: .day,   value: 7, to: next) ?? next
+                case .monthly:           next = cal.date(byAdding: .month, value: 1, to: next) ?? next
+                case .yearly:            next = cal.date(byAdding: .year,  value: 1, to: next) ?? next
+                case .customDays(let n): next = cal.date(byAdding: .day,   value: n, to: next) ?? next
                 }
             }
             sub.nextBillingDate = next
@@ -84,56 +84,44 @@ final class SubscriptionsViewModel {
 
     // MARK: - Monthly cost
 
-    /// Groups active subscriptions by currency, sums each group's monthly equivalent,
-    /// then converts each group total to home currency once — avoids per-row rounding drift.
-    /// Also populates `subscriptionHomeAmounts` for all foreign-currency subscriptions.
+    /// Groups all subscriptions by currency and fetches each foreign-currency rate exactly once,
+    /// computing both the monthly total and per-subscription home amounts in a single pass.
     private func computeMonthlyCost() async {
         monthlyCostIsLoading = true
         defer { monthlyCostIsLoading = false }
 
         let today = Date.utcToday
         var totalHomeMinor = 0
+        var homeAmounts: [UUID: Int] = [:]
 
-        // Monthly cost (active only)
-        let active = activeSubscriptions
-        if !active.isEmpty {
-            let grouped = Dictionary(grouping: active, by: \.currencyCode)
-            for (currency, subs) in grouped {
-                let groupMonthly = subs.reduce(0) { $0 + $1.monthlyEquivalentMinorUnits() }
-                if currency == homeCurrencyCode {
-                    totalHomeMinor += groupMonthly
-                } else {
-                    do {
-                        let rate = try await currencyService.rate(from: currency, to: homeCurrencyCode, on: today)
+        let grouped = Dictionary(grouping: subscriptions, by: \.currencyCode)
+
+        for (currency, subs) in grouped {
+            let activeSubs = subs.filter { $0.status == .active }
+            let groupMonthly = activeSubs.reduce(0) { $0 + $1.monthlyEquivalentMinorUnits() }
+
+            if currency == homeCurrencyCode {
+                totalHomeMinor += groupMonthly
+            } else {
+                do {
+                    let rate = try await currencyService.rate(from: currency, to: homeCurrencyCode, on: today)
+                    if groupMonthly > 0 {
                         let converted = Money(minorUnits: groupMonthly, currencyCode: currency)
                             .converted(to: homeCurrencyCode, rate: rate)
                         totalHomeMinor += converted.minorUnits
-                    } catch {
-                        AppLogger.subscriptions.warning("Rate unavailable for monthly cost (\(currency)→\(self.homeCurrencyCode)): \(error)")
                     }
-                }
-            }
-        }
-        monthlyCostMinor = totalHomeMinor
-
-        // Per-subscription home amounts for all foreign-currency subscriptions
-        var homeAmounts: [UUID: Int] = [:]
-        let foreignSubs = subscriptions.filter { $0.currencyCode != homeCurrencyCode }
-        if !foreignSubs.isEmpty {
-            let foreignGrouped = Dictionary(grouping: foreignSubs, by: \.currencyCode)
-            for (currency, subs) in foreignGrouped {
-                do {
-                    let rate = try await currencyService.rate(from: currency, to: homeCurrencyCode, on: today)
                     for sub in subs {
                         let converted = Money(minorUnits: sub.amountMinor, currencyCode: currency)
                             .converted(to: homeCurrencyCode, rate: rate)
                         homeAmounts[sub.id] = converted.minorUnits
                     }
                 } catch {
-                    AppLogger.subscriptions.warning("Rate unavailable for home amounts (\(currency)→\(self.homeCurrencyCode)): \(error)")
+                    AppLogger.subscriptions.warning("Rate unavailable (\(currency)→\(self.homeCurrencyCode)): \(error)")
                 }
             }
         }
+
+        monthlyCostMinor = totalHomeMinor
         subscriptionHomeAmounts = homeAmounts
     }
 

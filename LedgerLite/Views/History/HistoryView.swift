@@ -103,7 +103,7 @@ struct HistoryView: View {
             }
         }
         .searchable(text: $vm.searchText, prompt: String(localized: "Search all expenses"))
-        .onChange(of: vm.searchText) { _, _ in vm.performGlobalSearch() }
+        .onChange(of: vm.searchText) { _, _ in vm.scheduleSearch() }
         .sheet(item: $vm.activeSheet) { sheet in
             ExpenseFormSheet(mode: sheet.formMode) { vm.dismissSheet() }
         }
@@ -157,9 +157,7 @@ struct HistoryView: View {
 
     @ViewBuilder
     private func categoryFilterRow(_ vm: HistoryViewModel) -> some View {
-        let present = vm.categories.filter { cat in
-            vm.expenses.contains { $0.category?.id == cat.id }
-        }
+        let present = vm.presentCategories
         if present.count >= 2 {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
