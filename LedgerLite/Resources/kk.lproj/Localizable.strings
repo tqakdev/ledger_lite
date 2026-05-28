@@ -209,3 +209,41 @@
 "days" = "күн";
 "e.g. Coffee" = "мысалы, Кофе";
 "e.g. Your Netflix subscription renews on Jan 15 for $15.49…" = "мысалы, Netflix жазылымы 15 қаңтарда $15.49 сомаға жаңарады…";
+
+/* Billing calendar, streak, month total */
+"Billing on this day" = "Осы күнгі төлемдер";
+"Calendar" = "Күнтізбе";
+"List" = "Тізім";
+"View" = "Көрініс";
+"%lld-day streak" = "%lld күндік жол";
+"Month: %@" = "Ай: %@";
+
+/* Widget display names and UI */
+"Today's Spending" = "Бүгінгі шығындар";
+"See today's expenses at a glance." = "Бүгінгі шығындарды бір қарауда көріңіз.";
+"Upcoming Bills" = "Жақындағы төлемдер";
+"See your next subscription billing dates." = "Жазылымдар бойынша келесі төлем күндерін қараңыз.";
+"Next Billing" = "Келесі төлем";
+"Upcoming Subscriptions" = "Алдағы жазылымдар";
+"No expenses today" = "Бүгін шығын жоқ";
+"No subscriptions" = "Жазылым жоқ";
+"No data" = "Деректер жоқ";
+"In %lld days" = "%lld күннен кейін";
+
+/* Interpolated strings */
+"'%@' is a built-in category and cannot be deleted." = "'%@' — кірістірілген санат, оны жою мүмкін емес.";
+"A category named '%@' already exists." = "'%@' атауымен санат бұрыннан бар.";
+"Amounts in %@. Leave blank to remove a budget." = "%@ валютасындағы сомалар. Бюджетті жою үшін бос қалдырыңыз.";
+"Every %lld days" = "Әр %lld күн сайын";
+"Imported 1 expense." = "1 шығын импортталды.";
+"Imported %lld expenses." = "%lld шығын импортталды.";
+"Version %@, tap to copy" = "Нұсқа %@, көшіру үшін түртіңіз";
+"Active (%lld)" = "Белсенді (%lld)";
+"%lld subscriptions found" = "%lld жазылым табылды";
+
+/* Budget and notification strings */
+"You've spent %@ of your %@ budget." = "%@ бюджетіңіздің %@ сомасын жұмсадыңыз.";
+"%@ at 80%% of budget" = "%@: бюджеттің 80%%";
+"%@ budget reached" = "%@ бюджеті таусылды";
+"%@ of %@ spent this month." = "Осы айда %@ сомасынан %@ жұмсалды.";
+"%@ bills in 2 days" = "%@ 2 күннен кейін есептеледі";

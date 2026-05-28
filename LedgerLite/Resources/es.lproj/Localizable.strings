@@ -210,3 +210,41 @@
 "days" = "días";
 "e.g. Coffee" = "p. ej. Café";
 "e.g. Your Netflix subscription renews on Jan 15 for $15.49…" = "p. ej. Tu suscripción a Netflix se renueva el 15 de enero por $15,49…";
+
+/* Billing calendar, streak, month total */
+"Billing on this day" = "Cobros de este día";
+"Calendar" = "Calendario";
+"List" = "Lista";
+"View" = "Vista";
+"%lld-day streak" = "Racha de %lld días";
+"Month: %@" = "Mes: %@";
+
+/* Widget display names and UI */
+"Today's Spending" = "Gastos de hoy";
+"See today's expenses at a glance." = "Ve tus gastos de hoy de un vistazo.";
+"Upcoming Bills" = "Próximas facturas";
+"See your next subscription billing dates." = "Consulta tus próximas fechas de cobro.";
+"Next Billing" = "Próximo cobro";
+"Upcoming Subscriptions" = "Próximas suscripciones";
+"No expenses today" = "Sin gastos hoy";
+"No subscriptions" = "Sin suscripciones";
+"No data" = "Sin datos";
+"In %lld days" = "En %lld días";
+
+/* Interpolated strings */
+"'%@' is a built-in category and cannot be deleted." = "'%@' es una categoría integrada y no se puede eliminar.";
+"A category named '%@' already exists." = "Ya existe una categoría llamada '%@'.";
+"Amounts in %@. Leave blank to remove a budget." = "Importes en %@. Deja en blanco para eliminar el presupuesto.";
+"Every %lld days" = "Cada %lld días";
+"Imported 1 expense." = "1 gasto importado.";
+"Imported %lld expenses." = "%lld gastos importados.";
+"Version %@, tap to copy" = "Versión %@, toca para copiar";
+"Active (%lld)" = "Activas (%lld)";
+"%lld subscriptions found" = "%lld suscripciones encontradas";
+
+/* Budget and notification strings */
+"You've spent %@ of your %@ budget." = "Has gastado %@ de tu presupuesto de %@.";
+"%@ at 80%% of budget" = "%@ al 80%% del presupuesto";
+"%@ budget reached" = "Presupuesto de %@ alcanzado";
+"%@ of %@ spent this month." = "%@ de %@ gastados este mes.";
+"%@ bills in 2 days" = "%@ se cobra en 2 días";

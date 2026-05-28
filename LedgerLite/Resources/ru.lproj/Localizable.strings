@@ -209,3 +209,41 @@
 "days" = "дней";
 "e.g. Coffee" = "напр. Кофе";
 "e.g. Your Netflix subscription renews on Jan 15 for $15.49…" = "напр. Подписка Netflix обновляется 15 января за $15.49…";
+
+/* Billing calendar, streak, month total */
+"Billing on this day" = "Платежи этого дня";
+"Calendar" = "Календарь";
+"List" = "Список";
+"View" = "Вид";
+"%lld-day streak" = "Серия %lld дней";
+"Month: %@" = "Месяц: %@";
+
+/* Widget display names and UI */
+"Today's Spending" = "Расходы сегодня";
+"See today's expenses at a glance." = "Расходы за сегодня с первого взгляда.";
+"Upcoming Bills" = "Ближайшие платежи";
+"See your next subscription billing dates." = "Следующие даты списания по подпискам.";
+"Next Billing" = "Следующее списание";
+"Upcoming Subscriptions" = "Предстоящие подписки";
+"No expenses today" = "Расходов сегодня нет";
+"No subscriptions" = "Нет подписок";
+"No data" = "Нет данных";
+"In %lld days" = "Через %lld дн.";
+
+/* Interpolated strings */
+"'%@' is a built-in category and cannot be deleted." = "'%@' — встроенная категория, её нельзя удалить.";
+"A category named '%@' already exists." = "Категория '%@' уже существует.";
+"Amounts in %@. Leave blank to remove a budget." = "Суммы в %@. Оставьте пустым, чтобы убрать бюджет.";
+"Every %lld days" = "Каждые %lld дн.";
+"Imported 1 expense." = "Импортирован 1 расход.";
+"Imported %lld expenses." = "Импортировано %lld расходов.";
+"Version %@, tap to copy" = "Версия %@, нажмите для копирования";
+"Active (%lld)" = "Активные (%lld)";
+"%lld subscriptions found" = "Найдено %lld подписок";
+
+/* Budget and notification strings */
+"You've spent %@ of your %@ budget." = "Вы потратили %@ из бюджета %@.";
+"%@ at 80%% of budget" = "%@: 80%% бюджета";
+"%@ budget reached" = "Бюджет %@ исчерпан";
+"%@ of %@ spent this month." = "%@ из %@ потрачено в этом месяце.";
+"%@ bills in 2 days" = "Списание %@ через 2 дня";
