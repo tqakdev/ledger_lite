@@ -247,3 +247,12 @@
 "%@ budget reached" = "%@ бюджеті таусылды";
 "%@ of %@ spent this month." = "Осы айда %@ сомасынан %@ жұмсалды.";
 "%@ bills in 2 days" = "%@ 2 күннен кейін есептеледі";
+
+/* Onboarding v2 */
+"Log any expense in seconds, with smart merchant suggestions." = "Кез келген шығынды секундтарда тіркеңіз, ақылды ұсыныстармен.";
+"Track recurring bills and get notified before they charge." = "Тұрақты есептерді бақылаңыз және алдын ала хабарлама алыңыз.";
+"See spending trends and category breakdowns at a glance." = "Шығындар үрдісін және санаттар бойынша бөліністі бір қарауда көріңіз.";
+"2-day advance billing reminders" = "Есептелуден 2 күн бұрын еске салу";
+"Budget limit warnings" = "Бюджет шегіне жақындаған кезде ескерту";
+"No spam — only what matters" = "Спам жоқ — тек маңызды нәрселер";
+"Skip for Now" = "Қазір өткізіп жіберу";

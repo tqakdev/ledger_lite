@@ -248,3 +248,12 @@
 "%@ budget reached" = "Presupuesto de %@ alcanzado";
 "%@ of %@ spent this month." = "%@ de %@ gastados este mes.";
 "%@ bills in 2 days" = "%@ se cobra en 2 días";
+
+/* Onboarding v2 */
+"Log any expense in seconds, with smart merchant suggestions." = "Registra cualquier gasto en segundos, con sugerencias inteligentes.";
+"Track recurring bills and get notified before they charge." = "Controla tus facturas recurrentes y recibe avisos antes del cobro.";
+"See spending trends and category breakdowns at a glance." = "Visualiza tendencias de gasto y categorías de un vistazo.";
+"2-day advance billing reminders" = "Recordatorios 2 días antes del cobro";
+"Budget limit warnings" = "Avisos al acercarte al límite del presupuesto";
+"No spam — only what matters" = "Sin spam, solo lo que importa";
+"Skip for Now" = "Ahora no";

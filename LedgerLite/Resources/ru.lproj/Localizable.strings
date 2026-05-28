@@ -247,3 +247,12 @@
 "%@ budget reached" = "Бюджет %@ исчерпан";
 "%@ of %@ spent this month." = "%@ из %@ потрачено в этом месяце.";
 "%@ bills in 2 days" = "Списание %@ через 2 дня";
+
+/* Onboarding v2 */
+"Log any expense in seconds, with smart merchant suggestions." = "Записывайте любые расходы за секунды с умными подсказками.";
+"Track recurring bills and get notified before they charge." = "Отслеживайте регулярные платежи и получайте уведомления заранее.";
+"See spending trends and category breakdowns at a glance." = "Смотрите динамику расходов и разбивку по категориям.";
+"2-day advance billing reminders" = "Напоминания за 2 дня до списания";
+"Budget limit warnings" = "Предупреждения о приближении к лимиту бюджета";
+"No spam — only what matters" = "Без спама — только важное";
+"Skip for Now" = "Пропустить";
