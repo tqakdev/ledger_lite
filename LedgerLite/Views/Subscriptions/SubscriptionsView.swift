@@ -332,8 +332,8 @@ private struct SubscriptionsBillingCalendar: View {
 
     private var weekdayLabels: some View {
         HStack(spacing: 0) {
-            ForEach(shortWeekdaySymbols, id: \.self) { sym in
-                Text(sym)
+            ForEach(shortWeekdaySymbols.indices, id: \.self) { i in
+                Text(shortWeekdaySymbols[i])
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)

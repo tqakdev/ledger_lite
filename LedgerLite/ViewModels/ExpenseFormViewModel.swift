@@ -165,7 +165,7 @@ final class ExpenseFormViewModel {
     // MARK: - Private
 
     private func loadRecentMerchants() {
-        let recent = (try? expenseRepository.fetchAll()) ?? []
+        let recent = (try? expenseRepository.fetchRecent(limit: 500)) ?? []
         var seen = Set<String>()
         recentMerchants = recent
             .compactMap { $0.merchant }

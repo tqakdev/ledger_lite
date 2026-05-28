@@ -1,5 +1,18 @@
 import SwiftUI
 
+private enum _CurrencySymbolCache {
+    private static var cache: [String: String] = [:]
+    static func symbol(for code: String) -> String {
+        if let cached = cache[code] { return cached }
+        let fmt = NumberFormatter()
+        fmt.numberStyle = .currency
+        fmt.currencyCode = code
+        let symbol = fmt.currencySymbol ?? code
+        cache[code] = symbol
+        return symbol
+    }
+}
+
 // MARK: - Shared summary card used across Today, History, and Subscriptions tabs
 
 struct SummaryCard<Supplement: View>: View {
@@ -64,16 +77,14 @@ struct SummaryCard<Supplement: View>: View {
     }
 
     private var amountText: Text {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = money.currencyCode
-        let sym = formatter.currencySymbol ?? money.currencyCode
+        let sym = _CurrencySymbolCache.symbol(for: money.currencyCode)
         let full = money.formatted()
         let numStr = full.replacingOccurrences(of: sym, with: "").trimmingCharacters(in: .whitespaces)
         let symText = Text(sym).font(.system(.title2, design: .rounded, weight: .bold))
         let numText = Text(numStr).font(.system(.largeTitle, design: .rounded, weight: .bold)).monospacedDigit()
         return full.hasPrefix(sym) ? symText + numText : numText + Text(" ") + symText
     }
+
 }
 
 extension SummaryCard where Supplement == EmptyView {

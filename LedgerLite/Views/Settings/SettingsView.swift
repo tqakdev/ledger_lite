@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import LocalAuthentication
+import WidgetKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -512,6 +513,7 @@ private struct HomeCurrencyPickerView: View {
         List(Constants.App.supportedCurrencies, id: \.self) { code in
             Button {
                 selected = code
+                WidgetCenter.shared.reloadAllTimelines()
                 // Background rate fetch — idempotent, failure is silent
                 Task {
                     try? await CurrencyService(context: modelContext)

@@ -26,6 +26,12 @@ final class ExpenseRepository {
         )
     }
 
+    func fetchRecent(limit: Int) throws -> [Expense] {
+        var descriptor = FetchDescriptor<Expense>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        descriptor.fetchLimit = limit
+        return try context.fetch(descriptor)
+    }
+
     func add(_ expense: Expense) throws {
         context.insert(expense)
         try context.save()
