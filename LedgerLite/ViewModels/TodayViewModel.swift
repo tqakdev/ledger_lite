@@ -50,15 +50,18 @@ final class TodayViewModel {
         do {
             expenses = try expenseRepository.fetchToday()
             todayTotalMinor = expenses.totalInHomeCurrency(homeCurrencyCode)
-            dailyAverageMinor = computeDailyAverage()
-            currentStreak = computeStreak()
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
             AppLogger.ui.error("Today refresh failed: \(error)")
         }
         isLoading = false
-        Task { BudgetAlertService(context: modelContext).checkBudgets() }
+        // Defer expensive historical queries so the main list renders first
+        Task {
+            dailyAverageMinor = computeDailyAverage()
+            currentStreak = computeStreak()
+            BudgetAlertService(context: modelContext).checkBudgets()
+        }
     }
 
     func deleteExpense(_ expense: Expense) {

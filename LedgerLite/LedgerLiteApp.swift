@@ -6,25 +6,37 @@ import CoreSpotlight
 
 @main
 struct LedgerLiteApp: App {
-    private let container: ModelContainer
+    // Container created asynchronously so App.init() returns immediately and the
+    // first frame renders before SwiftData opens the store.
+    @State private var container: ModelContainer?
 
     init() {
-        _ = MetricManager.shared   // register MetricKit subscriber before first scene activates
+        _ = MetricManager.shared
         UNUserNotificationCenter.current().delegate = AppNotificationDelegate.shared
-        container = Self.makeContainer()
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .task { await appDidLaunch() }
-                .onOpenURL { url in handleDeepLink(url) }
-                .onContinueUserActivity(CSSearchableItemActionType) { activity in
-                    // Spotlight tap — route to Today tab so the user can find the expense
-                    handleDeepLink(URL(string: "ledgerlite://today")!)
+            Group {
+                if let container {
+                    ContentView()
+                        .modelContainer(container)
+                        .task { await appDidLaunch(container: container) }
+                        .onOpenURL { url in handleDeepLink(url) }
+                        .onContinueUserActivity(CSSearchableItemActionType) { _ in
+                            handleDeepLink(URL(string: "ledgerlite://today")!)
+                        }
+                } else {
+                    Color(.systemBackground).ignoresSafeArea()
                 }
+            }
+            .task {
+                guard container == nil else { return }
+                container = await Task.detached(priority: .userInitiated) {
+                    Self.makeContainer()
+                }.value
+            }
         }
-        .modelContainer(container)
     }
 
     @MainActor
@@ -39,8 +51,8 @@ struct LedgerLiteApp: App {
     // MARK: - Private
 
     @MainActor
-    private func appDidLaunch() async {
-        seedCategoriesIfNeeded()
+    private func appDidLaunch(container: ModelContainer) async {
+        seedCategoriesIfNeeded(container: container)
         do {
             try await SubscriptionService(context: container.mainContext).generatePendingExpenses()
         } catch {
@@ -49,7 +61,7 @@ struct LedgerLiteApp: App {
     }
 
     @MainActor
-    private func seedCategoriesIfNeeded() {
+    private func seedCategoriesIfNeeded(container: ModelContainer) {
         do {
             try CategoryRepository(context: container.mainContext).seedIfNeeded()
         } catch {
@@ -70,9 +82,6 @@ struct LedgerLiteApp: App {
             ExchangeRateCache.self,
         ])
 
-        // Migration plan ensures future CloudKit / schema migrations are non-destructive.
-        // To enable iCloud sync: add CloudKit entitlements (paid Apple Developer account required),
-        // then change cloudKitDatabase: .none → .private below.
         if let groupURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: Constants.App.appGroupIdentifier) {
             let storeURL = groupURL.appendingPathComponent("LedgerLite.store")
@@ -82,13 +91,11 @@ struct LedgerLiteApp: App {
                 return try ModelContainer(for: schema, migrationPlan: LedgerLiteMigrationPlan.self, configurations: [config])
             } catch {
                 AppLogger.data.error("ModelContainer (App Group) init failed: \(error)")
-                // Fall through to default location
             }
         } else {
-            AppLogger.data.warning("App Group container unavailable — using default store. Register \(Constants.App.appGroupIdentifier) in the Developer Portal for widget data sharing.")
+            AppLogger.data.warning("App Group container unavailable — using default store.")
         }
 
-        // Default location: works without provisioning, but widget can't access this store.
         do {
             let config = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
             return try ModelContainer(for: schema, migrationPlan: LedgerLiteMigrationPlan.self, configurations: [config])
@@ -97,8 +104,6 @@ struct LedgerLiteApp: App {
         }
     }
 
-    /// Sets WAL journal mode before SwiftData opens the store, eliminating the
-    /// "not configured in WAL mode" I/O warning from the SQLite subsystem.
     private static func enableWAL(at url: URL) {
         var db: OpaquePointer?
         guard sqlite3_open_v2(url.path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil) == SQLITE_OK else { return }
