@@ -11,6 +11,7 @@ struct InsightsView: View {
     @State private var shareItems: [Any] = []
     @State private var showError = false
     @State private var errorText = ""
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
         NavigationStack {
@@ -511,7 +512,7 @@ struct InsightsView: View {
     private func shareInsightsSummary(_ vm: InsightsViewModel) {
         let card = SummaryShareCardView(vm: vm)
         let renderer = ImageRenderer(content: card.frame(width: 360))
-        renderer.scale = UIScreen.main.scale
+        renderer.scale = displayScale
         if let image = renderer.uiImage {
             shareItems = [image]
         } else {

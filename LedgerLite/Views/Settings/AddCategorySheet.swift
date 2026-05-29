@@ -30,10 +30,10 @@ struct AddCategorySheet: View {
         "#98D8C8", "#F7DC6F", "#BB8FCE", "#BDC3C7", "#E74C3C", "#3498DB",
     ]
 
-    private var iconColumns: [GridItem] {
-        let count = UIScreen.main.bounds.width < 390 ? 5 : 6
-        return Array(repeating: GridItem(.flexible(), spacing: 10), count: count)
-    }
+    // Adaptive grids fill the available width on any device size, in landscape,
+    // and at large Dynamic Type without hard-coding a column count.
+    private let iconColumns = [GridItem(.adaptive(minimum: 48), spacing: 12)]
+    private let colorColumns = [GridItem(.adaptive(minimum: 44), spacing: 12)]
 
     var body: some View {
         NavigationStack {
@@ -152,7 +152,7 @@ struct AddCategorySheet: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(String(localized: "Color"))
                 .font(.headline)
-            LazyVGrid(columns: iconColumns, spacing: 12) {
+            LazyVGrid(columns: colorColumns, spacing: 12) {
                 ForEach(colors, id: \.self) { hex in
                     Button {
                         selectedColor = hex
