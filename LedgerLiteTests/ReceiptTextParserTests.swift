@@ -162,37 +162,19 @@ struct ReceiptParserReceiptTests {
         #expect(r.lineItems.isEmpty)
     }
 
-    @Test("wrapped description merges into its priced line")
-    func wrappedLineItem() {
-        let text = """
-        NIKE STORE
-        Air Jordan 4 (Men's
-        x1 $489.00
-        10.5) denim edition
-        Premium sneaker cleaner x1 $32.99
-        Total $521.99
-        """
-        let r = ReceiptTextParser.parse(text)
-        #expect(r.lineItems.count == 2)
-        #expect(r.lineItems.first?.name == "Air Jordan 4 (Men's x1")
-        #expect(r.lineItems.first?.amountMinor == 48900)
-        #expect(r.lineItems.last?.name == "Premium sneaker cleaner x1")
-        #expect(r.amountMinor == 52199)
-    }
-
-    @Test("priced line with only a quantity and no description above it is skipped")
+    @Test("a bare amount row with no description is not an item")
     func quantityOnlyLineSkipped() {
-        // No descriptive line precedes the quantity-only price, so there's
-        // nothing to name the item — it must not produce a junk "x1" entry.
+        // Rejoining wrapped descriptions is ReceiptLineGrouper's job; the parser
+        // only reads clean rows, so a row that's just a quantity+price is skipped.
         let r = ReceiptTextParser.parse("x1 $5.00\nTotal $5.00")
         #expect(r.lineItems.isEmpty)
     }
 
-    @Test("real Vision OCR of the Nike receipt: total + all four items")
+    @Test("Nike receipt (geometry-reconstructed rows): total + all four items")
     func realNikeOCR() {
-        // Captured verbatim from Vision on the actual receipt — note the column is
-        // split onto separate lines and interleaved (price-above-name, name-above-price),
-        // and "10.5" (shoe size) / "1104" (card) must not be read as money.
+        // These are the rows ReceiptLineGrouper produces from the real Vision output —
+        // description and price column rejoined. "10.5" (size) / "1104" (card) are
+        // not money; subtotal/tax/total/card rows are excluded.
         let text = """
         NIKE STORE
         2100 Southcenter Mall
@@ -202,23 +184,16 @@ struct ReceiptParserReceiptTests {
         Receipt: NKX-904118
         Associate: J. Calder
         Purchase: In-store
-        x1 $489.00
-        Air Jordan 4 (Men's
+        Air Jordan 4 (Men's x1 $489.00
         10.5) A denim edition
         Premium sneaker cleaner x1 $32.99
         kit
-        Crew socks (2-pack) x2
-        $28.00
-        Lace set (extra) x1
-        $14.00
-        $563.99
-        Subtotal
-        $47.11
-        Sales tax
-        $611.10
-        Total
-        **** 1104
-        Card number
+        Crew socks (2-pack) x2 $28.00
+        Lace set (extra) x1 $14.00
+        Subtotal $563.99
+        Sales tax $47.11
+        Total $611.10
+        Card number **** 1104
         """
         let r = ReceiptTextParser.parse(text)
         #expect(r.merchant == "NIKE STORE")
@@ -232,6 +207,50 @@ struct ReceiptParserReceiptTests {
         #expect(r.lineItems[1].name.contains("Premium sneaker cleaner"))
         #expect(r.lineItems[2].name.contains("Crew socks"))
         #expect(r.lineItems[3].name.contains("Lace set"))
+    }
+
+    @Test("Lidl receipt (geometry rows): groceries kept, payment/tax/unit-price dropped")
+    func realLidlOCR() {
+        // Geometry-reconstructed rows from the real Vision output of a Portuguese
+        // Lidl receipt (decimal comma, no currency symbol, pt-PT payment terms).
+        let text = """
+        LODL
+        V. REAL STO ANTONIO
+        Contribuinte Nr. 503 340 855
+        EUR
+        TOMATE DE CACHO 0,80 B
+        0,540 kg x 1,49 EUR/kg
+        ABACAXI 1,33 B
+        1,345 kg x 0,99 EUR/kg
+        BATATA CONS. ROXA BX 2,37 B
+        AMEIXA RAIN. CLA.EMB. 1,99 B
+        MOZZARELLA SORT. 0,89 B
+        QUEIJO CABRA 1,99 B
+        QUEIJO FETA 1,79 B
+        AZEITE GALLO 1º 2,49 B
+        CORNICHONS 1,99 C
+        BRANCO REG RIBATEJO 2,58 C
+        2 x 1,29
+        AGUA DE NASCENTE 1,74 B
+        Total 19,96
+        DINHEIRO 20,00
+        TROCO -0,04
+        B 6% 14,52 15,39 0,87
+        """
+        let r = ReceiptTextParser.parse(text, defaultCurrency: "EUR")
+        #expect(r.currencyCode == "EUR")
+        #expect(r.amountMinor == 1996)
+        #expect(r.amountConfident)
+
+        #expect(r.lineItems.count == 11)
+        #expect(r.lineItems.first?.name == "TOMATE DE CACHO")
+        #expect(r.lineItems.first?.amountMinor == 80)
+        #expect(r.lineItems.contains { $0.name == "AZEITE GALLO 1º" && $0.amountMinor == 249 })
+        // Payment / tax / unit-price rows must not appear as items.
+        #expect(r.lineItems.allSatisfy { !$0.name.lowercased().contains("dinheiro") })
+        #expect(r.lineItems.allSatisfy { !$0.name.lowercased().contains("troco") })
+        #expect(r.lineItems.allSatisfy { !$0.name.lowercased().contains("kg") })
+        #expect(r.lineItems.allSatisfy { $0.amountMinor != 2000 && $0.amountMinor != 1996 })
     }
 
     @Test("zero-decimal currency (JPY) scales without fraction")

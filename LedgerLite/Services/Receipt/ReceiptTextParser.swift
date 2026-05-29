@@ -24,6 +24,7 @@ enum ReceiptTextParser {
     private static let totalExclusions: [String] = [
         "subtotal", "sub total", "tax", "vat", "gst", "tip", "gratuity",
         "change", "cash", "tendered", "savings", "discount", "points",
+        "val. total", "val total", "base imp",
     ]
 
     // Words that never make a good merchant guess. Note: "store"/"shop" are
@@ -178,12 +179,16 @@ enum ReceiptTextParser {
 
     // MARK: - Line items
 
-    // Lines that are payment/summary rows, never a purchased item.
+    // Rows that are summary / payment / tax / unit-price lines, never a purchased
+    // item. Includes a few non-English terms common on European receipts.
     private static let itemExclusions: [String] = [
         "subtotal", "sub total", "total", "tax", "vat", "gst", "tip", "gratuity",
         "balance", "amount", "change", "cash", "tendered", "card", "visa",
         "mastercard", "debit", "credit", "approved", "savings", "discount",
         "points", "to pay", "receipt", "associate", "purchase",
+        // Non-English (pt/es/fr/de/it): cash, change, VAT, tax base, per-unit.
+        "dinheiro", "troco", "efectivo", "cambio", "iva", "base imp", "importe",
+        "/kg", "kg x", "x 1,", "x 0,", "€/kg", "eur/kg",
     ]
 
     private static let nameTrimChars = CharacterSet(charactersIn: " \t-:•·*$€£¥₹")
@@ -193,51 +198,22 @@ enum ReceiptTextParser {
         return itemExclusions.contains { lower.contains($0) }
     }
 
-    private static func looksLikeName(_ line: String, decimals: Int) -> Bool {
-        line.filter { $0.isLetter }.count >= 3
-            && !isExcludedLine(line)
-            && lastMoney(in: line, decimals: decimals) == nil
-    }
-
-    /// Extracts purchased lines as (description, price). Real receipt OCR puts the
-    /// amount column on its own lines, in either order relative to the description
-    /// (price-above-name for one item, name-above-price for the next). So each
-    /// money line is paired with an adjacent description line on whichever side
-    /// has one. Summary/payment amounts are dropped because their neighbours are
-    /// excluded labels rather than item descriptions.
+    /// Extracts purchased lines from the geometry-reconstructed rows. Each row is
+    /// "DESCRIPTION … PRICE", so the item is simply the text before the trailing
+    /// money token. No cross-line guessing — `ReceiptLineGrouper` already rebuilt
+    /// the rows, which is what makes this reliable across layouts. A row needs a
+    /// real description (3+ letters) so unit-price/quantity rows ("2 x 1,29",
+    /// "B 6% …") and bare amount columns are skipped.
     private static func detectLineItems(lines: [String], decimals: Int) -> [ReceiptLineItem] {
         var items: [ReceiptLineItem] = []
-        var usedAsName = Set<Int>()
-
-        for (index, line) in lines.enumerated() {
+        for line in lines {
             if isExcludedLine(line) { continue }
             guard let money = lastMoney(in: line, decimals: decimals) else { continue }
 
             let ns = line as NSString
-            let before = ns.substring(to: money.range.location).trimmingCharacters(in: nameTrimChars)
-            let after = ns.substring(from: money.range.location + money.range.length).trimmingCharacters(in: nameTrimChars)
+            let name = ns.substring(to: money.range.location).trimmingCharacters(in: nameTrimChars)
+            guard name.filter({ $0.isLetter }).count >= 3 else { continue }
 
-            var name: String
-            if before.filter({ $0.isLetter }).count >= 3 {
-                name = before                                   // inline: "Premium sneaker cleaner x1 $32.99"
-            } else {
-                // The amount stands alone (maybe with a quantity like "x1") — borrow
-                // the description from an adjacent, unused, non-excluded line.
-                let quantity = (before + " " + after).trimmingCharacters(in: .whitespaces)
-                var borrowed: String?
-                for neighbour in [index - 1, index + 1] {
-                    guard neighbour >= 0, neighbour < lines.count, !usedAsName.contains(neighbour) else { continue }
-                    guard looksLikeName(lines[neighbour], decimals: decimals) else { continue }
-                    borrowed = lines[neighbour]
-                    usedAsName.insert(neighbour)
-                    break
-                }
-                guard let borrowed else { continue }            // no description nearby → not a real item
-                name = quantity.isEmpty ? borrowed : "\(borrowed) \(quantity)"
-            }
-
-            name = name.trimmingCharacters(in: nameTrimChars)
-            guard name.filter({ $0.isLetter }).count >= 2 else { continue }
             items.append(ReceiptLineItem(name: name, amountMinor: minorUnits(from: money.value, decimals: decimals)))
         }
         return items

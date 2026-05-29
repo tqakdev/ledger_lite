@@ -7,13 +7,21 @@ enum ReceiptScannerError: Error {
 }
 
 /// Thin wrapper around Vision's on-device text recognition. This is the
-/// untestable boundary (no real images in unit tests); all parsing logic lives
-/// in `ReceiptTextParser`, which this feeds.
+/// untestable boundary (no real images in unit tests); the row reconstruction
+/// (`ReceiptLineGrouper`) and field parsing (`ReceiptTextParser`) it feeds are
+/// both pure and tested.
 struct ReceiptScanner {
 
-    /// Recognizes text in an image and returns it as newline-separated lines in
-    /// top-to-bottom reading order. Runs off the main thread.
+    /// Recognizes text and returns it as newline-separated **visual rows** —
+    /// reconstructed from observation geometry, not Vision's reading order, so a
+    /// description and its price column end up on the same line. Runs off the
+    /// main thread.
     func recognizeText(in cgImage: CGImage) async throws -> String {
+        let words = try await recognizeWords(in: cgImage)
+        return ReceiptLineGrouper.rows(from: words).joined(separator: "\n")
+    }
+
+    private func recognizeWords(in cgImage: CGImage) async throws -> [OCRWord] {
         try await withCheckedThrowingContinuation { continuation in
             // Build the request inside the background block so no non-Sendable
             // Vision object is captured across the concurrency boundary.
@@ -24,10 +32,11 @@ struct ReceiptScanner {
                         return
                     }
                     let observations = (request.results as? [VNRecognizedTextObservation]) ?? []
-                    // Vision's origin is bottom-left, so a larger maxY sits higher on the page.
-                    let ordered = observations.sorted { $0.boundingBox.maxY > $1.boundingBox.maxY }
-                    let lines = ordered.compactMap { $0.topCandidates(1).first?.string }
-                    continuation.resume(returning: lines.joined(separator: "\n"))
+                    let words = observations.compactMap { observation -> OCRWord? in
+                        guard let text = observation.topCandidates(1).first?.string else { return nil }
+                        return OCRWord(text: text, frame: observation.boundingBox)
+                    }
+                    continuation.resume(returning: words)
                 }
                 request.recognitionLevel = .accurate
                 request.usesLanguageCorrection = true
