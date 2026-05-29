@@ -243,7 +243,7 @@
 		EF3EF5189A9A9CB44CA225EC /* SubscriptionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionsViewModel.swift; sourceTree = "<group>"; };
 		F49F00666E74FD3CC649AE33 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		FAFC2876C3543629571BAFA3 /* AutoDetectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoDetectTests.swift; sourceTree = "<group>"; };
-		"TEMP_2E2414CD-CBA0-4A7D-A48A-031DA7B2CD3F" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		"TEMP_6972064A-EC55-482E-B681-137C7FACFBB1" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -568,10 +568,10 @@
 			path = Subscription;
 			sourceTree = "<group>";
 		};
-		"TEMP_065291CE-7F6C-4E4C-9A1B-28D3237E2D77" /* Ledger Lite */ = {
+		"TEMP_E9B691EF-6DC0-4765-BC47-63D0C70C0D74" /* Ledger Lite */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_2E2414CD-CBA0-4A7D-A48A-031DA7B2CD3F" /* Local.xcconfig */,
+				"TEMP_6972064A-EC55-482E-B681-137C7FACFBB1" /* Local.xcconfig */,
 			);
 			path = "Ledger Lite";
 			sourceTree = "<group>";
@@ -849,7 +849,7 @@
 /* Begin XCBuildConfiguration section */
 		3B2F164CD79B9819946D0E3B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_2E2414CD-CBA0-4A7D-A48A-031DA7B2CD3F" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_6972064A-EC55-482E-B681-137C7FACFBB1" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -950,7 +950,7 @@
 		};
 		65BA2CED960B86314443BB53 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_2E2414CD-CBA0-4A7D-A48A-031DA7B2CD3F" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_6972064A-EC55-482E-B681-137C7FACFBB1" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

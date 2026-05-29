@@ -16,7 +16,8 @@ struct AmountNumpad: View {
     let onBackspace: () -> Void
     var onSave: (() -> Void)? = nil
 
-    private let rows = [["7", "8", "9"], ["4", "5", "6"], ["1", "2", "3"]]
+    // Phone-keypad order: 1-2-3 on top (matches iOS dialer / Cash App), then 0 row.
+    private let rows = [["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]]
 
     var body: some View {
         VStack(spacing: 8) {
