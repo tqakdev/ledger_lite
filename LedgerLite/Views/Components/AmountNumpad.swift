@@ -15,12 +15,28 @@ struct AmountNumpad: View {
     let onSeparator: () -> Void
     let onBackspace: () -> Void
     var onSave: (() -> Void)? = nil
+    /// When provided, shows a chevron to collapse the keypad and reveal the form.
+    var onHide: (() -> Void)? = nil
 
     // Phone-keypad order: 1-2-3 on top (matches iOS dialer / Cash App), then 0 row.
     private let rows = [["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]]
 
     var body: some View {
         VStack(spacing: 8) {
+            if let onHide {
+                HStack {
+                    Spacer()
+                    Button(action: onHide) {
+                        Image(systemName: "chevron.down")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel(String(localized: "Hide keypad"))
+                }
+            }
             ForEach(rows, id: \.self) { row in
                 HStack(spacing: 8) {
                     ForEach(row, id: \.self) { digit in

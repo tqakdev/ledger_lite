@@ -22,6 +22,9 @@ struct ExpenseFormSheet: View {
     @State private var detailsExpanded = false
     @State private var showScanner = false
     @State private var didAutoScan = false
+    // Whether the amount keypad is showing. Lets the user collapse *both* the
+    // keypad and the keyboard to read the full form (e.g. a long scanned note).
+    @State private var amountActive = true
     @State private var showError  = false
     @State private var errorText  = ""
 
@@ -42,7 +45,10 @@ struct ExpenseFormSheet: View {
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button(String(localized: "Done")) { focusedField = nil }
+                    Button(String(localized: "Done")) {
+                        focusedField = nil
+                        amountActive = false   // collapse everything so the form is fully visible
+                    }
                 }
             }
         }
@@ -70,6 +76,9 @@ struct ExpenseFormSheet: View {
                 if let vm = viewModel, vm.merchant.isEmpty == false || vm.note.isEmpty == false {
                     detailsExpanded = true
                 }
+                // Collapse the keypad so the scanned details are fully visible.
+                focusedField = nil
+                amountActive = false
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             } onCancel: {
                 showScanner = false
@@ -137,6 +146,11 @@ struct ExpenseFormSheet: View {
         .onChange(of: vm.merchant) { _, prefix in
             vm.updateMerchantSuggestions(prefix: prefix)
         }
+        .onChange(of: focusedField) { _, field in
+            // Once a text field is touched, don't let the keypad spring back when
+            // the keyboard is dismissed — keep it collapsed until the amount is tapped.
+            if field != nil { amountActive = false }
+        }
     }
 
     // MARK: - Scan receipt button
@@ -166,17 +180,41 @@ struct ExpenseFormSheet: View {
         if focusedField == .merchant, !viewModel.merchantSuggestions.isEmpty {
             merchantSuggestionBar(viewModel)
         } else if focusedField == nil {
-            AmountNumpad(
-                separator: separator,
-                allowsDecimal: Money.decimals(for: viewModel.currencyCode) > 0,
-                canSave: viewModel.canSave,
-                saveTitle: saveButtonTitle,
-                onDigit: { numpadDigit($0, viewModel) },
-                onSeparator: { numpadSeparator(viewModel) },
-                onBackspace: { numpadBackspace(viewModel) },
-                onSave: { Task { await save(viewModel) } }
-            )
+            if amountActive {
+                AmountNumpad(
+                    separator: separator,
+                    allowsDecimal: Money.decimals(for: viewModel.currencyCode) > 0,
+                    canSave: viewModel.canSave,
+                    saveTitle: saveButtonTitle,
+                    onDigit: { numpadDigit($0, viewModel) },
+                    onSeparator: { numpadSeparator(viewModel) },
+                    onBackspace: { numpadBackspace(viewModel) },
+                    onSave: { Task { await save(viewModel) } },
+                    onHide: { amountActive = false }
+                )
+            } else if viewModel.canSave {
+                // Keypad collapsed but the entry is valid — keep Save reachable.
+                collapsedSaveBar(viewModel)
+            }
         }
+        // A non-amount text field is focused → show nothing; the system keyboard
+        // and its Done toolbar handle dismissal.
+    }
+
+    private func collapsedSaveBar(_ viewModel: ExpenseFormViewModel) -> some View {
+        Button {
+            Task { await save(viewModel) }
+        } label: {
+            Text(saveButtonTitle)
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+        }
+        .buttonStyle(.borderedProminent)
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
+        .background(.bar)
     }
 
     // MARK: - Template strip
@@ -300,7 +338,10 @@ struct ExpenseFormSheet: View {
             )
         )
         .contentShape(Rectangle())
-        .onTapGesture { focusedField = nil }
+        .onTapGesture {
+            focusedField = nil
+            amountActive = true   // tapping the amount brings the keypad back
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(String(localized: "Amount"))
         .accessibilityValue(viewModel.formattedAmount())

@@ -54,8 +54,8 @@ struct ExpenseFormScanTests {
             amountConfident: false
         ))
 
-        #expect(vm.minorUnits == 0)
-        #expect(vm.scanLowConfidence)
+        #expect(vm.minorUnits == 1299)   // best guess pre-filled…
+        #expect(vm.scanLowConfidence)    // …but flagged for the user to verify
         #expect(vm.merchant == "Corner Store")
     }
 

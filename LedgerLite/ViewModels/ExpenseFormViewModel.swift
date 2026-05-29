@@ -144,13 +144,15 @@ final class ExpenseFormViewModel {
             self.date = date
         }
 
-        if receipt.amountConfident, let amount = receipt.amountMinor {
+        if let amount = receipt.amountMinor {
+            // Pre-fill the best guess either way — a flagged number the user can
+            // confirm beats a blank field they must retype. The warning shows
+            // only when we weren't confident it's the true total.
             minorUnits = amount
             amountString = AmountInputParser(currencyCode: currencyCode, locale: .current)
                 .format(minorUnits: amount)
-            scanLowConfidence = false
+            scanLowConfidence = !receipt.amountConfident
         } else {
-            // Don't pre-fill a number we're unsure of — leave it for the user.
             scanLowConfidence = true
         }
 

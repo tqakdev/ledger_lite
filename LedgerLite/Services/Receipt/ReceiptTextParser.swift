@@ -73,6 +73,8 @@ enum ReceiptTextParser {
     // MARK: - Total
 
     /// Returns the total in minor units and whether it came from an explicit label.
+    /// Vision often splits a "Total" label and its amount onto separate lines in
+    /// either order, so the amount is looked for on the same line and both neighbours.
     private static func detectTotal(lines: [String], decimals: Int) -> (Int?, Bool) {
         for tier in totalKeywordTiers {
             var best: Decimal?
@@ -81,20 +83,24 @@ enum ReceiptTextParser {
                 guard tier.contains(where: { lower.contains($0) }) else { continue }
                 guard !totalExclusions.contains(where: { lower.contains($0) }) else { continue }
 
-                // The amount is usually on the same line; if not, look at the next.
-                var amount = largestPriceLikeAmount(in: line)
-                if amount == nil, index + 1 < lines.count {
-                    amount = largestPriceLikeAmount(in: lines[index + 1])
+                var amount = lastMoney(in: line, decimals: decimals)?.value
+                if amount == nil {
+                    for neighbour in [index + 1, index - 1] where neighbour >= 0 && neighbour < lines.count {
+                        if let value = lastMoney(in: lines[neighbour], decimals: decimals)?.value {
+                            amount = value
+                            break
+                        }
+                    }
                 }
                 if let amount, amount > (best ?? 0) { best = amount }
             }
             if let best { return (minorUnits(from: best, decimals: decimals), true) }
         }
 
-        // Fallback: the largest price-like number anywhere (low confidence).
+        // Fallback: the largest money amount anywhere (low confidence).
         var fallback: Decimal?
         for line in lines {
-            if let amount = largestPriceLikeAmount(in: line), amount > (fallback ?? 0) {
+            if let amount = lastMoney(in: line, decimals: decimals)?.value, amount > (fallback ?? 0) {
                 fallback = amount
             }
         }
@@ -113,24 +119,31 @@ enum ReceiptTextParser {
         pattern: "\\d[\\d.,]*\\d|\\d"
     )
 
-    /// All numeric tokens on a line, paired with whether the token looks like a
-    /// price (has a fractional part). Prefers price-looking tokens so a card
-    /// number or quantity doesn't masquerade as the total.
-    private static func largestPriceLikeAmount(in line: String) -> Decimal? {
+    /// Interprets a numeric token as a money amount **only if** it has exactly the
+    /// currency's decimal places (e.g. for USD, "489.00" yes; "10.5" shoe size no;
+    /// "1104" card digits no). This is what separates real prices from the sizes,
+    /// quantities, phone numbers and card fragments that litter receipt OCR.
+    private static func moneyValue(_ token: String, decimals: Int) -> Decimal? {
+        let cleaned = token.filter { $0.isNumber || $0 == "." || $0 == "," }
+        guard !cleaned.isEmpty else { return nil }
+        if decimals > 0 {
+            guard let lastSep = cleaned.lastIndex(where: { $0 == "." || $0 == "," }) else { return nil }
+            let fraction = cleaned[cleaned.index(after: lastSep)...]
+            guard fraction.count == decimals, fraction.allSatisfy(\.isNumber) else { return nil }
+        }
+        return parseDecimal(token)
+    }
+
+    /// The last money amount on a line and its character range (for splitting the name off).
+    private static func lastMoney(in line: String, decimals: Int) -> (value: Decimal, range: NSRange)? {
         let ns = line as NSString
         let matches = numberRegex.matches(in: line, range: NSRange(location: 0, length: ns.length))
-        var priced: [Decimal] = []
-        var plain: [Decimal] = []
-        for match in matches {
-            let token = ns.substring(with: match.range)
-            guard let value = parseDecimal(token) else { continue }
-            if token.contains(".") || token.contains(",") {
-                priced.append(value)
-            } else {
-                plain.append(value)
+        for match in matches.reversed() {
+            if let value = moneyValue(ns.substring(with: match.range), decimals: decimals) {
+                return (value, match.range)
             }
         }
-        return priced.max() ?? plain.max()
+        return nil
     }
 
     /// Normalizes a localized number token ("1,234.56", "1.234,56", "12,50") to Decimal.
@@ -173,33 +186,59 @@ enum ReceiptTextParser {
         "points", "to pay", "receipt", "associate", "purchase",
     ]
 
-    /// Extracts purchased lines: a description followed by a price. Summary and
-    /// payment rows are excluded. Item names may be slightly truncated when the
-    /// description wraps across OCR lines — the price line is what's captured.
+    private static let nameTrimChars = CharacterSet(charactersIn: " \t-:•·*$€£¥₹")
+
+    private static func isExcludedLine(_ line: String) -> Bool {
+        let lower = line.lowercased()
+        return itemExclusions.contains { lower.contains($0) }
+    }
+
+    private static func looksLikeName(_ line: String, decimals: Int) -> Bool {
+        line.filter { $0.isLetter }.count >= 3
+            && !isExcludedLine(line)
+            && lastMoney(in: line, decimals: decimals) == nil
+    }
+
+    /// Extracts purchased lines as (description, price). Real receipt OCR puts the
+    /// amount column on its own lines, in either order relative to the description
+    /// (price-above-name for one item, name-above-price for the next). So each
+    /// money line is paired with an adjacent description line on whichever side
+    /// has one. Summary/payment amounts are dropped because their neighbours are
+    /// excluded labels rather than item descriptions.
     private static func detectLineItems(lines: [String], decimals: Int) -> [ReceiptLineItem] {
         var items: [ReceiptLineItem] = []
-        for line in lines {
-            let lower = line.lowercased()
-            guard !itemExclusions.contains(where: { lower.contains($0) }) else { continue }
+        var usedAsName = Set<Int>()
+
+        for (index, line) in lines.enumerated() {
+            if isExcludedLine(line) { continue }
+            guard let money = lastMoney(in: line, decimals: decimals) else { continue }
 
             let ns = line as NSString
-            let matches = numberRegex.matches(in: line, range: NSRange(location: 0, length: ns.length))
-            // The price is the last token with a fractional part.
-            guard let priceMatch = matches.last(where: { match in
-                let token = ns.substring(with: match.range)
-                return token.contains(".") || token.contains(",")
-            }) else { continue }
+            let before = ns.substring(to: money.range.location).trimmingCharacters(in: nameTrimChars)
+            let after = ns.substring(from: money.range.location + money.range.length).trimmingCharacters(in: nameTrimChars)
 
-            let token = ns.substring(with: priceMatch.range)
-            guard let value = parseDecimal(token) else { continue }
+            var name: String
+            if before.filter({ $0.isLetter }).count >= 3 {
+                name = before                                   // inline: "Premium sneaker cleaner x1 $32.99"
+            } else {
+                // The amount stands alone (maybe with a quantity like "x1") — borrow
+                // the description from an adjacent, unused, non-excluded line.
+                let quantity = (before + " " + after).trimmingCharacters(in: .whitespaces)
+                var borrowed: String?
+                for neighbour in [index - 1, index + 1] {
+                    guard neighbour >= 0, neighbour < lines.count, !usedAsName.contains(neighbour) else { continue }
+                    guard looksLikeName(lines[neighbour], decimals: decimals) else { continue }
+                    borrowed = lines[neighbour]
+                    usedAsName.insert(neighbour)
+                    break
+                }
+                guard let borrowed else { continue }            // no description nearby → not a real item
+                name = quantity.isEmpty ? borrowed : "\(borrowed) \(quantity)"
+            }
 
-            var name = ns.substring(to: priceMatch.range.location)
-                .trimmingCharacters(in: CharacterSet(charactersIn: " \t-:•·*$€£¥₹"))
-            // Need a real description, not just stray punctuation.
-            guard name.contains(where: { $0.isLetter }), name.count >= 2 else { continue }
-            name = name.trimmingCharacters(in: .whitespaces)
-
-            items.append(ReceiptLineItem(name: name, amountMinor: minorUnits(from: value, decimals: decimals)))
+            name = name.trimmingCharacters(in: nameTrimChars)
+            guard name.filter({ $0.isLetter }).count >= 2 else { continue }
+            items.append(ReceiptLineItem(name: name, amountMinor: minorUnits(from: money.value, decimals: decimals)))
         }
         return items
     }

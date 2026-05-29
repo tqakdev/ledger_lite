@@ -162,6 +162,78 @@ struct ReceiptParserReceiptTests {
         #expect(r.lineItems.isEmpty)
     }
 
+    @Test("wrapped description merges into its priced line")
+    func wrappedLineItem() {
+        let text = """
+        NIKE STORE
+        Air Jordan 4 (Men's
+        x1 $489.00
+        10.5) denim edition
+        Premium sneaker cleaner x1 $32.99
+        Total $521.99
+        """
+        let r = ReceiptTextParser.parse(text)
+        #expect(r.lineItems.count == 2)
+        #expect(r.lineItems.first?.name == "Air Jordan 4 (Men's x1")
+        #expect(r.lineItems.first?.amountMinor == 48900)
+        #expect(r.lineItems.last?.name == "Premium sneaker cleaner x1")
+        #expect(r.amountMinor == 52199)
+    }
+
+    @Test("priced line with only a quantity and no description above it is skipped")
+    func quantityOnlyLineSkipped() {
+        // No descriptive line precedes the quantity-only price, so there's
+        // nothing to name the item — it must not produce a junk "x1" entry.
+        let r = ReceiptTextParser.parse("x1 $5.00\nTotal $5.00")
+        #expect(r.lineItems.isEmpty)
+    }
+
+    @Test("real Vision OCR of the Nike receipt: total + all four items")
+    func realNikeOCR() {
+        // Captured verbatim from Vision on the actual receipt — note the column is
+        // split onto separate lines and interleaved (price-above-name, name-above-price),
+        // and "10.5" (shoe size) / "1104" (card) must not be read as money.
+        let text = """
+        NIKE STORE
+        2100 Southcenter Mall
+        Tukwila, WA 98188
+        (206) 555-7716
+        03/03/2026 6:18:42 PM
+        Receipt: NKX-904118
+        Associate: J. Calder
+        Purchase: In-store
+        x1 $489.00
+        Air Jordan 4 (Men's
+        10.5) A denim edition
+        Premium sneaker cleaner x1 $32.99
+        kit
+        Crew socks (2-pack) x2
+        $28.00
+        Lace set (extra) x1
+        $14.00
+        $563.99
+        Subtotal
+        $47.11
+        Sales tax
+        $611.10
+        Total
+        **** 1104
+        Card number
+        """
+        let r = ReceiptTextParser.parse(text)
+        #expect(r.merchant == "NIKE STORE")
+        #expect(r.currencyCode == "USD")
+        #expect(r.amountMinor == 61110)
+        #expect(r.amountConfident)
+
+        #expect(r.lineItems.count == 4)
+        #expect(r.lineItems.map(\.amountMinor) == [48900, 3299, 2800, 1400])
+        #expect(r.lineItems[0].name.contains("Air Jordan 4"))
+        #expect(r.lineItems[1].name.contains("Premium sneaker cleaner"))
+        #expect(r.lineItems[2].name.contains("Crew socks"))
+        #expect(r.lineItems[3].name.contains("Lace set"))
+    }
+
     @Test("zero-decimal currency (JPY) scales without fraction")
     func jpyZeroDecimals() {
         let text = """
