@@ -14,11 +14,9 @@ struct SubscriptionFormSheet: View {
     let mode: SubscriptionFormMode
     let onComplete: () -> Void
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel: SubscriptionFormViewModel?
     @FocusState private var focusedField: SubscriptionFormField?
     @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
-    @State private var caretVisible = true
     @State private var showError = false
     @State private var errorText = ""
 
@@ -125,16 +123,7 @@ struct SubscriptionFormSheet: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.4)
 
-                    RoundedRectangle(cornerRadius: 1.5)
-                        .fill(Color.accentColor)
-                        .frame(width: 3, height: amountFontSize * 0.62)
-                        .opacity(reduceMotion ? 1 : (caretVisible ? 1 : 0))
-                        .onAppear {
-                            guard !reduceMotion else { return }
-                            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
-                                caretVisible = false
-                            }
-                        }
+                    BlinkingCaret(height: amountFontSize * 0.62)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)

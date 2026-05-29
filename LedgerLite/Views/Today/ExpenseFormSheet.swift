@@ -10,7 +10,6 @@ private enum ExpenseFormField: Hashable {
 struct ExpenseFormSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let mode: ExpenseFormMode
     let onComplete: () -> Void
@@ -20,7 +19,6 @@ struct ExpenseFormSheet: View {
     @FocusState private var focusedField: ExpenseFormField?
     @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
     @State private var detailsExpanded = false
-    @State private var caretVisible = true
     @State private var showError  = false
     @State private var errorText  = ""
 
@@ -233,16 +231,7 @@ struct ExpenseFormSheet: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.4)
 
-                RoundedRectangle(cornerRadius: 1.5)
-                    .fill(Color.accentColor)
-                    .frame(width: 3, height: amountFontSize * 0.62)
-                    .opacity(reduceMotion ? 1 : (caretVisible ? 1 : 0))
-                    .onAppear {
-                        guard !reduceMotion else { return }
-                        withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
-                            caretVisible = false
-                        }
-                    }
+                BlinkingCaret(height: amountFontSize * 0.62)
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)

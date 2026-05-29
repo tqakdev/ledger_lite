@@ -80,6 +80,7 @@
 		BC3ED8EC2FDADE419BAC4F3E /* CategoryPickerStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AD717977C12511921BB347 /* CategoryPickerStrip.swift */; };
 		BDEA2CC98BB2D86228A8E0AA /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521E87C073F4D7F6F15DB8C2 /* Enums.swift */; };
 		C53052389135A3C0579940F9 /* ExpenseTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7EF3229BCAC8E659489EC3 /* ExpenseTemplate.swift */; };
+		C5BB27FCB0055A5A04CA7B99 /* BlinkingCaret.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECE944CE912A50BE602494A4 /* BlinkingCaret.swift */; };
 		C602F3E17A72164F8B862646 /* SubscriptionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23EFAE4BA6CF4C663208D4FC /* SubscriptionRowView.swift */; };
 		C66270B43519573E8EF04FEC /* AmountInputParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2569CF2D6645681A201B54B8 /* AmountInputParser.swift */; };
 		C722CAF22A878FB323EAA175 /* ExchangeRateCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817D7907E0A96A011CF45248 /* ExchangeRateCache.swift */; };
@@ -237,11 +238,12 @@
 		E92A9D38DE34804CE8ACE156 /* CurrencyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyError.swift; sourceTree = "<group>"; };
 		EA3017F873D700B3FD82C6EC /* CandidateCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidateCardView.swift; sourceTree = "<group>"; };
 		EB37A75172F36C0DAD8C8CE6 /* SpotlightService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightService.swift; sourceTree = "<group>"; };
+		ECE944CE912A50BE602494A4 /* BlinkingCaret.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlinkingCaret.swift; sourceTree = "<group>"; };
 		EF36F43D34865D64F594D76E /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
 		EF3EF5189A9A9CB44CA225EC /* SubscriptionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionsViewModel.swift; sourceTree = "<group>"; };
 		F49F00666E74FD3CC649AE33 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		FAFC2876C3543629571BAFA3 /* AutoDetectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoDetectTests.swift; sourceTree = "<group>"; };
-		"TEMP_77229CB9-4455-40BC-AD75-B196CD79E224" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		"TEMP_2E2414CD-CBA0-4A7D-A48A-031DA7B2CD3F" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -495,6 +497,7 @@
 			isa = PBXGroup;
 			children = (
 				C1ED6C76295B332AE1FE9384 /* AmountNumpad.swift */,
+				ECE944CE912A50BE602494A4 /* BlinkingCaret.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -565,10 +568,10 @@
 			path = Subscription;
 			sourceTree = "<group>";
 		};
-		"TEMP_6AC9928F-7307-4FFC-B53C-CE0B843DB0D2" /* Ledger Lite */ = {
+		"TEMP_065291CE-7F6C-4E4C-9A1B-28D3237E2D77" /* Ledger Lite */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_77229CB9-4455-40BC-AD75-B196CD79E224" /* Local.xcconfig */,
+				"TEMP_2E2414CD-CBA0-4A7D-A48A-031DA7B2CD3F" /* Local.xcconfig */,
 			);
 			path = "Ledger Lite";
 			sourceTree = "<group>";
@@ -723,6 +726,7 @@
 				84235831413BDCDFCF8B9439 /* AppNotificationDelegate.swift in Sources */,
 				713751EF16777E8649CA919B /* AutoDetectSheet.swift in Sources */,
 				E614726BF73625B2DAD80E9F /* AutoDetectViewModel.swift in Sources */,
+				C5BB27FCB0055A5A04CA7B99 /* BlinkingCaret.swift in Sources */,
 				D2CFDCFA4F0A71ACA6FFABF2 /* BudgetAlertService.swift in Sources */,
 				C9FC4864F4CB48C4A38C03DE /* BudgetsSettingsView.swift in Sources */,
 				26D5A924BAB7F239982A7A72 /* CandidateCardView.swift in Sources */,
@@ -845,7 +849,7 @@
 /* Begin XCBuildConfiguration section */
 		3B2F164CD79B9819946D0E3B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_77229CB9-4455-40BC-AD75-B196CD79E224" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_2E2414CD-CBA0-4A7D-A48A-031DA7B2CD3F" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -946,7 +950,7 @@
 		};
 		65BA2CED960B86314443BB53 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_77229CB9-4455-40BC-AD75-B196CD79E224" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_2E2414CD-CBA0-4A7D-A48A-031DA7B2CD3F" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

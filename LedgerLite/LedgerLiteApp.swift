@@ -74,7 +74,7 @@ struct LedgerLiteApp: App {
     ///
     /// Falls back to the default sandbox location when the App Group container is
     /// unavailable (Simulator without a provisioning profile, CI builds).
-    private static func makeContainer() -> ModelContainer {
+    nonisolated private static func makeContainer() -> ModelContainer {
         let schema = Schema([
             Expense.self,
             Subscription.self,
@@ -104,7 +104,7 @@ struct LedgerLiteApp: App {
         }
     }
 
-    private static func enableWAL(at url: URL) {
+    nonisolated private static func enableWAL(at url: URL) {
         var db: OpaquePointer?
         guard sqlite3_open_v2(url.path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil) == SQLITE_OK else { return }
         defer { sqlite3_close(db) }
