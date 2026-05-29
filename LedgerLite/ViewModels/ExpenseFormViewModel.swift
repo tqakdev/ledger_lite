@@ -154,6 +154,14 @@ final class ExpenseFormViewModel {
             scanLowConfidence = true
         }
 
+        // List the individual purchases in the note (only when there are
+        // several and the user hasn't typed their own note).
+        if note.isEmpty, receipt.lineItems.count >= 2 {
+            note = receipt.lineItems
+                .map { "\($0.name) — \(Money(minorUnits: $0.amountMinor, currencyCode: currencyCode).formatted())" }
+                .joined(separator: "\n")
+        }
+
         if let merchant = receipt.merchant, !merchant.isEmpty {
             let available = Set(categories.map(\.name))
             if let guessed = MerchantCategoryGuesser.guess(

@@ -108,6 +108,60 @@ struct ReceiptParserReceiptTests {
         #expect(r.merchant == "Hello")
     }
 
+    @Test("store name containing 'Store' is not mistaken for noise; address is skipped")
+    func storeNameNotRejected() {
+        let text = """
+        NIKE STORE
+        2100 Southcenter Mall
+        Tukwila, WA 98188
+        (206) 555-7716
+        03/03/2026 6:18:42 PM
+        Air Jordan 4 x1 $489.00
+        Subtotal $563.99
+        Sales tax $47.11
+        Total $611.10
+        """
+        let r = ReceiptTextParser.parse(text)
+        #expect(r.merchant == "NIKE STORE")
+        #expect(r.amountMinor == 61110)
+        #expect(r.currencyCode == "USD")
+    }
+
+    @Test("merchant line starting with a number (address) is skipped")
+    func addressLineSkipped() {
+        let r = ReceiptTextParser.parse("123 Market Street\nCoffee House\nTotal $5.00")
+        #expect(r.merchant == "Coffee House")
+    }
+
+    @Test("line items are extracted, excluding subtotal/tax/total")
+    func lineItems() {
+        let text = """
+        NIKE STORE
+        2100 Southcenter Mall
+        Air Jordan 4 (Men's) x1 $489.00
+        Premium sneaker cleaner x1 $32.99
+        Crew socks (2-pack) x2 $28.00
+        Lace set (extra) x1 $14.00
+        Subtotal $563.99
+        Sales tax $47.11
+        Total $611.10
+        """
+        let r = ReceiptTextParser.parse(text)
+        #expect(r.lineItems.count == 4)
+        #expect(r.lineItems.first?.name == "Air Jordan 4 (Men's) x1")
+        #expect(r.lineItems.first?.amountMinor == 48900)
+        #expect(r.lineItems.last?.amountMinor == 1400)
+        // No subtotal/tax/total leaking in as items.
+        #expect(r.lineItems.allSatisfy { !$0.name.lowercased().contains("total") })
+        #expect(r.lineItems.allSatisfy { $0.amountMinor != 61110 })
+    }
+
+    @Test("single-line receipt with a price but no description yields no items")
+    func noSpuriousItems() {
+        let r = ReceiptTextParser.parse("Corner Store\nTotal $5.00")
+        #expect(r.lineItems.isEmpty)
+    }
+
     @Test("zero-decimal currency (JPY) scales without fraction")
     func jpyZeroDecimals() {
         let text = """

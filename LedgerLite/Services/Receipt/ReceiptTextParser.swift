@@ -26,11 +26,11 @@ enum ReceiptTextParser {
         "change", "cash", "tendered", "savings", "discount", "points",
     ]
 
-    // Words that never make a good merchant guess.
+    // Words that never make a good merchant guess. Note: "store"/"shop" are
+    // deliberately NOT here — they appear in real names ("Nike Store", "Body Shop").
     private static let merchantNoise: Set<String> = [
-        "receipt", "invoice", "tax invoice", "order", "table", "server",
-        "cashier", "welcome", "thank you", "thanks", "tel", "phone", "fax",
-        "vat", "gst", "date", "time", "store", "terminal",
+        "receipt", "invoice", "order #", "cashier", "welcome", "thank you",
+        "thanks", "tel:", "phone", "fax", "date", "time",
     ]
 
     // MARK: - Public
@@ -51,6 +51,7 @@ enum ReceiptTextParser {
             merchant: detectMerchant(lines: lines),
             date: detectDate(in: text),
             amountConfident: confident,
+            lineItems: detectLineItems(lines: lines, decimals: decimals),
             rawText: text
         )
     }
@@ -162,6 +163,47 @@ enum ReceiptTextParser {
         return Decimal(string: s, locale: Locale(identifier: "en_US_POSIX"))
     }
 
+    // MARK: - Line items
+
+    // Lines that are payment/summary rows, never a purchased item.
+    private static let itemExclusions: [String] = [
+        "subtotal", "sub total", "total", "tax", "vat", "gst", "tip", "gratuity",
+        "balance", "amount", "change", "cash", "tendered", "card", "visa",
+        "mastercard", "debit", "credit", "approved", "savings", "discount",
+        "points", "to pay", "receipt", "associate", "purchase",
+    ]
+
+    /// Extracts purchased lines: a description followed by a price. Summary and
+    /// payment rows are excluded. Item names may be slightly truncated when the
+    /// description wraps across OCR lines — the price line is what's captured.
+    private static func detectLineItems(lines: [String], decimals: Int) -> [ReceiptLineItem] {
+        var items: [ReceiptLineItem] = []
+        for line in lines {
+            let lower = line.lowercased()
+            guard !itemExclusions.contains(where: { lower.contains($0) }) else { continue }
+
+            let ns = line as NSString
+            let matches = numberRegex.matches(in: line, range: NSRange(location: 0, length: ns.length))
+            // The price is the last token with a fractional part.
+            guard let priceMatch = matches.last(where: { match in
+                let token = ns.substring(with: match.range)
+                return token.contains(".") || token.contains(",")
+            }) else { continue }
+
+            let token = ns.substring(with: priceMatch.range)
+            guard let value = parseDecimal(token) else { continue }
+
+            var name = ns.substring(to: priceMatch.range.location)
+                .trimmingCharacters(in: CharacterSet(charactersIn: " \t-:•·*$€£¥₹"))
+            // Need a real description, not just stray punctuation.
+            guard name.contains(where: { $0.isLetter }), name.count >= 2 else { continue }
+            name = name.trimmingCharacters(in: .whitespaces)
+
+            items.append(ReceiptLineItem(name: name, amountMinor: minorUnits(from: value, decimals: decimals)))
+        }
+        return items
+    }
+
     // MARK: - Merchant
 
     private static func detectMerchant(lines: [String]) -> String? {
@@ -169,8 +211,10 @@ enum ReceiptTextParser {
             let lower = line.lowercased()
             guard line.count >= 2, line.count <= 40 else { continue }
             guard line.contains(where: { $0.isLetter }) else { continue }
+            // Skip lines starting with a digit — addresses, dates, receipt numbers.
+            guard let first = line.first, !first.isNumber else { continue }
             guard !merchantNoise.contains(where: { lower.contains($0) }) else { continue }
-            // Skip lines that are mostly digits (addresses, phone numbers, dates).
+            // Skip lines that are mostly digits (phone numbers, codes).
             let digits = line.filter { $0.isNumber }.count
             guard digits * 2 < line.count else { continue }
             return line

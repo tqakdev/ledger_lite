@@ -58,4 +58,46 @@ struct ExpenseFormScanTests {
         #expect(vm.scanLowConfidence)
         #expect(vm.merchant == "Corner Store")
     }
+
+    @Test("line items populate an empty note as a breakdown")
+    func lineItemsFillNote() throws {
+        let container = try makeContainer()
+        let vm = ExpenseFormViewModel(mode: .add, context: container.mainContext, homeCurrencyCode: "USD")
+        vm.loadCategories()
+
+        vm.applyParsedReceipt(ParsedReceipt(
+            amountMinor: 51700,
+            currencyCode: "USD",
+            merchant: "Nike Store",
+            amountConfident: true,
+            lineItems: [
+                ReceiptLineItem(name: "Air Jordan 4 x1", amountMinor: 48900),
+                ReceiptLineItem(name: "Crew socks x2", amountMinor: 2800),
+            ]
+        ))
+
+        #expect(vm.note.contains("Air Jordan 4 x1"))
+        #expect(vm.note.contains("Crew socks x2"))
+        #expect(vm.note.split(separator: "\n").count == 2)
+    }
+
+    @Test("line items do not overwrite a note the user already has")
+    func lineItemsPreserveExistingNote() throws {
+        let container = try makeContainer()
+        let vm = ExpenseFormViewModel(mode: .add, context: container.mainContext, homeCurrencyCode: "USD")
+        vm.loadCategories()
+        vm.note = "my own note"
+
+        vm.applyParsedReceipt(ParsedReceipt(
+            amountMinor: 51700,
+            currencyCode: "USD",
+            amountConfident: true,
+            lineItems: [
+                ReceiptLineItem(name: "Item A", amountMinor: 100),
+                ReceiptLineItem(name: "Item B", amountMinor: 200),
+            ]
+        ))
+
+        #expect(vm.note == "my own note")
+    }
 }

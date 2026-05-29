@@ -357,11 +357,10 @@ struct ExpenseFormSheet: View {
                     Image(systemName: "note.text")
                         .foregroundStyle(.secondary)
                         .frame(width: 20)
-                    TextField(String(localized: "Note"), text: $vm.note)
+                    TextField(String(localized: "Note"), text: $vm.note, axis: .vertical)
                         .textFieldStyle(.plain)
+                        .lineLimit(1...8)
                         .focused($focusedField, equals: .note)
-                        .submitLabel(.done)
-                        .onSubmit { focusedField = nil }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)

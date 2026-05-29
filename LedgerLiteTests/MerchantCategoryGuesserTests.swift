@@ -34,6 +34,11 @@ struct MerchantCategoryGuesserTests {
         #expect(MerchantCategoryGuesser.guess(merchant: "Tesco Supermarket", history: [], available: available) == "Groceries")
     }
 
+    @Test("keyword fallback: NIKE STORE → Shopping")
+    func keywordShoppingNike() {
+        #expect(MerchantCategoryGuesser.guess(merchant: "NIKE STORE", history: [], available: available) == "Shopping")
+    }
+
     @Test("no match → nil")
     func noMatch() {
         #expect(MerchantCategoryGuesser.guess(merchant: "Zxqv Holdings", history: [], available: available) == nil)
