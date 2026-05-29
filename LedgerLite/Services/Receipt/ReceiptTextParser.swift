@@ -44,7 +44,12 @@ enum ReceiptTextParser {
 
         let currency = detectCurrency(in: text) ?? defaultCurrency
         let decimals = Money.decimals(for: currency ?? "USD")
-        let (amount, confident) = detectTotal(lines: lines, decimals: decimals)
+
+        // Reconcile line items by the universal invariant — items sum to the
+        // (sub)total. This both ends the item list (dropping summary/payment/tax
+        // rows in any language) and yields a language-agnostic total fallback.
+        let reconciled = reconcileItems(lines: lines, decimals: decimals)
+        let (amount, confident) = detectTotal(lines: lines, decimals: decimals, reconciledTotal: reconciled.total)
 
         return ParsedReceipt(
             amountMinor: amount,
@@ -52,7 +57,7 @@ enum ReceiptTextParser {
             merchant: detectMerchant(lines: lines),
             date: detectDate(in: text),
             amountConfident: confident,
-            lineItems: detectLineItems(lines: lines, decimals: decimals),
+            lineItems: reconciled.items,
             rawText: text
         )
     }
@@ -73,10 +78,12 @@ enum ReceiptTextParser {
 
     // MARK: - Total
 
-    /// Returns the total in minor units and whether it came from an explicit label.
+    /// Returns the total in minor units and whether it's trustworthy.
+    /// Order of preference: an explicit total label → the amount the items
+    /// reconciled to (language-agnostic) → the largest amount anywhere (weak).
     /// Vision often splits a "Total" label and its amount onto separate lines in
     /// either order, so the amount is looked for on the same line and both neighbours.
-    private static func detectTotal(lines: [String], decimals: Int) -> (Int?, Bool) {
+    private static func detectTotal(lines: [String], decimals: Int, reconciledTotal: Int?) -> (Int?, Bool) {
         for tier in totalKeywordTiers {
             var best: Decimal?
             for (index, line) in lines.enumerated() {
@@ -98,7 +105,10 @@ enum ReceiptTextParser {
             if let best { return (minorUnits(from: best, decimals: decimals), true) }
         }
 
-        // Fallback: the largest money amount anywhere (low confidence).
+        // No total label found — trust the reconciled item sum if we have one.
+        if let reconciledTotal { return (reconciledTotal, true) }
+
+        // Last resort: the largest money amount anywhere (low confidence).
         var fallback: Decimal?
         for line in lines {
             if let amount = lastMoney(in: line, decimals: decimals)?.value, amount > (fallback ?? 0) {
@@ -198,25 +208,52 @@ enum ReceiptTextParser {
         return itemExclusions.contains { lower.contains($0) }
     }
 
-    /// Extracts purchased lines from the geometry-reconstructed rows. Each row is
-    /// "DESCRIPTION … PRICE", so the item is simply the text before the trailing
-    /// money token. No cross-line guessing — `ReceiptLineGrouper` already rebuilt
-    /// the rows, which is what makes this reliable across layouts. A row needs a
-    /// real description (3+ letters) so unit-price/quantity rows ("2 x 1,29",
-    /// "B 6% …") and bare amount columns are skipped.
-    private static func detectLineItems(lines: [String], decimals: Int) -> [ReceiptLineItem] {
-        var items: [ReceiptLineItem] = []
-        for line in lines {
-            if isExcludedLine(line) { continue }
-            guard let money = lastMoney(in: line, decimals: decimals) else { continue }
+    /// Per-unit / weight rows ("0,540 kg x 1,49 EUR/kg") — structural, not items.
+    private static func isUnitPriceRow(_ line: String) -> Bool {
+        let lower = line.lowercased()
+        return lower.contains("kg") || lower.contains("/kg") || lower.contains("/lb") || lower.contains("€/")
+    }
 
+    /// Reconciles line items by the universal invariant: **items sum to the
+    /// (sub)total**. From the geometry-reconstructed rows it takes each
+    /// "DESCRIPTION … PRICE" row (3+ letters of description) as a candidate, then
+    /// collects them in order until a candidate's amount equals the running sum —
+    /// that candidate is the (sub)total, and everything after it (tax, cash,
+    /// change, in any language) is dropped without needing keywords for it.
+    ///
+    /// Known summary terms are still excluded up front, which both covers the
+    /// common case and prevents them from polluting the running sum. When the sum
+    /// never reconciles (e.g. an OCR error in a price), it degrades to "every
+    /// non-summary candidate is an item", i.e. the previous behaviour.
+    ///
+    /// Returns the items and, when reconciliation succeeded, the amount they summed
+    /// to — used as a language-agnostic total fallback.
+    private static func reconcileItems(lines: [String], decimals: Int) -> (items: [ReceiptLineItem], total: Int?) {
+        var candidates: [(name: String, minor: Int)] = []
+        for line in lines {
+            if isExcludedLine(line) || isUnitPriceRow(line) { continue }
+            guard let money = lastMoney(in: line, decimals: decimals) else { continue }
             let ns = line as NSString
             let name = ns.substring(to: money.range.location).trimmingCharacters(in: nameTrimChars)
             guard name.filter({ $0.isLetter }).count >= 3 else { continue }
-
-            items.append(ReceiptLineItem(name: name, amountMinor: minorUnits(from: money.value, decimals: decimals)))
+            candidates.append((name, minorUnits(from: money.value, decimals: decimals)))
         }
-        return items
+
+        var collected: [(name: String, minor: Int)] = []
+        var runningSum = 0
+        var reconciledTotal: Int?
+        for candidate in candidates {
+            // A row equal to the running sum of prior items is the (sub)total — stop.
+            if collected.count >= 2, abs(candidate.minor - runningSum) <= 1 {
+                reconciledTotal = candidate.minor
+                break
+            }
+            collected.append(candidate)
+            runningSum += candidate.minor
+        }
+
+        let items = collected.map { ReceiptLineItem(name: $0.name, amountMinor: $0.minor) }
+        return (items, reconciledTotal)
     }
 
     // MARK: - Merchant

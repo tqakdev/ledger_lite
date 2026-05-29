@@ -253,6 +253,42 @@ struct ReceiptParserReceiptTests {
         #expect(r.lineItems.allSatisfy { $0.amountMinor != 2000 && $0.amountMinor != 1996 })
     }
 
+    @Test("reconciliation: foreign receipt with no English keywords")
+    func reconcilesForeignReceipt() {
+        // German terms (Summe/Bar/Rückgeld) are in no keyword list — items are
+        // still terminated correctly because they sum to "Summe", and that sum
+        // becomes the total since there's no recognizable total label.
+        let text = """
+        Kaufland
+        Brot 1,99 €
+        Milch 0,89 €
+        Käse 3,50 €
+        Summe 6,38 €
+        Bar 10,00 €
+        Rückgeld 3,62 €
+        """
+        let r = ReceiptTextParser.parse(text, defaultCurrency: "EUR")
+        #expect(r.lineItems.map(\.amountMinor) == [199, 89, 350])
+        #expect(r.amountMinor == 638)
+        #expect(r.amountConfident)
+        #expect(r.lineItems.allSatisfy { !["Summe", "Bar", "Rückgeld"].contains($0.name) })
+    }
+
+    @Test("degrades gracefully when the item sum doesn't reconcile")
+    func degradesWhenNoReconciliation() {
+        // Items don't sum to the total (e.g. a price misread / missing line) —
+        // still return the item rows and take the total from its label.
+        let text = """
+        Shop
+        Apple 1,00 €
+        Banana 2,00 €
+        Total 9,99 €
+        """
+        let r = ReceiptTextParser.parse(text, defaultCurrency: "EUR")
+        #expect(r.lineItems.count == 2)
+        #expect(r.amountMinor == 999)
+    }
+
     @Test("zero-decimal currency (JPY) scales without fraction")
     func jpyZeroDecimals() {
         let text = """
