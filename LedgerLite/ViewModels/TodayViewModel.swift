@@ -3,20 +3,28 @@ import SwiftData
 
 enum TodaySheet: Identifiable {
     case quickAdd
+    case scanReceipt
     case edit(Expense)
 
     var id: String {
         switch self {
         case .quickAdd: return "quickAdd"
+        case .scanReceipt: return "scanReceipt"
         case .edit(let expense): return "edit-\(expense.id.uuidString)"
         }
     }
 
     var formMode: ExpenseFormMode {
         switch self {
-        case .quickAdd: return .add
+        case .quickAdd, .scanReceipt: return .add
         case .edit(let expense): return .edit(expense)
         }
+    }
+
+    /// True when the form should open straight into the receipt scanner.
+    var startsWithScan: Bool {
+        if case .scanReceipt = self { return true }
+        return false
     }
 }
 
@@ -84,6 +92,7 @@ final class TodayViewModel {
     }
 
     func presentQuickAdd() { activeSheet = .quickAdd }
+    func presentScan() { activeSheet = .scanReceipt }
     func presentEdit(for expense: Expense) { activeSheet = .edit(expense) }
 
     func dismissSheet() {

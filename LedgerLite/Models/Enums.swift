@@ -98,4 +98,5 @@ enum ExpenseSource: String, Hashable, Codable, CaseIterable {
     case subscription = "subscription"
     case widget       = "widget"
     case siri         = "siri"
+    case scanned      = "scanned"
 }

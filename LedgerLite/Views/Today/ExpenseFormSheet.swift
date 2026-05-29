@@ -12,6 +12,7 @@ struct ExpenseFormSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     let mode: ExpenseFormMode
+    var autoScan: Bool = false
     let onComplete: () -> Void
 
     @Environment(\.requestReview) private var requestReview
@@ -19,6 +20,8 @@ struct ExpenseFormSheet: View {
     @FocusState private var focusedField: ExpenseFormField?
     @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
     @State private var detailsExpanded = false
+    @State private var showScanner = false
+    @State private var didAutoScan = false
     @State private var showError  = false
     @State private var errorText  = ""
 
@@ -51,6 +54,26 @@ struct ExpenseFormSheet: View {
             }
             // In edit mode the details usually already hold a merchant/note, so reveal them.
             if case .edit = mode { detailsExpanded = true }
+            // Camera-FAB entry opens straight into the scanner.
+            if autoScan && !didAutoScan {
+                didAutoScan = true
+                showScanner = true
+            }
+        }
+        .sheet(isPresented: $showScanner) {
+            ReceiptScanView(
+                defaultCurrency: viewModel?.currencyCode ?? UserPreferences.homeCurrencyCode
+            ) { receipt in
+                showScanner = false
+                guard !receipt.isEmpty else { return }
+                viewModel?.applyParsedReceipt(receipt)
+                if let vm = viewModel, vm.merchant.isEmpty == false || vm.note.isEmpty == false {
+                    detailsExpanded = true
+                }
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            } onCancel: {
+                showScanner = false
+            }
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
@@ -80,7 +103,18 @@ struct ExpenseFormSheet: View {
                     templateStrip(vm)
                 }
 
+                if case .add = mode {
+                    scanReceiptButton
+                }
+
                 amountDisplay(vm)
+
+                if vm.scanLowConfidence {
+                    Label(String(localized: "Scanned — double-check the amount."), systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
 
                 if case .add = mode {
                     currencyPicker(vm)
@@ -103,6 +137,26 @@ struct ExpenseFormSheet: View {
         .onChange(of: vm.merchant) { _, prefix in
             vm.updateMerchantSuggestions(prefix: prefix)
         }
+    }
+
+    // MARK: - Scan receipt button
+
+    private var scanReceiptButton: some View {
+        Button {
+            focusedField = nil
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            showScanner = true
+        } label: {
+            Label(String(localized: "Scan a receipt"), systemImage: "doc.text.viewfinder")
+                .font(.subheadline.weight(.medium))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(Color.accentColor.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(Color.accentColor)
+        .padding(.horizontal)
     }
 
     // MARK: - Bottom bar (numpad / merchant suggestions)

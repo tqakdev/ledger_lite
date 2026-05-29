@@ -41,9 +41,17 @@ final class ExpenseFormViewModel {
     // Merchant autocomplete
     var merchantSuggestions: [String] = []
     private var recentMerchants: [String] = []
+    private var recentMerchantCategories: [(merchant: String, categoryName: String)] = []
 
     // Recurring templates
     var templates: [ExpenseTemplate] = []
+
+    // Receipt scan
+    /// Set when a scan couldn't confidently read the amount, so the form can
+    /// prompt the user to double-check it.
+    var scanLowConfidence = false
+    /// How this entry originated; `.scanned` once a receipt has been applied.
+    private var source: ExpenseSource = .manual
 
     private let expenseRepository: ExpenseRepository
     private let categoryRepository: CategoryRepository
@@ -118,6 +126,46 @@ final class ExpenseFormViewModel {
         }
     }
 
+    // MARK: - Receipt scan
+
+    /// Pre-fills the form from a scanned receipt. Confident amounts are filled;
+    /// an unread amount is left blank and flagged. The category is guessed from
+    /// the user's own history first, then a keyword fallback.
+    func applyParsedReceipt(_ receipt: ParsedReceipt) {
+        source = .scanned
+
+        if let code = receipt.currencyCode, Constants.App.supportedCurrencies.contains(code) {
+            currencyCode = code
+        }
+        if let merchant = receipt.merchant {
+            self.merchant = merchant
+        }
+        if let date = receipt.date {
+            self.date = date
+        }
+
+        if receipt.amountConfident, let amount = receipt.amountMinor {
+            minorUnits = amount
+            amountString = AmountInputParser(currencyCode: currencyCode, locale: .current)
+                .format(minorUnits: amount)
+            scanLowConfidence = false
+        } else {
+            // Don't pre-fill a number we're unsure of — leave it for the user.
+            scanLowConfidence = true
+        }
+
+        if let merchant = receipt.merchant, !merchant.isEmpty {
+            let available = Set(categories.map(\.name))
+            if let guessed = MerchantCategoryGuesser.guess(
+                merchant: merchant,
+                history: recentMerchantCategories,
+                available: available
+            ), let cat = categories.first(where: { $0.name == guessed }) {
+                selectedCategory = cat
+            }
+        }
+    }
+
     func saveAsTemplate() {
         guard !merchant.isEmpty, minorUnits > 0 else { return }
         ExpenseTemplateService.add(ExpenseTemplate(
@@ -172,6 +220,14 @@ final class ExpenseFormViewModel {
             .filter { seen.insert($0.lowercased()).inserted }
             .prefix(200)
             .map { $0 }
+
+        // Most-recent (merchant, category) pairs power the scan category guess.
+        var seenPairs = Set<String>()
+        recentMerchantCategories = recent.compactMap { expense in
+            guard let merchant = expense.merchant, let category = expense.category else { return nil }
+            guard seenPairs.insert(merchant.lowercased()).inserted else { return nil }
+            return (merchant: merchant, categoryName: category.name)
+        }
     }
 
     private func addExpense(category: Category) async throws {
@@ -200,7 +256,7 @@ final class ExpenseFormViewModel {
             date: date,
             note: note.isEmpty ? nil : note,
             merchant: merchant.isEmpty ? nil : merchant,
-            source: .manual,
+            source: source,
             needsRateRefresh: needsRefresh
         )
         expense.category = category

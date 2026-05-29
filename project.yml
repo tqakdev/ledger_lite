@@ -106,6 +106,7 @@ targets:
         UIRequiresFullScreen: true
         ITSAppUsesNonExemptEncryption: false
         NSFaceIDUsageDescription: "Used to lock LedgerLite and protect your financial data."
+        NSCameraUsageDescription: "Used to scan receipts. Receipts are read on your device and never uploaded."
         NSUserActivityTypes:
           - com.apple.corespotlightitem
     entitlements:

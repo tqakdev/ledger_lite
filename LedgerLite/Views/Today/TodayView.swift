@@ -32,7 +32,7 @@ struct TodayView: View {
             viewModel?.refresh()
         }
         .sheet(item: sheetBinding) { sheet in
-            ExpenseFormSheet(mode: sheet.formMode) {
+            ExpenseFormSheet(mode: sheet.formMode, autoScan: sheet.startsWithScan) {
                 viewModel?.dismissSheet()
             }
         }
@@ -164,9 +164,31 @@ struct TodayView: View {
     // MARK: - FAB
 
     private func quickAddFAB(_ viewModel: TodayViewModel) -> some View {
-        FABView(isVisible: $fabVisible, isSheetOpen: viewModel.activeSheet != nil) {
-            viewModel.presentQuickAdd()
+        VStack(alignment: .trailing, spacing: 14) {
+            scanButton(viewModel)
+            FABView(isVisible: $fabVisible, isSheetOpen: viewModel.activeSheet != nil) {
+                viewModel.presentQuickAdd()
+            }
         }
+    }
+
+    private func scanButton(_ viewModel: TodayViewModel) -> some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            viewModel.presentScan()
+        } label: {
+            Image(systemName: "doc.text.viewfinder")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 48, height: 48)
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay(Circle().stroke(Color.accentColor.opacity(0.25), lineWidth: 1))
+                .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 3)
+        }
+        .padding(.trailing, 26)
+        .accessibilityLabel(String(localized: "Scan receipt"))
+        .scaleEffect(fabVisible ? 1.0 : 0.01)
+        .animation(.spring(duration: 0.4, bounce: 0.4), value: fabVisible)
     }
 
     private struct FABView: View {

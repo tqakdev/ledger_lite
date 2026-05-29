@@ -29,6 +29,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Used to scan receipts. Receipts are read on your device and never uploaded.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Used to lock LedgerLite and protect your financial data.</string>
 	<key>NSUserActivityTypes</key>
