@@ -3,7 +3,6 @@ import SwiftData
 import StoreKit
 
 private enum ExpenseFormField: Hashable {
-    case amount
     case merchant
     case note
 }
@@ -11,6 +10,7 @@ private enum ExpenseFormField: Hashable {
 struct ExpenseFormSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let mode: ExpenseFormMode
     let onComplete: () -> Void
@@ -19,6 +19,8 @@ struct ExpenseFormSheet: View {
     @State private var viewModel: ExpenseFormViewModel?
     @FocusState private var focusedField: ExpenseFormField?
     @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
+    @State private var detailsExpanded = false
+    @State private var caretVisible = true
     @State private var showError  = false
     @State private var errorText  = ""
 
@@ -37,16 +39,6 @@ struct ExpenseFormSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(String(localized: "Cancel")) { dismiss() }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    if let viewModel {
-                        Button(String(localized: "Save")) {
-                            focusedField = nil
-                            Task { await save(viewModel) }
-                        }
-                        .fontWeight(.semibold)
-                        .disabled(!viewModel.canSave)
-                    }
-                }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button(String(localized: "Done")) { focusedField = nil }
@@ -59,10 +51,8 @@ struct ExpenseFormSheet: View {
                 vm.loadCategories()
                 viewModel = vm
             }
-            // Delay so the sheet animation settles before the keyboard appears
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                focusedField = .amount
-            }
+            // In edit mode the details usually already hold a merchant/note, so reveal them.
+            if case .edit = mode { detailsExpanded = true }
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
@@ -92,7 +82,7 @@ struct ExpenseFormSheet: View {
                     templateStrip(vm)
                 }
 
-                amountField(vm)
+                amountDisplay(vm)
 
                 if case .add = mode {
                     currencyPicker(vm)
@@ -103,19 +93,37 @@ struct ExpenseFormSheet: View {
                     selected: $vm.selectedCategory
                 )
 
-                detailsGroup(vm)
+                detailsDisclosure(vm)
             }
             .padding(.bottom, 8)
         }
         .scrollDismissesKeyboard(.interactively)
         .scrollBounceBehavior(.basedOnSize)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if focusedField == .merchant, !vm.merchantSuggestions.isEmpty {
-                merchantSuggestionBar(vm)
-            }
+            bottomBar(vm)
         }
         .onChange(of: vm.merchant) { _, prefix in
             vm.updateMerchantSuggestions(prefix: prefix)
+        }
+    }
+
+    // MARK: - Bottom bar (numpad / merchant suggestions)
+
+    @ViewBuilder
+    private func bottomBar(_ viewModel: ExpenseFormViewModel) -> some View {
+        if focusedField == .merchant, !viewModel.merchantSuggestions.isEmpty {
+            merchantSuggestionBar(viewModel)
+        } else if focusedField == nil {
+            AmountNumpad(
+                separator: separator,
+                allowsDecimal: Money.decimals(for: viewModel.currencyCode) > 0,
+                canSave: viewModel.canSave,
+                saveTitle: saveButtonTitle,
+                onDigit: { numpadDigit($0, viewModel) },
+                onSeparator: { numpadSeparator(viewModel) },
+                onBackspace: { numpadBackspace(viewModel) },
+                onSave: { Task { await save(viewModel) } }
+            )
         }
     }
 
@@ -204,39 +212,40 @@ struct ExpenseFormSheet: View {
         .background(.ultraThinMaterial)
     }
 
-    // MARK: - Amount field
+    // MARK: - Amount display
 
-    private func amountField(_ viewModel: ExpenseFormViewModel) -> some View {
+    private func amountDisplay(_ viewModel: ExpenseFormViewModel) -> some View {
         let symbol = Self.currencySymbol(for: viewModel.currencyCode)
+        let isEmpty = viewModel.amountString.isEmpty
         return HStack(alignment: .firstTextBaseline, spacing: 4) {
             Text(symbol)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(.secondary)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
                 .fixedSize()
 
-            ZStack {
-                // Styled placeholder — only shown when field is empty so cursor never sits on it
-                if viewModel.amountString.isEmpty {
-                    Text("0")
-                        .font(.system(size: amountFontSize, weight: .bold, design: .rounded))
-                        .foregroundStyle(.tertiary)
-                        .monospacedDigit()
-                        .allowsHitTesting(false)
-                }
-                TextField("", text: amountBinding(viewModel))
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(isEmpty ? "0" : viewModel.amountString)
                     .font(.system(size: amountFontSize, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                    .multilineTextAlignment(.trailing)
-                    .keyboardType(.decimalPad)
-                    .focused($focusedField, equals: .amount)
-                    .tint(viewModel.amountString.isEmpty ? .clear : .accentColor)
-                    .fixedSize()
+                    .foregroundStyle(isEmpty ? .tertiary : .primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.4)
+
+                RoundedRectangle(cornerRadius: 1.5)
+                    .fill(Color.accentColor)
+                    .frame(width: 3, height: amountFontSize * 0.62)
+                    .opacity(reduceMotion ? 1 : (caretVisible ? 1 : 0))
+                    .onAppear {
+                        guard !reduceMotion else { return }
+                        withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
+                            caretVisible = false
+                        }
+                    }
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)
-        // Subtle scale-in when first digit is entered
         .scaleEffect(viewModel.minorUnits > 0 ? 1.0 : 0.95)
         .animation(.spring(response: 0.3, dampingFraction: 0.5), value: viewModel.minorUnits > 0)
         .padding(.vertical, 12)
@@ -247,66 +256,110 @@ struct ExpenseFormSheet: View {
                 endPoint: .bottom
             )
         )
+        .contentShape(Rectangle())
+        .onTapGesture { focusedField = nil }
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(String(localized: "Amount"))
         .accessibilityValue(viewModel.formattedAmount())
     }
 
-    private func detailsGroup(_ viewModel: ExpenseFormViewModel) -> some View {
+    // MARK: - Details (collapsible)
+
+    @ViewBuilder
+    private func detailsDisclosure(_ viewModel: ExpenseFormViewModel) -> some View {
         @Bindable var vm = viewModel
-        return VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                Image(systemName: "building.2.fill")
-                    .foregroundStyle(.secondary)
-                    .frame(width: 20)
-                TextField(String(localized: "Merchant"), text: $vm.merchant)
-                    .textFieldStyle(.plain)
-                    .focused($focusedField, equals: .merchant)
-                    .submitLabel(.next)
-                    .onSubmit { focusedField = .note }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-
-            Divider().padding(.leading, 16)
-
-            HStack(spacing: 12) {
-                Image(systemName: "note.text")
-                    .foregroundStyle(.secondary)
-                    .frame(width: 20)
-                TextField(String(localized: "Note"), text: $vm.note)
-                    .textFieldStyle(.plain)
-                    .focused($focusedField, equals: .note)
-                    .submitLabel(.done)
-                    .onSubmit { focusedField = nil }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-
-            Divider().padding(.leading, 16)
-
-            HStack(spacing: 12) {
-                Image(systemName: "calendar")
-                    .foregroundStyle(.secondary)
-                    .frame(width: 20)
-                if let hint = dateHint(vm.date) {
-                    Text(hint)
+        VStack(spacing: 0) {
+            Button {
+                focusedField = nil
+                withAnimation(.easeInOut(duration: 0.2)) { detailsExpanded.toggle() }
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "square.and.pencil")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
+                    Text(collapsedSummary(vm))
                         .font(.subheadline)
+                        .foregroundStyle(!detailsExpanded && detailsHaveContent(vm) ? .primary : .secondary)
+                        .lineLimit(1)
+                    Spacer()
+                    Image(systemName: detailsExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Spacer()
-                DatePicker(
-                    String(localized: "Date"),
-                    selection: $vm.date,
-                    displayedComponents: .date
-                )
-                .labelsHidden()
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .buttonStyle(.plain)
+
+            if detailsExpanded {
+                Divider().padding(.leading, 16)
+
+                HStack(spacing: 12) {
+                    Image(systemName: "building.2.fill")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
+                    TextField(String(localized: "Merchant"), text: $vm.merchant)
+                        .textFieldStyle(.plain)
+                        .focused($focusedField, equals: .merchant)
+                        .submitLabel(.next)
+                        .onSubmit { focusedField = .note }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+
+                Divider().padding(.leading, 16)
+
+                HStack(spacing: 12) {
+                    Image(systemName: "note.text")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
+                    TextField(String(localized: "Note"), text: $vm.note)
+                        .textFieldStyle(.plain)
+                        .focused($focusedField, equals: .note)
+                        .submitLabel(.done)
+                        .onSubmit { focusedField = nil }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+
+                Divider().padding(.leading, 16)
+
+                HStack(spacing: 12) {
+                    Image(systemName: "calendar")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
+                    if let hint = dateHint(vm.date) {
+                        Text(hint)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    DatePicker(
+                        String(localized: "Date"),
+                        selection: $vm.date,
+                        displayedComponents: .date
+                    )
+                    .labelsHidden()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
         }
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal)
+    }
+
+    private func detailsHaveContent(_ vm: ExpenseFormViewModel) -> Bool {
+        !vm.merchant.isEmpty || !vm.note.isEmpty
+    }
+
+    private func collapsedSummary(_ vm: ExpenseFormViewModel) -> String {
+        if detailsExpanded { return String(localized: "Details") }
+        if !vm.merchant.isEmpty { return vm.merchant }
+        if !vm.note.isEmpty { return vm.note }
+        return String(localized: "Add merchant, note, date")
     }
 
     // MARK: - Currency picker
@@ -321,13 +374,40 @@ struct ExpenseFormSheet: View {
         .pickerStyle(.menu)
         .padding(.horizontal)
         .onChange(of: viewModel.currencyCode) { _, _ in
-            focusedField = .amount
+            focusedField = nil
         }
+    }
+
+    // MARK: - Numpad input
+
+    private var separator: String { Locale.current.decimalSeparator ?? "." }
+
+    private func numpadDigit(_ digit: String, _ vm: ExpenseFormViewModel) {
+        vm.setAmount(vm.amountString + digit)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private func numpadSeparator(_ vm: ExpenseFormViewModel) {
+        guard !vm.amountString.contains(separator) else { return }
+        vm.setAmount((vm.amountString.isEmpty ? "0" : vm.amountString) + separator)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private func numpadBackspace(_ vm: ExpenseFormViewModel) {
+        guard !vm.amountString.isEmpty else { return }
+        vm.setAmount(String(vm.amountString.dropLast()))
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private var saveButtonTitle: String {
+        if case .edit = mode { return String(localized: "Save Changes") }
+        return String(localized: "Add Expense")
     }
 
     // MARK: - Save
 
     private func save(_ viewModel: ExpenseFormViewModel) async {
+        focusedField = nil
         if await viewModel.save() {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             if case .add = mode { maybeRequestReview() }
@@ -346,10 +426,6 @@ struct ExpenseFormSheet: View {
     }
 
     // MARK: - Bindings
-
-    private func amountBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {
-        Binding(get: { viewModel.amountString }, set: { viewModel.setAmount($0) })
-    }
 
     private func currencyBinding(_ viewModel: ExpenseFormViewModel) -> Binding<String> {
         Binding(

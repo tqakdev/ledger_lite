@@ -3,7 +3,6 @@ import SwiftData
 
 private enum SubscriptionFormField: Hashable {
     case name
-    case amount
     case customDays
     case notes
 }
@@ -15,9 +14,11 @@ struct SubscriptionFormSheet: View {
     let mode: SubscriptionFormMode
     let onComplete: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel: SubscriptionFormViewModel?
     @FocusState private var focusedField: SubscriptionFormField?
     @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 48
+    @State private var caretVisible = true
     @State private var showError = false
     @State private var errorText = ""
 
@@ -58,10 +59,7 @@ struct SubscriptionFormSheet: View {
                 vm.loadCategories()
                 viewModel = vm
             }
-            // Delay so the sheet animation settles before the keyboard appears
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                focusedField = .name
-            }
+            // Start on the amount numpad (focusedField == nil), not the name keyboard.
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
@@ -93,12 +91,24 @@ struct SubscriptionFormSheet: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .scrollBounceBehavior(.basedOnSize)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if focusedField == nil {
+                AmountNumpad(
+                    separator: separator,
+                    allowsDecimal: Money.decimals(for: viewModel.currencyCode) > 0,
+                    onDigit: { numpadDigit($0, viewModel) },
+                    onSeparator: { numpadSeparator(viewModel) },
+                    onBackspace: { numpadBackspace(viewModel) }
+                )
+            }
+        }
     }
 
     // MARK: - Amount section
 
     private func amountSection(_ viewModel: SubscriptionFormViewModel) -> some View {
         let symbol = Self.currencySymbol(for: viewModel.currencyCode)
+        let isEmpty = viewModel.amountString.isEmpty
         return VStack(spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(symbol)
@@ -107,22 +117,24 @@ struct SubscriptionFormSheet: View {
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
                     .fixedSize()
-                ZStack {
-                    if viewModel.amountString.isEmpty {
-                        Text("0")
-                            .font(.system(size: amountFontSize, weight: .bold, design: .rounded))
-                            .foregroundStyle(.tertiary)
-                            .monospacedDigit()
-                            .allowsHitTesting(false)
-                    }
-                    TextField("", text: amountBinding(viewModel))
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(isEmpty ? "0" : viewModel.amountString)
                         .font(.system(size: amountFontSize, weight: .bold, design: .rounded))
                         .monospacedDigit()
-                        .multilineTextAlignment(.trailing)
-                        .keyboardType(.decimalPad)
-                        .focused($focusedField, equals: .amount)
-                        .tint(viewModel.amountString.isEmpty ? .clear : .accentColor)
-                        .fixedSize()
+                        .foregroundStyle(isEmpty ? .tertiary : .primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.4)
+
+                    RoundedRectangle(cornerRadius: 1.5)
+                        .fill(Color.accentColor)
+                        .frame(width: 3, height: amountFontSize * 0.62)
+                        .opacity(reduceMotion ? 1 : (caretVisible ? 1 : 0))
+                        .onAppear {
+                            guard !reduceMotion else { return }
+                            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
+                                caretVisible = false
+                            }
+                        }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)
@@ -136,7 +148,11 @@ struct SubscriptionFormSheet: View {
                     endPoint: .bottom
                 )
             )
+            .contentShape(Rectangle())
+            .onTapGesture { focusedField = nil }
+            .accessibilityElement(children: .ignore)
             .accessibilityLabel(String(localized: "Amount"))
+            .accessibilityValue(Money(minorUnits: viewModel.minorUnits, currencyCode: viewModel.currencyCode).formatted())
 
             Picker(String(localized: "Currency"), selection: currencyBinding(viewModel)) {
                 ForEach(Constants.App.supportedCurrencies, id: \.self) { code in
@@ -145,7 +161,7 @@ struct SubscriptionFormSheet: View {
             }
             .pickerStyle(.menu)
             .onChange(of: viewModel.currencyCode) { _, _ in
-                focusedField = .amount
+                focusedField = nil
             }
         }
     }
@@ -171,8 +187,8 @@ struct SubscriptionFormSheet: View {
                     TextField(String(localized: "Name"), text: $vm.name)
                         .textFieldStyle(.plain)
                         .focused($focusedField, equals: .name)
-                        .submitLabel(.next)
-                        .onSubmit { focusedField = .amount }
+                        .submitLabel(.done)
+                        .onSubmit { focusedField = nil }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -315,11 +331,28 @@ struct SubscriptionFormSheet: View {
         return symbol
     }
 
-    // MARK: - Bindings
+    // MARK: - Numpad input
 
-    private func amountBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
-        Binding(get: { viewModel.amountString }, set: { viewModel.setAmount($0) })
+    private var separator: String { Locale.current.decimalSeparator ?? "." }
+
+    private func numpadDigit(_ digit: String, _ vm: SubscriptionFormViewModel) {
+        vm.setAmount(vm.amountString + digit)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
+
+    private func numpadSeparator(_ vm: SubscriptionFormViewModel) {
+        guard !vm.amountString.contains(separator) else { return }
+        vm.setAmount((vm.amountString.isEmpty ? "0" : vm.amountString) + separator)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private func numpadBackspace(_ vm: SubscriptionFormViewModel) {
+        guard !vm.amountString.isEmpty else { return }
+        vm.setAmount(String(vm.amountString.dropLast()))
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    // MARK: - Bindings
 
     private func currencyBinding(_ viewModel: SubscriptionFormViewModel) -> Binding<String> {
         Binding(

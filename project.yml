@@ -25,6 +25,27 @@ settings:
 
 schemes:
 
+  # Primary app scheme. Defined explicitly so the test bundle is wired into the
+  # Test action — otherwise ⌘U / `xcodebuild test` runs zero tests against a
+  # silently-empty test action.
+  LedgerLite:
+    build:
+      targets:
+        LedgerLite: all
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - LedgerLiteTests
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
   # The LedgerLiteWidget target contains two widget kinds.
   # Xcode requires _XCWidgetKind to know which one to launch when debugging.
   # Use "LedgerLiteTodayWidget" scheme for the today widget,
@@ -70,7 +91,7 @@ targets:
     info:
       path: LedgerLite/Resources/Info.plist
       properties:
-        CFBundleDisplayName: LedgerLite
+        CFBundleDisplayName: Ledger Lite
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleDevelopmentRegion: en
