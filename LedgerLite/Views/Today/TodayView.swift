@@ -116,6 +116,10 @@ struct TodayView: View {
             streakChip(viewModel)
         }
         .redacted(reason: viewModel.isLoading && viewModel.expenses.isEmpty ? .placeholder : [])
+        // Daily-average and streak are computed in a deferred task, so they
+        // resolve a beat after the card appears. Fade them in instead of snapping.
+        .animation(.easeInOut(duration: 0.25), value: viewModel.dailyAverageMinor)
+        .animation(.easeInOut(duration: 0.25), value: viewModel.currentStreak)
     }
 
     @ViewBuilder
@@ -135,6 +139,7 @@ struct TodayView: View {
             .padding(.vertical, 3)
             .background((isAbove ? Color.orange : Color.green).opacity(0.12))
             .clipShape(Capsule())
+            .transition(.opacity.combined(with: .scale(scale: 0.9)))
         }
     }
 
@@ -152,6 +157,7 @@ struct TodayView: View {
             .padding(.vertical, 3)
             .background(Color.orange.opacity(0.12))
             .clipShape(Capsule())
+            .transition(.opacity.combined(with: .scale(scale: 0.9)))
         }
     }
 

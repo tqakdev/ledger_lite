@@ -105,7 +105,7 @@ struct SubscriptionFormSheet: View {
     // MARK: - Amount section
 
     private func amountSection(_ viewModel: SubscriptionFormViewModel) -> some View {
-        let symbol = Self.currencySymbol(for: viewModel.currencyCode)
+        let symbol = Money.symbol(for: viewModel.currencyCode)
         let isEmpty = viewModel.amountString.isEmpty
         return VStack(spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -308,17 +308,6 @@ struct SubscriptionFormSheet: View {
     }
 
     // MARK: - Helpers
-
-    private static var symbolCache: [String: String] = [:]
-    private static func currencySymbol(for code: String) -> String {
-        if let cached = symbolCache[code] { return cached }
-        let fmt = NumberFormatter()
-        fmt.numberStyle = .currency
-        fmt.currencyCode = code
-        let symbol = fmt.currencySymbol ?? code
-        symbolCache[code] = symbol
-        return symbol
-    }
 
     // MARK: - Numpad input
 

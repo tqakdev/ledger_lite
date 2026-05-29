@@ -56,6 +56,27 @@ struct Money: Hashable, Codable {
             ?? "\(currencyCode) \(decimalValue)"
     }
 
+    // MARK: Currency symbol
+
+    /// The localized currency symbol for an ISO 4217 code (e.g. "USD" → "$").
+    /// Cached because resolving a symbol spins up a `NumberFormatter`, and views
+    /// ask for the same few symbols repeatedly. Centralizes lookup that was
+    /// previously duplicated across several views.
+    static func symbol(for code: String) -> String {
+        symbolLock.withLock {
+            if let cached = symbolCache[code] { return cached }
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencyCode = code
+            let symbol = formatter.currencySymbol ?? code
+            symbolCache[code] = symbol
+            return symbol
+        }
+    }
+
+    private static let symbolLock = NSLock()
+    private static var symbolCache: [String: String] = [:]
+
     // MARK: Conversion
 
     /// Returns a new Money in `targetCode` at the given exchange rate.

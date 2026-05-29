@@ -34,6 +34,7 @@ final class TodayViewModel {
 
     private let expenseRepository: ExpenseRepository
     private let modelContext: ModelContext
+    private var metricsTask: Task<Void, Never>?
 
     init(context: ModelContext) {
         self.modelContext = context
@@ -56,10 +57,17 @@ final class TodayViewModel {
             AppLogger.ui.error("Today refresh failed: \(error)")
         }
         isLoading = false
-        // Defer expensive historical queries so the main list renders first
-        Task {
-            dailyAverageMinor = computeDailyAverage()
-            currentStreak = computeStreak()
+        // Defer expensive historical queries so the main list renders first.
+        // Coalesce rapid refreshes (appear/dismiss/delete) by cancelling any
+        // in-flight pass, so a stale computation can't overwrite fresher values
+        // or trigger a duplicate budget check.
+        metricsTask?.cancel()
+        metricsTask = Task {
+            let average = computeDailyAverage()
+            let streak  = computeStreak()
+            guard !Task.isCancelled else { return }
+            dailyAverageMinor = average
+            currentStreak = streak
             BudgetAlertService(context: modelContext).checkBudgets()
         }
     }

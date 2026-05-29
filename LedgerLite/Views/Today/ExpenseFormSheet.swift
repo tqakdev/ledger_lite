@@ -213,7 +213,7 @@ struct ExpenseFormSheet: View {
     // MARK: - Amount display
 
     private func amountDisplay(_ viewModel: ExpenseFormViewModel) -> some View {
-        let symbol = Self.currencySymbol(for: viewModel.currencyCode)
+        let symbol = Money.symbol(for: viewModel.currencyCode)
         let isEmpty = viewModel.amountString.isEmpty
         return HStack(alignment: .firstTextBaseline, spacing: 4) {
             Text(symbol)
@@ -435,16 +435,5 @@ struct ExpenseFormSheet: View {
         if Calendar.current.isDateInToday(date) { return String(localized: "Today") }
         if Calendar.current.isDateInYesterday(date) { return String(localized: "Yesterday") }
         return nil
-    }
-
-    private static var symbolCache: [String: String] = [:]
-    private static func currencySymbol(for code: String) -> String {
-        if let cached = symbolCache[code] { return cached }
-        let fmt = NumberFormatter()
-        fmt.numberStyle = .currency
-        fmt.currencyCode = code
-        let symbol = fmt.currencySymbol ?? code
-        symbolCache[code] = symbol
-        return symbol
     }
 }

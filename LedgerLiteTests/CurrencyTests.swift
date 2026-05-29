@@ -292,6 +292,49 @@ struct FrankfurterClientTests {
             _ = try await client.fetchRates(base: "EUR", quotes: ["IDR"], on: Date.utcToday)
         }
     }
+
+    @Test("batch 404 falls back to per-code fetch, returning the supported rates")
+    func batch404PerCodeFallback() async throws {
+        MockURLProtocol.reset()
+        // Frankfurter 404s the entire batch when any one code is unsupported,
+        // and 404s a lone unsupported code too. Mimic that: any request whose
+        // `to` includes the unsupported code (IDR) fails; others succeed.
+        MockURLProtocol.requestHandler = { request in
+            let url = request.url!
+            let to = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .queryItems?.first(where: { $0.name == "to" })?.value ?? ""
+            if to.contains("IDR") {
+                let resp = HTTPURLResponse(url: url, statusCode: 404, httpVersion: nil, headerFields: nil)!
+                return (resp, Data())
+            }
+            let body = "{\"base\":\"EUR\",\"date\":\"2024-01-15\",\"rates\":{\"\(to)\":1.25}}"
+            let resp = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (resp, Data(body.utf8))
+        }
+
+        let client = FrankfurterClient(
+            http: URLSessionHTTPClient(session: MockURLSessionFactory.make())
+        )
+        let rates = try await client.fetchRates(base: "EUR", quotes: ["USD", "IDR"], on: Date.utcToday)
+
+        #expect(rates["USD"] == Decimal(string: "1.25", locale: Locale(identifier: "en_US_POSIX"))!)
+        #expect(rates["IDR"] == nil)
+    }
+
+    @Test("batch 404 where every code is unsupported still throws")
+    func batch404AllUnsupportedThrows() async throws {
+        MockURLProtocol.reset()
+        MockURLProtocol.requestHandler = { request in
+            let resp = HTTPURLResponse(url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!
+            return (resp, Data())
+        }
+        let client = FrankfurterClient(
+            http: URLSessionHTTPClient(session: MockURLSessionFactory.make())
+        )
+        await #expect(throws: CurrencyError.self) {
+            _ = try await client.fetchRates(base: "EUR", quotes: ["XXX", "YYY"], on: Date.utcToday)
+        }
+    }
 }
 
 // MARK: - Live integration (gated)

@@ -16,21 +16,32 @@ struct FrankfurterClient: RateFetching {
         let filtered = quotes.filter { $0 != base }
         guard !filtered.isEmpty else { return [:] }
 
-        let request = try buildRequest(base: base, quotes: filtered, on: date)
+        do {
+            return try await fetchBatch(base: base, quotes: filtered, on: date)
+        } catch CurrencyError.unsupportedCurrency where filtered.count > 1 {
+            // Frankfurter 404s the *entire* batch when any one code is unsupported,
+            // so a single bad currency would otherwise sink the rates for all the
+            // good ones. Re-fetch each code on its own and keep what resolves.
+            AppLogger.currency.error("Frankfurter batch 404 \(base)→[\(filtered.joined(separator: ","))]; retrying per code")
+            return try await fetchPerCode(base: base, quotes: filtered, on: date)
+        }
+    }
+
+    // MARK: - Private
+
+    /// Fetches all `quotes` in a single request. Throws `unsupportedCurrency` on 404.
+    private func fetchBatch(base: String, quotes: [String], on date: Date) async throws -> [String: Decimal] {
+        let request = try buildRequest(base: base, quotes: quotes, on: date)
         let (data, response) = try await http.data(for: request)
 
         switch response.statusCode {
         case 200:
             let decoded = try APIRateDecoder.decodeRates(from: data)
             guard decoded.base == base else { throw CurrencyError.decodingFailed }
-            AppLogger.currency.info("Frankfurter OK \(base)→[\(filtered.joined(separator: ","))] \(decoded.date)")
+            AppLogger.currency.info("Frankfurter OK \(base)→[\(quotes.joined(separator: ","))] \(decoded.date)")
             return decoded.rates
         case 404:
-            // TODO: Frankfurter returns 404 for the entire batch when any one currency is unsupported.
-            // Improve resilience by catching this, identifying the culprit via binary search or
-            // per-code retries, and re-fetching with the unsupported code removed.
-            AppLogger.currency.error("Frankfurter 404 for \(base)→[\(filtered.joined(separator: ","))]")
-            throw CurrencyError.unsupportedCurrency(filtered.joined(separator: ","))
+            throw CurrencyError.unsupportedCurrency(quotes.joined(separator: ","))
         default:
             AppLogger.currency.error("Frankfurter HTTP \(response.statusCode) for \(request.url?.absoluteString ?? "?")")
             if response.statusCode >= 500 {
@@ -40,7 +51,27 @@ struct FrankfurterClient: RateFetching {
         }
     }
 
-    // MARK: - Private
+    /// Retries each quote individually, collecting the rates that resolve and
+    /// dropping any that 404. Throws `unsupportedCurrency` only if none succeed.
+    private func fetchPerCode(base: String, quotes: [String], on date: Date) async throws -> [String: Decimal] {
+        var rates: [String: Decimal] = [:]
+        var unsupported: [String] = []
+        for quote in quotes {
+            do {
+                let single = try await fetchBatch(base: base, quotes: [quote], on: date)
+                rates.merge(single) { _, new in new }
+            } catch CurrencyError.unsupportedCurrency {
+                unsupported.append(quote)
+            }
+        }
+        guard !rates.isEmpty else {
+            throw CurrencyError.unsupportedCurrency(quotes.joined(separator: ","))
+        }
+        if !unsupported.isEmpty {
+            AppLogger.currency.error("Frankfurter unsupported: \(unsupported.joined(separator: ","))")
+        }
+        return rates
+    }
 
     private func buildRequest(base: String, quotes: [String], on date: Date) throws -> URLRequest {
         let normalized = date.utcStartOfDay
