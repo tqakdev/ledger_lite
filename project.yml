@@ -109,6 +109,10 @@ targets:
         NSCameraUsageDescription: "Used to scan receipts. Receipts are read on your device and never uploaded."
         NSUserActivityTypes:
           - com.apple.corespotlightitem
+        CFBundleURLTypes:
+          - CFBundleURLName: com.enes.ledgerlite
+            CFBundleURLSchemes:
+              - ledgerlite
     entitlements:
       path: LedgerLite/Resources/LedgerLite.entitlements
       properties:
@@ -140,6 +144,7 @@ targets:
       - path: LedgerLite/Utilities
         excludes:
           - PreviewContainer.swift   # preview-only; not needed in widget target
+          - ScreenshotSeeder.swift   # DEBUG screenshot data; app target only
       - path: LedgerLite/Services/WidgetDataService.swift
     dependencies:
       - sdk: WidgetKit.framework

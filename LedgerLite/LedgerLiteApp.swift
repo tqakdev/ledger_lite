@@ -53,6 +53,11 @@ struct LedgerLiteApp: App {
     @MainActor
     private func appDidLaunch(container: ModelContainer) async {
         seedCategoriesIfNeeded(container: container)
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--seed-screenshots") {
+            ScreenshotSeeder.seed(context: container.mainContext)
+        }
+        #endif
         do {
             try await SubscriptionService(context: container.mainContext).generatePendingExpenses()
         } catch {

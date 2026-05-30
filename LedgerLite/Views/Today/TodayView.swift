@@ -48,6 +48,9 @@ struct TodayView: View {
                 UINotificationFeedbackGenerator().notificationOccurred(.error)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("LedgerLitePresentScan"))) { _ in
+            viewModel?.presentScan()
+        }
     }
 
     // MARK: - Content

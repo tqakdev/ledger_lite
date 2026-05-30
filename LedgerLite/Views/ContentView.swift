@@ -117,8 +117,13 @@ struct ContentView: View {
                 guard let url = note.object as? URL else { return }
                 switch url.host {
                 case "today", "expense": selectedTab = 0
+                case "history":          selectedTab = 1
                 case "subscriptions":    selectedTab = 2
                 case "insights":         selectedTab = 3
+                case "settings":         selectedTab = 4
+                case "scan":
+                    selectedTab = 0
+                    NotificationCenter.default.post(name: Notification.Name("LedgerLitePresentScan"), object: nil)
                 default: break
                 }
             }
@@ -137,6 +142,9 @@ struct ContentView: View {
         }
         .onAppear {
             if biometricLockEnabled { isLocked = true }
+            #if DEBUG
+            applyLaunchScreen()
+            #endif
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background && biometricLockEnabled {
@@ -144,6 +152,28 @@ struct ContentView: View {
             }
         }
     }
+
+    #if DEBUG
+    /// Opens directly to a tab (or the scanner) when launched with
+    /// `--screen <today|history|subscriptions|insights|settings|scan>` — used to
+    /// capture App Store screenshots without taps or deep-link prompts.
+    private func applyLaunchScreen() {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "--screen"), i + 1 < args.count else { return }
+        switch args[i + 1] {
+        case "history":       selectedTab = 1
+        case "subscriptions": selectedTab = 2
+        case "insights":      selectedTab = 3
+        case "settings":      selectedTab = 4
+        case "scan":
+            selectedTab = 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                NotificationCenter.default.post(name: Notification.Name("LedgerLitePresentScan"), object: nil)
+            }
+        default:              selectedTab = 0
+        }
+    }
+    #endif
 }
 
 #Preview {
