@@ -159,7 +159,7 @@ struct InsightsView: View {
             Chart(vm.categoryTotals, id: \.category.id) { item in
                 SectorMark(
                     angle: .value(String(localized: "Amount"), item.minorUnits),
-                    innerRadius: .ratio(0.56),
+                    innerRadius: .ratio(0.64),
                     angularInset: vm.categoryTotals.count == 1 ? 0 : 1.5
                 )
                 .foregroundStyle(Color(hex: item.category.colorHex))
@@ -190,8 +190,9 @@ struct InsightsView: View {
                     Text(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
                         .font(.system(.callout, design: .rounded, weight: .bold))
                         .monospacedDigit()
-                        .minimumScaleFactor(0.5)
-                        .frame(maxWidth: 120)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.4)
+                        .frame(maxWidth: 132)
                     Text("\(pct)%")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
@@ -202,15 +203,16 @@ struct InsightsView: View {
                     Text(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())
                         .font(.system(.callout, design: .rounded, weight: .bold))
                         .monospacedDigit()
-                        .minimumScaleFactor(0.5)
-                        .frame(maxWidth: 120)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.4)
+                        .frame(maxWidth: 132)
                         .contentTransition(.numericText(value: Double(vm.periodTotalMinor)))
                         .animation(.easeInOut(duration: 0.3), value: vm.periodTotalMinor)
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: vm.selectedCategory?.id)
         }
-        .frame(height: 180)
+        .frame(height: 210)
     }
 
     private func callout(item: (category: Category, minorUnits: Int), vm: InsightsViewModel) -> some View {
@@ -314,10 +316,12 @@ struct InsightsView: View {
                 RuleMark(y: .value(String(localized: "Average"), avg))
                     .foregroundStyle(.secondary.opacity(0.55))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
-                    .annotation(position: .top, alignment: .trailing, spacing: 2) {
+                    .annotation(position: .top, alignment: .leading, spacing: 2) {
                         Text(String(localized: "Avg"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
+                            .padding(.horizontal, 4)
+                            .background(.background.opacity(0.6), in: Capsule())
                     }
             }
         }
