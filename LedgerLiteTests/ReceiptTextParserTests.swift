@@ -253,6 +253,32 @@ struct ReceiptParserReceiptTests {
         #expect(r.lineItems.allSatisfy { $0.amountMinor != 2000 && $0.amountMinor != 1996 })
     }
 
+    @Test("Morrisons receipt: drops the promotion/discount line, keeps real items")
+    func realMorrisonsOCR() {
+        // Geometry rows from the real Vision OCR of a UK Morrisons receipt — has a
+        // promotions section with a negative discount that must not become an item.
+        let text = """
+        Morrisons Daily
+        Bristol BS16 1QY
+        KINDER BUENO TWIN FINGER BAR 4 1 1.25
+        EXPRESS CUISINE CHICKEN TIKKA 1 3.10
+        EXPRESS CUISINE CHICKEN TANDOO 1 3.10
+        VITHIT PERFORM 500ML 500ML 1 2.10
+        Total Items) Sold 9.55
+        Less Promotion Discount -2.20
+        Total To Pay £7.35
+        EXPRESS MEAL DEAL @ £4.25 -2.20
+        """
+        let r = ReceiptTextParser.parse(text, defaultCurrency: "EUR")
+        #expect(r.currencyCode == "GBP")          // £ detected, not the EUR default
+        #expect(r.amountMinor == 735)             // "Total To Pay" beats "Total Items Sold"
+        #expect(r.lineItems.count == 4)
+        #expect(r.lineItems.map(\.amountMinor) == [125, 310, 310, 210])
+        // The −2.20 promotion line must not appear as an item.
+        #expect(r.lineItems.allSatisfy { $0.amountMinor != 220 })
+        #expect(r.lineItems.allSatisfy { !$0.name.contains("MEAL DEAL") })
+    }
+
     @Test("reconciliation: foreign receipt with no English keywords")
     func reconcilesForeignReceipt() {
         // German terms (Summe/Bar/Rückgeld) are in no keyword list — items are

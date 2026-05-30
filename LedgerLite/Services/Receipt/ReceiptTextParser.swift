@@ -234,7 +234,12 @@ enum ReceiptTextParser {
             if isExcludedLine(line) || isUnitPriceRow(line) { continue }
             guard let money = lastMoney(in: line, decimals: decimals) else { continue }
             let ns = line as NSString
-            let name = ns.substring(to: money.range.location).trimmingCharacters(in: nameTrimChars)
+            let before = ns.substring(to: money.range.location)
+            // A minus right before the amount means a discount / refund / change —
+            // never a purchased item (e.g. "MEAL DEAL @ £4.25  -2.20").
+            let beforeStripped = before.trimmingCharacters(in: CharacterSet(charactersIn: " \t$€£¥₹"))
+            if beforeStripped.hasSuffix("-") || beforeStripped.hasSuffix("−") { continue }
+            let name = before.trimmingCharacters(in: nameTrimChars)
             guard name.filter({ $0.isLetter }).count >= 3 else { continue }
             candidates.append((name, minorUnits(from: money.value, decimals: decimals)))
         }
