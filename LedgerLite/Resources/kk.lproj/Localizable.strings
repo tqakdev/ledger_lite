@@ -119,17 +119,17 @@
 "About" = "Қосымша туралы";
 "Version" = "Нұсқа";
 "Disable in System Settings" = "Жүйе параметрлерінде өшіру";
-"Go to Settings → Notifications → LedgerLite to turn off billing reminders." = "Төлем еске салғыштарын өшіру үшін Параметрлер → Хабарландырулар → LedgerLite бөліміне өтіңіз.";
+"Go to Settings → Notifications → Ledger Lite to turn off billing reminders." = "Төлем еске салғыштарын өшіру үшін Параметрлер → Хабарландырулар → Ledger Lite бөліміне өтіңіз.";
 "Import Complete" = "Импорт аяқталды";
 "The file contains no expense rows." = "Файлда шығын жолдары жоқ.";
 "Could not access the selected file." = "Таңдалған файлға қол жеткізу мүмкін болмады.";
 "Biometrics Unavailable" = "Биометрия қол жетімді емес";
 "Face ID or Touch ID is not set up on this device. Enable it in Settings → Face ID & Passcode." = "Face ID немесе Touch ID бұл құрылғыда орнатылмаған. Параметрлер → Face ID және рұқсат коды бөлімінде қосыңыз.";
 "Notifications Denied" = "Хабарландырулар тыйым салынған";
-"Allow notifications in Settings → Notifications → LedgerLite." = "Параметрлер → Хабарландырулар → LedgerLite бөлімінде хабарландыруларға рұқсат беріңіз.";
+"Allow notifications in Settings → Notifications → Ledger Lite." = "Параметрлер → Хабарландырулар → Ledger Lite бөлімінде хабарландыруларға рұқсат беріңіз.";
 
 /* Onboarding */
-"Welcome to LedgerLite" = "LedgerLite қолданбасына қош келдіңіз";
+"Welcome to Ledger Lite" = "Ledger Lite қолданбасына қош келдіңіз";
 "Track daily spending, manage subscriptions, and understand where your money goes." = "Күнделікті шығындарды бақылаңыз, жазылымдарды басқарыңыз және ақшаңыз қайда кететінін біліңіз.";
 "Get Started" = "Бастау";
 "Pick Your Currency" = "Валютаны таңдаңыз";
@@ -142,7 +142,7 @@
 "Start Tracking" = "Бақылауды бастау";
 
 /* Lock screen */
-"Unlock LedgerLite" = "LedgerLite бағдарламасын ашу";
+"Unlock Ledger Lite" = "Ledger Lite бағдарламасын ашу";
 "Tap to authenticate" = "Аутентификация үшін түртіңіз";
 "Authentication failed. Tap to try again." = "Аутентификация сәтсіз аяқталды. Қайталау үшін түртіңіз.";
 
@@ -169,9 +169,9 @@
 "Color" = "Түс";
 "Confirm" = "Растау";
 "Confirm All" = "Барлығын растау";
-"Could not access LedgerLite data." = "LedgerLite деректеріне қол жеткізу мүмкін болмады.";
-"Could not open LedgerLite database." = "LedgerLite дерекқорын ашу мүмкін болмады.";
-"Could not read LedgerLite data." = "LedgerLite деректерін оқу мүмкін болмады.";
+"Could not access Ledger Lite data." = "Ledger Lite деректеріне қол жеткізу мүмкін болмады.";
+"Could not open Ledger Lite database." = "Ledger Lite дерекқорын ашу мүмкін болмады.";
+"Could not read Ledger Lite data." = "Ledger Lite деректерін оқу мүмкін болмады.";
 "Custom" = "Реттелетін";
 "Day" = "Күн";
 "Dismiss" = "Жабу";
@@ -179,7 +179,7 @@
 "Expenses" = "Шығындар";
 "Every" = "Сайын";
 "Icon" = "Белгіше";
-"LedgerLite is Locked" = "LedgerLite құлыпталған";
+"Ledger Lite is Locked" = "Ledger Lite құлыпталған";
 "Low confidence" = "Төмен сенімділік";
 "New Category" = "Жаңа санат";
 "Next billing" = "Келесі төлем";

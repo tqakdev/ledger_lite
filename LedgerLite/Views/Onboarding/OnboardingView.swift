@@ -67,7 +67,7 @@ struct OnboardingView: View {
                 Spacer().frame(height: 28)
 
                 VStack(spacing: 10) {
-                    Text(String(localized: "Welcome to LedgerLite"))
+                    Text(String(localized: "Welcome to Ledger Lite"))
                         .font(.largeTitle.bold())
                         .multilineTextAlignment(.center)
                     Text(String(localized: "Track daily spending, manage subscriptions, and understand where your money goes."))

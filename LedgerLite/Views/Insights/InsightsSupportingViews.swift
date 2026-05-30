@@ -14,7 +14,7 @@ struct SummaryShareCardView: View {
             HStack {
                 Image(systemName: "chart.pie.fill")
                     .foregroundStyle(Color.accentColor)
-                Text("LedgerLite")
+                Text("Ledger Lite")
                     .font(.headline)
                 Spacer()
                 Text(vm.period.displayName)

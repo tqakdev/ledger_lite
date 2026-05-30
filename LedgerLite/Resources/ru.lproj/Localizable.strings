@@ -119,17 +119,17 @@
 "About" = "О приложении";
 "Version" = "Версия";
 "Disable in System Settings" = "Отключить в системных настройках";
-"Go to Settings → Notifications → LedgerLite to turn off billing reminders." = "Перейдите в Настройки → Уведомления → LedgerLite, чтобы отключить напоминания об оплате.";
+"Go to Settings → Notifications → Ledger Lite to turn off billing reminders." = "Перейдите в Настройки → Уведомления → Ledger Lite, чтобы отключить напоминания об оплате.";
 "Import Complete" = "Импорт завершён";
 "The file contains no expense rows." = "Файл не содержит строк с расходами.";
 "Could not access the selected file." = "Не удалось получить доступ к выбранному файлу.";
 "Biometrics Unavailable" = "Биометрия недоступна";
 "Face ID or Touch ID is not set up on this device. Enable it in Settings → Face ID & Passcode." = "Face ID или Touch ID не настроен на этом устройстве. Включите в Настройки → Face ID и пароль.";
 "Notifications Denied" = "Уведомления запрещены";
-"Allow notifications in Settings → Notifications → LedgerLite." = "Разрешите уведомления в Настройки → Уведомления → LedgerLite.";
+"Allow notifications in Settings → Notifications → Ledger Lite." = "Разрешите уведомления в Настройки → Уведомления → Ledger Lite.";
 
 /* Onboarding */
-"Welcome to LedgerLite" = "Добро пожаловать в LedgerLite";
+"Welcome to Ledger Lite" = "Добро пожаловать в Ledger Lite";
 "Track daily spending, manage subscriptions, and understand where your money goes." = "Отслеживайте ежедневные расходы, управляйте подписками и узнайте, куда уходят деньги.";
 "Get Started" = "Начать";
 "Pick Your Currency" = "Выберите валюту";
@@ -142,7 +142,7 @@
 "Start Tracking" = "Начать отслеживание";
 
 /* Lock screen */
-"Unlock LedgerLite" = "Разблокировать LedgerLite";
+"Unlock Ledger Lite" = "Разблокировать Ledger Lite";
 "Tap to authenticate" = "Нажмите для аутентификации";
 "Authentication failed. Tap to try again." = "Ошибка аутентификации. Нажмите, чтобы повторить.";
 
@@ -169,9 +169,9 @@
 "Color" = "Цвет";
 "Confirm" = "Подтвердить";
 "Confirm All" = "Подтвердить все";
-"Could not access LedgerLite data." = "Не удалось получить доступ к данным LedgerLite.";
-"Could not open LedgerLite database." = "Не удалось открыть базу данных LedgerLite.";
-"Could not read LedgerLite data." = "Не удалось прочитать данные LedgerLite.";
+"Could not access Ledger Lite data." = "Не удалось получить доступ к данным Ledger Lite.";
+"Could not open Ledger Lite database." = "Не удалось открыть базу данных Ledger Lite.";
+"Could not read Ledger Lite data." = "Не удалось прочитать данные Ledger Lite.";
 "Custom" = "Произвольный";
 "Day" = "День";
 "Dismiss" = "Закрыть";
@@ -179,7 +179,7 @@
 "Expenses" = "Расходы";
 "Every" = "Каждые";
 "Icon" = "Значок";
-"LedgerLite is Locked" = "LedgerLite заблокирован";
+"Ledger Lite is Locked" = "Ledger Lite заблокирован";
 "Low confidence" = "Низкая точность";
 "New Category" = "Новая категория";
 "Next billing" = "Следующее списание";

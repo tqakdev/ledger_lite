@@ -27,7 +27,7 @@ struct LogExpenseIntent: AppIntent {
         guard let groupURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: "group.com.enes.ledgerlite")
         else {
-            throw AppIntentError.generic(String(localized: "Could not access LedgerLite data."))
+            throw AppIntentError.generic(String(localized: "Could not access Ledger Lite data."))
         }
 
         let schema = Schema([Expense.self, Subscription.self, Category.self, ExchangeRateCache.self])
@@ -37,7 +37,7 @@ struct LogExpenseIntent: AppIntent {
             cloudKitDatabase: .none
         )
         guard let container = try? ModelContainer(for: schema, configurations: [config]) else {
-            throw AppIntentError.generic(String(localized: "Could not open LedgerLite database."))
+            throw AppIntentError.generic(String(localized: "Could not open Ledger Lite database."))
         }
 
         let context = container.mainContext

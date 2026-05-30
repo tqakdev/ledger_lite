@@ -8,7 +8,7 @@ struct TodayTotalIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let service = WidgetDataService() else {
-            return .result(dialog: IntentDialog(stringLiteral: String(localized: "Could not read LedgerLite data.")))
+            return .result(dialog: IntentDialog(stringLiteral: String(localized: "Could not read Ledger Lite data.")))
         }
         let summary = service.todaySummary()
         let total   = Money(minorUnits: summary.totalMinor, currencyCode: summary.currencyCode).formatted()

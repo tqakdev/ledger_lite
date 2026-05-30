@@ -78,7 +78,7 @@ struct SettingsView: View {
             }
             Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text(String(localized: "Go to Settings → Notifications → LedgerLite to turn off billing reminders."))
+            Text(String(localized: "Go to Settings → Notifications → Ledger Lite to turn off billing reminders."))
         }
         .fileImporter(
             isPresented: $showImportPicker,
@@ -104,7 +104,7 @@ struct SettingsView: View {
             }
             Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text(String(localized: "Allow notifications in Settings → Notifications → LedgerLite."))
+            Text(String(localized: "Allow notifications in Settings → Notifications → Ledger Lite."))
         }
     }
 
@@ -289,7 +289,7 @@ struct SettingsView: View {
             .accessibilityElement(children: .combine)
             .accessibilityLabel(String(localized: "Version \(appVersion), tap to copy"))
 
-            Link(destination: URL(string: "https://bluemadisonblue.github.io/ledgerlite-privacy/")!) {
+            Link(destination: URL(string: "https://tqakdev.github.io/ledgerlite-privacy/")!) {
                 HStack {
                     Text(String(localized: "Privacy Policy"))
                     Spacer()

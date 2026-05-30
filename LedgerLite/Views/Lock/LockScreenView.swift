@@ -15,7 +15,7 @@ struct LockScreenView: View {
                     .font(.system(size: 64))
                     .foregroundStyle(Color.accentColor)
                 VStack(spacing: 8) {
-                    Text(String(localized: "LedgerLite is Locked"))
+                    Text(String(localized: "Ledger Lite is Locked"))
                         .font(.title2.bold())
                     if failed {
                         Text(String(localized: "Authentication failed. Try again."))
@@ -42,7 +42,7 @@ struct LockScreenView: View {
         let ctx = LAContext()
         ctx.evaluatePolicy(
             .deviceOwnerAuthentication,
-            localizedReason: String(localized: "Unlock LedgerLite")
+            localizedReason: String(localized: "Unlock Ledger Lite")
         ) { success, _ in
             DispatchQueue.main.async {
                 if success { onUnlock() } else { failed = true }
