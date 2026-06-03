@@ -159,8 +159,10 @@ final class TodayViewModel {
         }
     }
 
-    // Returns (total monthly budget - month-to-date spending) / days remaining in month.
-    // Returns nil when no category has a budget, so the chip is hidden by default.
+    // Returns (total monthly budget - month-to-date spending in budgeted categories) / days remaining.
+    // Returns nil when no category has a budget set, so the chip is hidden by default.
+    // Only spending in categories that carry a budget is counted — unbudgeted categories
+    // (e.g. a one-off "Travel" spend) must not reduce safe-to-spend for budgeted categories.
     private func computeSafeToSpend() -> Int? {
         let cal = Calendar.current
         let now = Date()
@@ -180,7 +182,10 @@ final class TodayViewModel {
             )
         )) ?? []
 
-        let totalSpent = monthExpenses.totalInHomeCurrency(homeCurrencyCode)
+        // Filter to only expenses whose category has a monthly budget set.
+        // Unbudgeted spending should not penalise the safe-to-spend calculation.
+        let budgetedExpenses = monthExpenses.filter { ($0.category?.monthlyBudgetMinor ?? 0) > 0 }
+        let totalSpent = budgetedExpenses.totalInHomeCurrency(homeCurrencyCode)
 
         guard let monthRange = cal.range(of: .day, in: .month, for: now),
               let dayOfMonth = cal.dateComponents([.day], from: now).day else { return nil }
