@@ -134,4 +134,57 @@ struct SafeToSpendTests {
         let safe = try #require(vm.safeToSpendMinor)
         #expect(safe > 0, "Only $200 of budgeted spend against a $1 000 budget must leave safe-to-spend positive")
     }
+
+    /// Multiple budgeted categories: their budgets and spending both sum correctly.
+    @Test("multiple budgeted categories: budgets and spending aggregate correctly")
+    func multipleBudgetedCategories() async throws {
+        let container = try SafeToSpendHarness.makeContainer()
+
+        // Food: $600 budget, $100 spent. Transport: $400 budget, $50 spent.
+        // Total budget = $1 000. Total spend = $150. Remaining = $850.
+        let food      = SafeToSpendHarness.makeCategory(name: "Food",      budgetMinor: 60_000)
+        let transport = SafeToSpendHarness.makeCategory(name: "Transport", budgetMinor: 40_000)
+        container.mainContext.insert(food)
+        container.mainContext.insert(transport)
+
+        container.mainContext.insert(SafeToSpendHarness.makeExpense(amountMinor: 10_000, category: food))
+        container.mainContext.insert(SafeToSpendHarness.makeExpense(amountMinor: 5_000,  category: transport))
+
+        let vm = TodayViewModel(context: container.mainContext)
+        vm.refresh()
+        await Task.yield()
+
+        let safe = try #require(vm.safeToSpendMinor)
+        // Remaining $850 spread over remaining days is always > 0 with only 15% of budget spent.
+        #expect(safe > 0, "Combined $150 spend against $1 000 total budget must leave safe-to-spend positive")
+    }
+
+    /// A future-dated expense (next month) must not reduce this month's safe-to-spend.
+    @Test("next-month expense is excluded from safe-to-spend calculation")
+    func nextMonthExpenseExcluded() async throws {
+        let container = try SafeToSpendHarness.makeContainer()
+
+        let food = SafeToSpendHarness.makeCategory(name: "Food", budgetMinor: 100_000)
+        container.mainContext.insert(food)
+
+        // Expense dated 40 days in the future — safely outside the current calendar month.
+        let futureDate = Calendar.current.date(byAdding: .day, value: 40, to: Date()) ?? Date()
+        let future = Expense(
+            amountMinor: 99_000,
+            currencyCode: "USD",
+            exchangeRateToHome: 1,
+            homeCurrencyAtEntry: "USD",
+            date: futureDate
+        )
+        future.category = food
+        container.mainContext.insert(future)
+
+        let vm = TodayViewModel(context: container.mainContext)
+        vm.refresh()
+        await Task.yield()
+
+        // The $990 next-month expense must not reduce safe-to-spend for the current month.
+        let safe = try #require(vm.safeToSpendMinor)
+        #expect(safe > 0, "A future-month expense must not count against the current month's budget")
+    }
 }

@@ -91,7 +91,7 @@ final class CurrencyService {
     }
 
     private func crossRate(eurToQuote: Decimal, eurToBase: Decimal) throws -> Decimal {
-        guard eurToBase != 0 else { throw CurrencyError.decodingFailed }
+        guard eurToBase != 0, eurToQuote != 0 else { throw CurrencyError.decodingFailed }
         return eurToQuote / eurToBase
     }
 

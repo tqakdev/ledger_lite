@@ -196,6 +196,8 @@ struct SpendingHeatmapSection: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("13-week spending activity heatmap in \(currencyCode)"))
     }
 }
 

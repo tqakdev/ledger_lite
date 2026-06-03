@@ -115,8 +115,10 @@ struct TodayView: View {
             money: Money(minorUnits: viewModel.todayTotalMinor, currencyCode: viewModel.homeCurrencyCode),
             subtitle: Date.now.formatted(date: .complete, time: .omitted)
         ) {
-            velocityLabel(viewModel)
-            streakChip(viewModel)
+            HStack(spacing: 6) {
+                velocityLabel(viewModel)
+                streakChip(viewModel)
+            }
             safeToSpendChip(viewModel)
         }
         .redacted(reason: viewModel.isLoading && viewModel.expenses.isEmpty ? .placeholder : [])

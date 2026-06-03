@@ -42,7 +42,7 @@ struct WidgetDataService {
 
     init?() {
         guard let groupURL = FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: "group.com.enes.ledgerlite")
+            .containerURL(forSecurityApplicationGroupIdentifier: Constants.App.appGroupIdentifier)
         else { return nil }
         let storeURL = groupURL.appendingPathComponent("LedgerLite.store")
         let schema = Schema([Expense.self, Subscription.self, Category.self, ExchangeRateCache.self])
@@ -56,7 +56,7 @@ struct WidgetDataService {
     @MainActor
     func todaySummary() -> TodaySummary {
         let context = container.mainContext
-        let homeCurrency = UserDefaults(suiteName: "group.com.enes.ledgerlite")?
+        let homeCurrency = UserDefaults(suiteName: Constants.App.appGroupIdentifier)?
             .string(forKey: "homeCurrencyCode") ?? "USD"
         let start = Calendar.current.startOfDay(for: Date())
         let end   = Calendar.current.date(byAdding: .day, value: 1, to: start) ?? start

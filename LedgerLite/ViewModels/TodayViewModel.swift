@@ -131,12 +131,14 @@ final class TodayViewModel {
     }
 
     private func computeDailyAverage() -> Int {
-        guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) else { return 0 }
+        let now = Date()
+        guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: now) else { return 0 }
         do {
             let since = thirtyDaysAgo
+            let upperBound = now
             let recent = try modelContext.fetch(
                 FetchDescriptor<Expense>(
-                    predicate: #Predicate { $0.date >= since },
+                    predicate: #Predicate { $0.date >= since && $0.date <= upperBound },
                     sortBy: []
                 )
             )
@@ -173,11 +175,12 @@ final class TodayViewModel {
 
         var monthComps = cal.dateComponents([.year, .month], from: now)
         monthComps.day = 1
-        guard let monthStart = cal.date(from: monthComps) else { return nil }
+        guard let monthStart = cal.date(from: monthComps),
+              let monthEnd = cal.date(byAdding: .month, value: 1, to: monthStart) else { return nil }
 
         let monthExpenses = (try? modelContext.fetch(
             FetchDescriptor<Expense>(
-                predicate: #Predicate { $0.date >= monthStart },
+                predicate: #Predicate { $0.date >= monthStart && $0.date < monthEnd },
                 sortBy: []
             )
         )) ?? []
