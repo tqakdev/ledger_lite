@@ -4,10 +4,10 @@
 Ledger Lite – Expense Tracker
 
 ## Subtitle (30 chars)
-Receipt Scanner & Budgets
+On-Device Scanner, No Account
 
 ## Promotional Text (170 chars)
-Scan a receipt and it's logged in seconds — on-device, private, no account. Track spending, budgets, and subscriptions, all on your iPhone.
+Scan receipts on-device — nothing uploaded, ever. Get a daily safe-to-spend target from your budgets. No account, no cloud, no tracking.
 
 ## Category
 Finance
@@ -22,29 +22,42 @@ https://tqakdev.github.io/ledgerlite-privacy/
 https://tqakdev.github.io/ledgerlite-privacy/
 
 ## Keywords (100 chars)
-spending,subscriptions,money manager,bills,renewals,ocr,finance,personal,savings,wallet,currency
+receipt scanner,safe to spend,on-device ocr,subscriptions,budgets,no account,multi-currency,private
 
 ## Description
-Take control of your finances with Ledger Lite — a clean, fast, and completely private expense tracker that lives entirely on your device.
+Ledger Lite is a privacy-first expense tracker built on three ideas most apps don't combine: receipts scanned entirely on your device, a daily safe-to-spend number calculated from your own budgets, and zero servers — ever.
 
-Snap a photo of any receipt and Ledger Lite extracts the total, merchant, date, and a full item breakdown — entirely on your device, in seconds. Or log what you spend by hand with an amount, category, currency, and note. No account, no subscription, no internet required. Your data never leaves your phone.
+**Receipt scanning with Apple's Vision framework — nothing leaves your iPhone**
+Point the camera at a paper receipt or import a screenshot. Ledger Lite uses Apple's on-device OCR (Vision) to extract the total, merchant, date, and a suggested category in seconds. No image is uploaded. No account is required to scan. Cloud-based OCR, a staple of most receipt apps, is architecturally impossible here.
+
+**Daily Safe-to-Spend**
+Set monthly budgets per category. Ledger Lite subtracts what you've spent so far this month and divides the remaining budget across the days left — giving you a single "safe to spend today" number on the Today screen. It's proactive guidance, not just a scorecard.
+
+**Subscription auto-detect**
+Paste a billing email or SMS confirmation and Ledger Lite extracts the service name, amount, currency, and billing cycle automatically. Your inbox becomes your subscription tracker.
+
+**Historically accurate multi-currency**
+Exchange rates are frozen at the moment you log an entry. Past totals never drift when rates change — a correctness guarantee most multi-currency apps skip.
 
 **What's inside:**
-• Receipt scanner — snap or import a receipt and it's read on-device (nothing is uploaded); the total, merchant, date, and item list are filled in for you
-• Today view — your daily total at a glance with a spending velocity badge and streak counter
-• Budgets — set monthly limits per category and get notified before you overspend
-• Insights — an interactive donut chart and spending trends broken down by category for any period
-• Subscriptions — track recurring bills with a calendar of upcoming charges and your true monthly cost
-• History — browse any past day with swipe navigation, full-text search, and a monthly running total
-• Multi-currency — log in any currency with automatic conversion to your home currency
-• Home screen widget — your daily total always one glance away
-• Biometric lock — Face ID / Touch ID to keep your finances private
-• On-device only — SwiftData storage, no iCloud, no servers
+• On-device receipt scanner (Apple Vision, camera + photo library, no upload)
+• Daily Safe-to-Spend chip — budget ÷ days remaining, shown on Today
+• Subscription auto-detect — paste a billing message, get a filled-in subscription
+• Today view — daily total with velocity badge (vs. your 30-day average) and streak counter
+• Budgets — monthly limits per category with 80 % and 100 % local notifications
+• Insights — interactive donut chart and daily/monthly bar chart for any period
+• History — swipe by day, full-text search, monthly running total
+• Multi-currency — live rates via Frankfurter; amounts frozen at entry for accuracy
+• Home screen & Lock Screen widget — daily total at a glance
+• Biometric lock — Face ID / Touch ID
+• Siri Shortcuts — log an expense or check your total with your voice
+• CSV export — one tap
+• On-device only — SwiftData, no iCloud, no backend, no tracking
 
-No ads. No tracking. No account required.
+No ads. No account. No data collection.
 
 ## What's New (Version 1.0)
-Initial release.
+Initial release — on-device receipt scanning, Daily Safe-to-Spend, subscription auto-detect, multi-currency with frozen exchange rates, and zero data collection.
 
 ## Age Rating
 4+ (no objectionable content)

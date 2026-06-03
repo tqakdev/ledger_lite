@@ -39,6 +39,9 @@ final class TodayViewModel {
     var errorMessage: String?
     var isLoading: Bool = false
     var currentStreak: Int = 0
+    /// Remaining monthly budget divided by days left in the month.
+    /// nil when no category budgets have been set.
+    var safeToSpendMinor: Int? = nil
 
     private let expenseRepository: ExpenseRepository
     private let modelContext: ModelContext
@@ -73,9 +76,11 @@ final class TodayViewModel {
         metricsTask = Task {
             let average = computeDailyAverage()
             let streak  = computeStreak()
+            let safe    = computeSafeToSpend()
             guard !Task.isCancelled else { return }
             dailyAverageMinor = average
             currentStreak = streak
+            safeToSpendMinor = safe
             BudgetAlertService(context: modelContext).checkBudgets()
         }
     }
@@ -152,5 +157,36 @@ final class TodayViewModel {
             AppLogger.ui.error("Daily average failed: \(error)")
             return 0
         }
+    }
+
+    // Returns (total monthly budget - month-to-date spending) / days remaining in month.
+    // Returns nil when no category has a budget, so the chip is hidden by default.
+    private func computeSafeToSpend() -> Int? {
+        let cal = Calendar.current
+        let now = Date()
+
+        let categories = (try? modelContext.fetch(FetchDescriptor<Category>())) ?? []
+        let totalBudget = categories.compactMap(\.monthlyBudgetMinor).reduce(0, +)
+        guard totalBudget > 0 else { return nil }
+
+        var monthComps = cal.dateComponents([.year, .month], from: now)
+        monthComps.day = 1
+        guard let monthStart = cal.date(from: monthComps) else { return nil }
+
+        let monthExpenses = (try? modelContext.fetch(
+            FetchDescriptor<Expense>(
+                predicate: #Predicate { $0.date >= monthStart },
+                sortBy: []
+            )
+        )) ?? []
+
+        let totalSpent = monthExpenses.totalInHomeCurrency(homeCurrencyCode)
+
+        guard let monthRange = cal.range(of: .day, in: .month, for: now),
+              let dayOfMonth = cal.dateComponents([.day], from: now).day else { return nil }
+        let daysRemaining = max(1, monthRange.count - dayOfMonth + 1)
+
+        let remaining = totalBudget - totalSpent
+        return remaining / daysRemaining
     }
 }

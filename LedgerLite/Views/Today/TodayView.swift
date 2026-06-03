@@ -117,12 +117,13 @@ struct TodayView: View {
         ) {
             velocityLabel(viewModel)
             streakChip(viewModel)
+            safeToSpendChip(viewModel)
         }
         .redacted(reason: viewModel.isLoading && viewModel.expenses.isEmpty ? .placeholder : [])
-        // Daily-average and streak are computed in a deferred task, so they
-        // resolve a beat after the card appears. Fade them in instead of snapping.
+        // Deferred metrics fade in once computed rather than snapping into place.
         .animation(.easeInOut(duration: 0.25), value: viewModel.dailyAverageMinor)
         .animation(.easeInOut(duration: 0.25), value: viewModel.currentStreak)
+        .animation(.easeInOut(duration: 0.25), value: viewModel.safeToSpendMinor)
     }
 
     @ViewBuilder
@@ -159,6 +160,30 @@ struct TodayView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background(Color.orange.opacity(0.12))
+            .clipShape(Capsule())
+            .transition(.opacity.combined(with: .scale(scale: 0.9)))
+        }
+    }
+
+    @ViewBuilder
+    private func safeToSpendChip(_ viewModel: TodayViewModel) -> some View {
+        if let safe = viewModel.safeToSpendMinor {
+            let overBudget = safe <= 0
+            HStack(spacing: 4) {
+                Image(systemName: overBudget ? "exclamationmark.shield.fill" : "shield.checkmark.fill")
+                    .font(.caption)
+                if overBudget {
+                    Text(String(localized: "Budget exceeded"))
+                        .font(.caption)
+                } else {
+                    Text(String(localized: "Safe to spend: \(Money(minorUnits: safe, currencyCode: viewModel.homeCurrencyCode).formatted()) today"))
+                        .font(.caption)
+                }
+            }
+            .foregroundStyle(overBudget ? .red : Color.mint)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background((overBudget ? Color.red : Color.mint).opacity(0.12))
             .clipShape(Capsule())
             .transition(.opacity.combined(with: .scale(scale: 0.9)))
         }
