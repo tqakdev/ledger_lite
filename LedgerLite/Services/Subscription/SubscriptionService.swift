@@ -112,7 +112,13 @@ final class SubscriptionService {
         guard sub.nextBillingDate < referenceDate else { return }
 
         var generated = 0
+        var iterations = 0
         while sub.nextBillingDate < referenceDate {
+            iterations += 1
+            guard iterations <= 1200 else {
+                AppLogger.subscriptions.error("generateExpenses loop cap reached for \(sub.name) — possible infinite cycle")
+                break
+            }
             let billingDate = sub.nextBillingDate
 
             let rate: Decimal

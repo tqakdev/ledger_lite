@@ -25,7 +25,7 @@ struct LogExpenseIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let groupURL = FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: "group.com.enes.ledgerlite")
+            .containerURL(forSecurityApplicationGroupIdentifier: Constants.App.appGroupIdentifier)
         else {
             throw AppIntentError.generic(String(localized: "Could not access Ledger Lite data."))
         }
@@ -82,7 +82,7 @@ struct CategoryOptionsProvider: DynamicOptionsProvider {
     @MainActor
     func results() async throws -> [String] {
         guard let groupURL = FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: "group.com.enes.ledgerlite")
+            .containerURL(forSecurityApplicationGroupIdentifier: Constants.App.appGroupIdentifier)
         else { return [] }
         let schema = Schema([Expense.self, Subscription.self, Category.self, ExchangeRateCache.self])
         let config = ModelConfiguration(

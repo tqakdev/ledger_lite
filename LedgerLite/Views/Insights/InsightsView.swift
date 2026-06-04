@@ -93,6 +93,7 @@ struct InsightsView: View {
                         Group {
                             donutSection(vm)
                             trendSection(vm)
+                            heatmapSection(vm)
                             if vm.period == .month {
                                 budgetSection(vm)
                                     .transition(.opacity.combined(with: .move(edge: .top)))
@@ -404,6 +405,22 @@ struct InsightsView: View {
                 .tint(entry.progressColor)
                 .accessibilityLabel("\(entry.category.name) budget: \(Int(entry.clampedProgress * 100))% used")
         }
+    }
+
+    // MARK: - Heatmap section
+
+    private func heatmapSection(_ vm: InsightsViewModel) -> some View {
+        GroupBox {
+            SpendingHeatmapSection(
+                dailyTotals: vm.heatmapDailyTotals,
+                currencyCode: vm.homeCurrencyCode
+            )
+        } label: {
+            Label(String(localized: "Daily Activity"), systemImage: "calendar.badge.clock")
+                .font(.headline)
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
     }
 
     // MARK: - Top merchant section

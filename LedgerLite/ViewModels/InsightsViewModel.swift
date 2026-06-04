@@ -48,6 +48,8 @@ final class InsightsViewModel {
     var errorMessage: String?
     var topMerchant: (merchant: String, minorUnits: Int)? = nil
     var periodExpenses: [Expense] = []
+    /// Daily spending totals for the 13-week rolling heatmap: startOfDay → home-currency minor units.
+    var heatmapDailyTotals: [Date: Int] = [:]
 
     // MARK: - Dependencies
 
@@ -90,11 +92,12 @@ final class InsightsViewModel {
                     )
                 )
             }
-            periodExpenses   = filtered
-            categoryTotals   = makeCategoryTotals(filtered)
-            dailyTotals      = makeGroupedTotals(filtered, period: period)
-            periodTotalMinor = makePeriodTotal(filtered)
-            topMerchant      = makeTopMerchant(filtered)
+            periodExpenses      = filtered
+            categoryTotals      = makeCategoryTotals(filtered)
+            dailyTotals         = makeGroupedTotals(filtered, period: period)
+            periodTotalMinor    = makePeriodTotal(filtered)
+            topMerchant         = makeTopMerchant(filtered)
+            heatmapDailyTotals  = makeHeatmapTotals()
         } catch {
             errorMessage = error.localizedDescription
             AppLogger.data.error("InsightsViewModel refresh failed: \(error)")
@@ -189,6 +192,28 @@ final class InsightsViewModel {
     private func makePeriodTotal(_ expenses: [Expense]) -> Int {
         let sum = expenses.reduce(Decimal(0)) { $0 + homeDecimal($1) }
         return toMinor(sum, places: Money.decimals(for: homeCurrencyCode))
+    }
+
+    // Builds a startOfDay → minorUnits map for the last 91 days (13-week heatmap window).
+    // This fetch is independent of the period picker so the heatmap always shows recent activity.
+    private func makeHeatmapTotals() -> [Date: Int] {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        guard let since = cal.date(byAdding: .day, value: -90, to: today) else { return [:] }
+
+        let expenses = (try? modelContext.fetch(
+            FetchDescriptor<Expense>(
+                predicate: #Predicate { $0.date >= since },
+                sortBy: []
+            )
+        )) ?? []
+
+        let places = Money.decimals(for: homeCurrencyCode)
+        var sums: [Date: Decimal] = [:]
+        for e in expenses {
+            sums[cal.startOfDay(for: e.date), default: 0] += homeDecimal(e)
+        }
+        return sums.mapValues { toMinor($0, places: places) }
     }
 
     // MARK: - Helpers

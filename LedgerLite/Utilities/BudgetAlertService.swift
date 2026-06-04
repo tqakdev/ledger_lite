@@ -20,12 +20,14 @@ final class BudgetAlertService {
         var monthComps = cal.dateComponents([.year, .month], from: now)
         monthComps.day = 1
         guard let monthStart = cal.date(from: monthComps),
-              let year = monthComps.year, let month = monthComps.month else { return }
+              let year = monthComps.year,
+              let month = monthComps.month else { return }
         let monthKey = "\(year)-\(month)"
 
+        guard let monthEnd = cal.date(byAdding: .month, value: 1, to: monthStart) else { return }
         guard let expenses = try? modelContext.fetch(
             FetchDescriptor<Expense>(
-                predicate: #Predicate { $0.date >= monthStart },
+                predicate: #Predicate { $0.date >= monthStart && $0.date < monthEnd },
                 sortBy: []
             )
         ) else { return }
