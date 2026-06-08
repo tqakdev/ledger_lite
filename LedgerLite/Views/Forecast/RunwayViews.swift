@@ -235,7 +235,7 @@ struct RunwayDetailView: View {
             }
 
             // Zero "danger line".
-            RuleMark(y: .value(String(localized: "Zero"), 0))
+            RuleMark(y: .value(String(localized: "Zero"), 0.0))
                 .foregroundStyle(.red.opacity(0.5))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
 
