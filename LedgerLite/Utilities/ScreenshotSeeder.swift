@@ -14,6 +14,11 @@ enum ScreenshotSeeder {
         UserDefaults.standard.set(false, forKey: "biometricLockEnabled")
         UserPreferences.homeCurrencyCode = "USD"
 
+        // Seed the Payday Runway so the Today hero card is populated in screenshots.
+        UserPreferences.availableBalanceMinor = 120_000          // $1,200 available
+        UserPreferences.balanceAsOfDate = Date()
+        UserPreferences.nextPayday = Calendar.current.date(byAdding: .day, value: 14, to: Date())
+
         guard let categories = try? CategoryRepository(context: context).fetchAll() else { return }
         var byName: [String: Category] = [:]
         for category in categories { byName[category.name] = category }
