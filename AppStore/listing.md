@@ -45,14 +45,11 @@ Paste a billing email or SMS and Ledger Lite pulls out the service, amount, curr
 Exchange rates are frozen the moment you log an entry, so past totals never drift when rates move. Works abroad, fully offline.
 
 **What's inside:**
-• Payday Runway — a forward balance forecast with a daily "truly safe to spend" that accounts for upcoming bills
-• Runway chart — see exactly which day your balance dips, with bill markers
-• On-device receipt scanner (Apple Vision, camera + photo library, no upload)
-• Subscription auto-detect — paste a billing message, get a filled-in subscription
-• Budgets — monthly limits per category with 80 % and 100 % local notifications
-• Insights — donut chart, trend chart, and a 13-week spending heatmap
-• History — swipe by day, full-text search, monthly running total
-• Multi-currency — live rates; amounts frozen at entry for accuracy
+• Runway (home) — a forward balance forecast with a daily "truly safe to spend" that accounts for upcoming bills, and a balance-to-payday chart showing the day you'd dip
+• Spending — log expenses by day, full-text search, on-device receipt scanner (Apple Vision, no upload)
+• Bills — track recurring charges, paste a billing message to auto-detect, see them netted into your runway
+• Trends — spending trend chart, 13-week heatmap, budgets with 80 % / 100 % local alerts
+• Multi-currency — live rates; amounts frozen at entry for accuracy, works offline abroad
 • Home screen & Lock Screen widget
 • Biometric lock — Face ID / Touch ID
 • Siri Shortcuts — log an expense or check your total with your voice
@@ -83,22 +80,22 @@ logged on-device only (os.Logger). In App Store Connect → App Privacy, answer
 - Sign-in required: No (the app has no account or login).
 - Demo account: Not applicable.
 - Notes: "All data is stored on-device; there is no backend and no bank linking.
-  TO SEE THE KEY FEATURE (Payday Runway): open the app → on the Today screen tap
-  'See your runway to payday' → enter any balance (e.g. 600) and a payday a couple
-  of weeks out → Save. The Today screen then shows a daily 'truly safe to spend'
-  number, and tapping the card opens a forward balance-projection chart. Add a few
-  subscriptions (Subscriptions tab → +, or paste a billing email to auto-detect)
-  to see upcoming bills netted out of the forecast. To test receipt scanning, point
-  the camera at any printed receipt or tap 'Choose Photo' — all OCR runs on-device."
+  The app OPENS on the Runway forecast (its home and core concept). If it shows a
+  'Set up your runway' card, tap it, enter any balance (e.g. 600) and a payday ~2
+  weeks out, then Save — the home screen then renders a daily 'truly safe to spend'
+  figure and a balance-to-payday chart with markers for upcoming bills. Add a few
+  recurring charges in the Bills tab (+ or paste a billing email to auto-detect) to
+  see them netted out of the forecast. Log/scan expenses from the Spending tab or
+  the + / scan buttons; all receipt OCR runs on-device (works in Airplane Mode)."
 
 ## Screenshots
 Lead with the differentiator. Recommended 6.9" iPhone set (1320×2868, RGB, no alpha):
-01-runway (Today screen with the runway card + safe-to-spend, the FIRST screenshot)
-· 02-runway-chart (the forward projection with bill markers) · 03-scan (on-device
-OCR) · 04-insights (heatmap) · 05-subscriptions. Upload to the iPhone 6.9" slot;
-App Store Connect scales it to smaller devices. The runway shots are the ones a
-reviewer must see in the first 15 seconds — they are visually unlike any other
-expense app.
+01-runway (the home screen: "truly safe to spend / day" + balance-to-payday chart —
+the FIRST screenshot) · 02-bills (recurring charges feeding the runway) · 03-scan
+(on-device OCR) · 04-spending (day log) · 05-trends (heatmap). Capture with the
+`--seed-screenshots` launch arg, which pre-fills a balance + payday so the runway
+renders. The runway shot is the one a reviewer must see in the first 15 seconds —
+it is visually unlike any other expense app.
 
 ## Pre-submission checklist
 - [ ] Privacy Policy / Support URL is LIVE (https://tqakdev.github.io/ledgerlite-privacy/)
