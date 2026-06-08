@@ -39,6 +39,10 @@ struct SettingsView: View {
     // Reset data
     @State private var showResetConfirmation = false
 
+    // Runway forecast
+    @State private var showRunwaySetup = false
+    @State private var runwayRefresh = 0   // bump to re-read UserPreferences after edits
+
     private var appVersion: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
         let b = Bundle.main.infoDictionary?["CFBundleVersion"]           as? String ?? "1"
@@ -49,6 +53,7 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 generalSection
+                runwaySection
                 categoriesSection
                 budgetsSection
                 notificationsSection
@@ -68,6 +73,29 @@ struct SettingsView: View {
             set: { if !$0 { exportItems = [] } }
         )) {
             ActivitySheet(items: exportItems)
+        }
+        .sheet(isPresented: $showRunwaySetup) {
+            RunwaySetupSheet(
+                currencyCode: homeCurrencyCode,
+                isConfigured: UserPreferences.hasRunwaySetup,
+                initialBalanceMinor: UserPreferences.availableBalanceMinor,
+                initialPayday: UserPreferences.nextPayday,
+                onSave: { balance, payday in
+                    UserPreferences.availableBalanceMinor = balance
+                    UserPreferences.balanceAsOfDate = Date()
+                    UserPreferences.nextPayday = payday
+                    runwayRefresh += 1
+                    WidgetCenter.shared.reloadAllTimelines()
+                },
+                onClear: {
+                    UserPreferences.availableBalanceMinor = nil
+                    UserPreferences.balanceAsOfDate = nil
+                    UserPreferences.nextPayday = nil
+                    UserPreferences.paydayIncomeMinor = nil
+                    runwayRefresh += 1
+                    WidgetCenter.shared.reloadAllTimelines()
+                }
+            )
         }
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
             Button(String(localized: "OK"), role: .cancel) {}
@@ -127,6 +155,42 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Runway
+
+    private var runwaySection: some View {
+        Section {
+            Button {
+                showRunwaySetup = true
+            } label: {
+                Label {
+                    HStack {
+                        Text(String(localized: "Balance & Payday"))
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Text(runwayStatus)
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    }
+                } icon: {
+                    settingsIcon("chart.line.uptrend.xyaxis", color: .mint)
+                }
+            }
+            .id(runwayRefresh)   // re-read UserPreferences after the sheet saves
+        } header: {
+            Text(String(localized: "Runway Forecast"))
+        } footer: {
+            Text(String(localized: "Powers the daily safe-to-spend on the Today screen. Calculated entirely on your device."))
+        }
+    }
+
+    private var runwayStatus: String {
+        guard UserPreferences.hasRunwaySetup,
+              let balance = UserPreferences.availableBalanceMinor else {
+            return String(localized: "Off")
+        }
+        return Money(minorUnits: balance, currencyCode: homeCurrencyCode).formatted()
     }
 
     // MARK: - Categories

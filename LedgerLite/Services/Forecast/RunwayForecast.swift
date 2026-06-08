@@ -15,10 +15,11 @@ import Foundation
 struct RunwayForecast {
 
     /// A single committed outflow (typically a subscription billing) on a given day.
-    struct Bill: Equatable {
+    struct Bill: Equatable, Hashable, Identifiable {
         let date: Date          // day the bill is charged
         let amountMinor: Int    // home-currency minor units
         let name: String
+        var id: String { "\(name)-\(date.timeIntervalSince1970)-\(amountMinor)" }
     }
 
     struct Input {
