@@ -33,7 +33,7 @@ struct SubscriptionsView: View {
                     ProgressView()
                 }
             }
-            .navigationTitle(String(localized: "Subscriptions"))
+            .navigationTitle(String(localized: "Bills"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 if let viewModel {

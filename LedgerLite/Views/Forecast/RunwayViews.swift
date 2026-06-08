@@ -13,126 +13,38 @@ private func compactMoney(_ minor: Int, currency: String) -> String {
     let body: String
     if abs >= 1_000_000 { body = String(format: "%.1fM", abs / 1_000_000) }
     else if abs >= 1_000 { body = String(format: "%.1fk", abs / 1_000) }
-    else if abs >= 100   { body = String(format: "%.0f", abs) }
     else                 { body = String(format: "%.0f", abs) }
     return "\(sign)\(symbol)\(body)"
 }
 
-// MARK: - Runway card (Today hero)
+// MARK: - Setup prompt
 
-/// The forward-looking hero on the Today screen. Shows the single "truly safe to spend"
-/// number, or a setup call-to-action when the user hasn't entered a balance + payday yet.
-struct RunwayCardView: View {
-    let result: RunwayForecast.Result?
-    let hasSetup: Bool
-    let currencyCode: String
-    let onOpenDetail: () -> Void
+/// Call-to-action shown on the Runway home before the user has entered a balance + payday.
+struct RunwaySetupPromptView: View {
     let onSetup: () -> Void
 
     var body: some View {
-        if hasSetup, let result {
-            configured(result)
-        } else {
-            setupPrompt
-        }
-    }
-
-    // MARK: Configured state
-
-    @ViewBuilder
-    private func configured(_ result: RunwayForecast.Result) -> some View {
-        let danger = result.firstNegativeDate != nil
-        let tint: Color = danger ? .red : .mint
-
-        Button(action: onOpenDetail) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: danger ? "exclamationmark.triangle.fill" : "chart.line.uptrend.xyaxis")
-                        .font(.subheadline)
-                        .foregroundStyle(tint)
-                    Text(String(localized: "Runway to payday"))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+        Button(action: onSetup) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                        .font(.title2)
+                        .foregroundStyle(Color.accentColor)
+                    Text(String(localized: "Set up your runway"))
+                        .font(.headline)
+                        .foregroundStyle(.primary)
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.tertiary)
                 }
-
-                Text(Money(minorUnits: result.trulySafePerDayMinor, currencyCode: currencyCode).formatted())
-                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                    .monospacedDigit()
-                    .foregroundStyle(tint)
-                + Text(String(localized: " / day"))
-                    .font(.system(.title3, design: .rounded, weight: .semibold))
+                Text(String(localized: "Add your available balance and next payday to see a daily safe-to-spend that already accounts for the bills heading your way — calculated entirely on your device."))
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
-
-                Text(subtitle(result, danger: danger))
-                    .font(.caption)
-                    .foregroundStyle(danger ? .red : .secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .background(
-                LinearGradient(
-                    colors: [tint.opacity(0.14), Color(.secondarySystemGroupedBackground)],
-                    startPoint: .top, endPoint: .bottom
-                )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityLabel(result, danger: danger))
-        .accessibilityHint(String(localized: "Opens the runway forecast"))
-    }
-
-    private func subtitle(_ result: RunwayForecast.Result, danger: Bool) -> String {
-        if danger, let neg = result.firstNegativeDate {
-            return String(localized: "Heads up — projected to run out by \(neg.formatted(.dateTime.month(.abbreviated).day()))")
-        }
-        let bills = Money(minorUnits: result.totalUpcomingBillsMinor, currencyCode: currencyCode).formatted()
-        if result.totalUpcomingBillsMinor > 0 {
-            return String(localized: "Safe daily spend after \(bills) in upcoming bills · \(result.daysToPayday) days left")
-        }
-        return String(localized: "\(result.daysToPayday) days until payday")
-    }
-
-    private func accessibilityLabel(_ result: RunwayForecast.Result, danger: Bool) -> String {
-        let amount = Money(minorUnits: result.trulySafePerDayMinor, currencyCode: currencyCode).formatted()
-        if danger, let neg = result.firstNegativeDate {
-            return String(localized: "Runway: safe to spend \(amount) per day. Warning: projected to run out by \(neg.formatted(.dateTime.month(.abbreviated).day())).")
-        }
-        return String(localized: "Runway: safe to spend \(amount) per day for \(result.daysToPayday) days until payday.")
-    }
-
-    // MARK: Setup prompt
-
-    private var setupPrompt: some View {
-        Button(action: onSetup) {
-            HStack(spacing: 12) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.title2)
-                    .foregroundStyle(Color.accentColor)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(String(localized: "See your runway to payday"))
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                    Text(String(localized: "Add your balance and payday to get a daily safe-to-spend that accounts for upcoming bills."))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 4)
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .padding(18)
             .background(Color(.secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(
@@ -144,40 +56,25 @@ struct RunwayCardView: View {
     }
 }
 
-// MARK: - Runway detail
+// MARK: - Inline forecast
 
-/// Full forward projection: the balance curve from today to payday with bill markers,
-/// a zero "danger line", and the list of bills due before payday.
-struct RunwayDetailView: View {
-    @Environment(\.dismiss) private var dismiss
+/// The forward projection rendered inline on the Runway home: the headline
+/// "truly safe to spend" figure, the balance-to-payday curve with bill markers and
+/// a zero danger line, and the list of bills due before payday.
+struct RunwayForecastView: View {
     let result: RunwayForecast.Result
     let currencyCode: String
-    let onEdit: () -> Void
 
     private var danger: Bool { result.firstNegativeDate != nil }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    headline
-                    chart
-                    if !result.upcomingBills.isEmpty { billsList }
-                    explainer
-                }
-                .padding()
-            }
-            .navigationTitle(String(localized: "Runway"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "Done")) { dismiss() }
-                }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(String(localized: "Edit")) { onEdit() }
-                }
-            }
+        VStack(alignment: .leading, spacing: 18) {
+            headline
+            chart
+            if !result.upcomingBills.isEmpty { billsList }
+            explainer
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: Headline
@@ -204,9 +101,21 @@ struct RunwayDetailView: View {
                 )
                 .font(.caption)
                 .foregroundStyle(.red)
+            } else {
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var subtitle: String {
+        if result.totalUpcomingBillsMinor > 0 {
+            let bills = Money(minorUnits: result.totalUpcomingBillsMinor, currencyCode: currencyCode).formatted()
+            return String(localized: "After \(bills) in bills · \(result.daysToPayday) days to payday")
+        }
+        return String(localized: "\(result.daysToPayday) days until payday")
     }
 
     // MARK: Chart
@@ -327,7 +236,7 @@ struct RunwayDetailView: View {
     // MARK: Explainer
 
     private var explainer: some View {
-        Text(String(localized: "Your runway projects your balance forward using your upcoming subscription bills and your recent spending pace. Everything is calculated on your device — no bank connection."))
+        Text(String(localized: "Projected from your upcoming bills and recent spending pace. Calculated entirely on your device — no bank connection."))
             .font(.caption)
             .foregroundStyle(.tertiary)
             .fixedSize(horizontal: false, vertical: true)

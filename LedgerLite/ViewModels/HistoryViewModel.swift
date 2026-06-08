@@ -2,18 +2,29 @@ import Foundation
 import SwiftData
 
 enum HistorySheet: Identifiable {
+    case add
+    case scanReceipt
     case edit(Expense)
 
     var id: String {
         switch self {
+        case .add:               return "add"
+        case .scanReceipt:       return "scan"
         case .edit(let expense): return "edit-\(expense.id.uuidString)"
         }
     }
 
     var formMode: ExpenseFormMode {
         switch self {
+        case .add, .scanReceipt: return .add
         case .edit(let expense): return .edit(expense)
         }
+    }
+
+    /// True when the form should open straight into the receipt scanner.
+    var startsWithScan: Bool {
+        if case .scanReceipt = self { return true }
+        return false
     }
 }
 
@@ -148,6 +159,8 @@ final class HistoryViewModel {
         }
     }
 
+    func presentAdd() { activeSheet = .add }
+    func presentScan() { activeSheet = .scanReceipt }
     func presentEdit(for expense: Expense) { activeSheet = .edit(expense) }
 
     func dismissSheet() {

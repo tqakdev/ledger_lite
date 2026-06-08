@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Shared summary card used across Today, History, and Subscriptions tabs
+// MARK: - Shared summary card used across the Runway, Spending, and Bills tabs
 
 struct SummaryCard<Supplement: View>: View {
     let title: String
@@ -90,25 +90,21 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             TabView(selection: $selectedTab) {
-                TodayView()
-                    .tabItem { Label(String(localized: "Today"), systemImage: "house") }
+                RunwayView()
+                    .tabItem { Label(String(localized: "Runway"), systemImage: "chart.line.uptrend.xyaxis") }
                     .tag(0)
 
                 HistoryView()
-                    .tabItem { Label(String(localized: "History"), systemImage: "clock") }
+                    .tabItem { Label(String(localized: "Spending"), systemImage: "list.bullet") }
                     .tag(1)
 
                 SubscriptionsView()
-                    .tabItem { Label(String(localized: "Subscriptions"), systemImage: "repeat") }
+                    .tabItem { Label(String(localized: "Bills"), systemImage: "creditcard") }
                     .tag(2)
-
-                InsightsView()
-                    .tabItem { Label(String(localized: "Insights"), systemImage: "chart.pie") }
-                    .tag(3)
 
                 SettingsView()
                     .tabItem { Label(String(localized: "Settings"), systemImage: "gear") }
-                    .tag(4)
+                    .tag(3)
             }
             .onChange(of: selectedTab) { _, _ in
                 UISelectionFeedbackGenerator().selectionChanged()
@@ -116,11 +112,16 @@ struct ContentView: View {
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("LedgerLiteDeepLink"))) { note in
                 guard let url = note.object as? URL else { return }
                 switch url.host {
-                case "today", "expense": selectedTab = 0
-                case "history":          selectedTab = 1
-                case "subscriptions":    selectedTab = 2
-                case "insights":         selectedTab = 3
-                case "settings":         selectedTab = 4
+                case "today", "runway":
+                    selectedTab = 0
+                // Trends lives inside the Spending tab now, and the widget's per-expense
+                // links open the spending log.
+                case "history", "spending", "expense", "insights", "trends":
+                    selectedTab = 1
+                case "subscriptions", "bills":
+                    selectedTab = 2
+                case "settings":
+                    selectedTab = 3
                 case "scan":
                     selectedTab = 0
                     NotificationCenter.default.post(name: Notification.Name("LedgerLitePresentScan"), object: nil)
@@ -155,22 +156,22 @@ struct ContentView: View {
 
     #if DEBUG
     /// Opens directly to a tab (or the scanner) when launched with
-    /// `--screen <today|history|subscriptions|insights|settings|scan>` — used to
-    /// capture App Store screenshots without taps or deep-link prompts.
+    /// `--screen <runway|spending|bills|settings|scan>` — used to capture App Store
+    /// screenshots without taps or deep-link prompts. Legacy names still map.
     private func applyLaunchScreen() {
         let args = ProcessInfo.processInfo.arguments
         guard let i = args.firstIndex(of: "--screen"), i + 1 < args.count else { return }
         switch args[i + 1] {
-        case "history":       selectedTab = 1
-        case "subscriptions": selectedTab = 2
-        case "insights":      selectedTab = 3
-        case "settings":      selectedTab = 4
+        case "spending", "history":          selectedTab = 1
+        case "bills", "subscriptions":       selectedTab = 2
+        case "insights", "trends":           selectedTab = 1
+        case "settings":                     selectedTab = 3
         case "scan":
             selectedTab = 0
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 NotificationCenter.default.post(name: Notification.Name("LedgerLitePresentScan"), object: nil)
             }
-        default:              selectedTab = 0
+        default:                             selectedTab = 0   // runway / today
         }
     }
     #endif

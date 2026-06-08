@@ -14,30 +14,31 @@ struct InsightsView: View {
     @Environment(\.displayScale) private var displayScale
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if let vm = viewModel {
-                    content(vm)
-                } else {
-                    ProgressView()
-                }
+        // No NavigationStack here: Trends is pushed from the Spending tab, which
+        // already provides one. Re-centering the app on the forecast means Trends
+        // is a secondary destination, not a primary tab.
+        Group {
+            if let vm = viewModel {
+                content(vm)
+            } else {
+                ProgressView()
             }
-            .navigationTitle(String(localized: "Insights"))
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                if let vm = viewModel, !vm.categoryTotals.isEmpty {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            shareInsightsSummary(vm)
-                        } label: {
-                            Image(systemName: "square.and.arrow.up")
-                        }
+        }
+        .navigationTitle(String(localized: "Trends"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if let vm = viewModel, !vm.categoryTotals.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        shareInsightsSummary(vm)
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
                     }
                 }
             }
-            .sheet(isPresented: $showShareSheet) {
-                InsightsActivitySheet(items: shareItems)
-            }
+        }
+        .sheet(isPresented: $showShareSheet) {
+            InsightsActivitySheet(items: shareItems)
         }
         .onAppear {
             if viewModel == nil {
@@ -91,7 +92,8 @@ struct InsightsView: View {
                             .padding(.vertical, 40)
                     } else {
                         Group {
-                            donutSection(vm)
+                            // Trend + heatmap lead; the category donut — the universal
+                            // expense-tracker visual — is demoted to the bottom.
                             trendSection(vm)
                             heatmapSection(vm)
                             if vm.period == .month {
@@ -99,6 +101,7 @@ struct InsightsView: View {
                                     .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                             topMerchantSection(vm)
+                            donutSection(vm)
                         }
                         .id(vm.period)
                         .transition(.opacity)
@@ -587,7 +590,9 @@ struct InsightsView: View {
 
 #if DEBUG
 #Preview {
-    InsightsView()
-        .modelContainer(PreviewContainer.shared)
+    NavigationStack {
+        InsightsView()
+            .modelContainer(PreviewContainer.shared)
+    }
 }
 #endif
