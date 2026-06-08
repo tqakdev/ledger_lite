@@ -4,6 +4,9 @@ import SwiftData
 struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: TodayViewModel?
+    @State private var forecastVM: ForecastViewModel?
+    @State private var showRunwayDetail = false
+    @State private var showRunwaySetup  = false
     @State private var fabVisible = false
     @State private var showError  = false
     @State private var errorText  = ""
@@ -29,11 +32,16 @@ struct TodayView: View {
             if viewModel == nil {
                 viewModel = TodayViewModel(context: modelContext)
             }
+            if forecastVM == nil {
+                forecastVM = ForecastViewModel(context: modelContext)
+            }
             viewModel?.refresh()
+            forecastVM?.refresh()
         }
         .sheet(item: sheetBinding) { sheet in
             ExpenseFormSheet(mode: sheet.formMode, autoScan: sheet.startsWithScan) {
                 viewModel?.dismissSheet()
+                forecastVM?.refresh()
             }
         }
         .alert(String(localized: "Something went wrong"), isPresented: $showError) {
@@ -57,19 +65,24 @@ struct TodayView: View {
 
     @ViewBuilder
     private func todayContent(_ viewModel: TodayViewModel) -> some View {
-        if viewModel.expenses.isEmpty && !viewModel.isLoading {
-            emptyState
-        } else {
-            List {
-                Section {
-                    todaySummaryCard(viewModel)
-                        .padding(.horizontal, 12)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                }
+        List {
+            Section {
+                runwayCard()
+                    .padding(.horizontal, 12)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 4, trailing: 0))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                todaySummaryCard(viewModel)
+                    .padding(.horizontal, 12)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 8, trailing: 0))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
 
-                Section(String(localized: "Expenses")) {
+            Section(String(localized: "Expenses")) {
+                if viewModel.expenses.isEmpty {
+                    emptyExpensesRow
+                } else {
                     ForEach(viewModel.expenses, id: \.id) { expense in
                         ExpenseRowView(
                             expense: expense,
@@ -97,14 +110,73 @@ struct TodayView: View {
                         }
                     }
                 }
-                Section { Color.clear.frame(height: 80) }
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
             }
-            .listStyle(.insetGrouped)
-            .listSectionSpacing(.compact)
-            .refreshable { viewModel.refresh() }
+            Section { Color.clear.frame(height: 80) }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
         }
+        .listStyle(.insetGrouped)
+        .listSectionSpacing(.compact)
+        .refreshable {
+            viewModel.refresh()
+            forecastVM?.refresh()
+        }
+    }
+
+    // MARK: - Runway card
+
+    @ViewBuilder
+    private func runwayCard() -> some View {
+        if let fvm = forecastVM {
+            RunwayCardView(
+                result: fvm.result,
+                hasSetup: fvm.hasSetup,
+                currencyCode: fvm.homeCurrencyCode,
+                onOpenDetail: { showRunwayDetail = true },
+                onSetup: { showRunwaySetup = true }
+            )
+            .sheet(isPresented: $showRunwayDetail) {
+                if let result = fvm.result {
+                    RunwayDetailView(result: result, currencyCode: fvm.homeCurrencyCode) {
+                        showRunwayDetail = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            showRunwaySetup = true
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showRunwaySetup) {
+                RunwaySetupSheet(
+                    currencyCode: fvm.homeCurrencyCode,
+                    isConfigured: fvm.hasSetup,
+                    initialBalanceMinor: UserPreferences.availableBalanceMinor,
+                    initialPayday: UserPreferences.nextPayday,
+                    onSave: { balance, payday in fvm.saveSetup(balanceMinor: balance, payday: payday) },
+                    onClear: { fvm.clearSetup() }
+                )
+            }
+        }
+    }
+
+    private var emptyExpensesRow: some View {
+        HStack {
+            Spacer()
+            VStack(spacing: 6) {
+                Image(systemName: "tray")
+                    .font(.title2)
+                    .foregroundStyle(.tertiary)
+                Text(String(localized: "No expenses today"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Text(String(localized: "Tap + to log your first expense."))
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 16)
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
     }
 
     // MARK: - Summary card
@@ -245,16 +317,6 @@ struct TodayView: View {
             .scaleEffect(reduceMotion ? 1.0 : (isVisible ? 1.0 : 0.01))
             .animation(reduceMotion ? nil : .spring(duration: 0.4, bounce: 0.4), value: isVisible)
             .onAppear { isVisible = true }
-        }
-    }
-
-    // MARK: - Empty state
-
-    private var emptyState: some View {
-        ContentUnavailableView {
-            Label(String(localized: "No Expenses Today"), systemImage: "tray")
-        } description: {
-            Text(String(localized: "Tap + to log your first expense."))
         }
     }
 

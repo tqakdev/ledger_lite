@@ -59,8 +59,8 @@ struct OnboardingView: View {
                     Circle()
                         .fill(Color.accentColor.opacity(0.12))
                         .frame(width: 120, height: 120)
-                    Image(systemName: "chart.pie.fill")
-                        .font(.system(size: 58))
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                        .font(.system(size: 54))
                         .foregroundStyle(Color.accentColor)
                 }
 
@@ -70,7 +70,7 @@ struct OnboardingView: View {
                     Text(String(localized: "Welcome to Ledger Lite"))
                         .font(.largeTitle.bold())
                         .multilineTextAlignment(.center)
-                    Text(String(localized: "Track daily spending, manage subscriptions, and understand where your money goes."))
+                    Text(String(localized: "Know what you can safely spend today — forecast all the way to payday, entirely on your device."))
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -81,22 +81,22 @@ struct OnboardingView: View {
 
                 VStack(spacing: 12) {
                     featureRow(
-                        icon: "plus.circle.fill",
-                        color: Color.accentColor,
-                        title: String(localized: "Quick Add"),
-                        subtitle: String(localized: "Log any expense in seconds, with smart merchant suggestions.")
+                        icon: "chart.line.uptrend.xyaxis",
+                        color: .mint,
+                        title: String(localized: "Payday Runway"),
+                        subtitle: String(localized: "A daily safe-to-spend that accounts for the bills already heading your way.")
                     )
                     featureRow(
                         icon: "repeat.circle.fill",
                         color: .purple,
                         title: String(localized: "Subscriptions"),
-                        subtitle: String(localized: "Track recurring bills and get notified before they charge.")
+                        subtitle: String(localized: "Track recurring bills and see them netted out of your forecast.")
                     )
                     featureRow(
-                        icon: "chart.pie.fill",
+                        icon: "lock.shield.fill",
                         color: .orange,
-                        title: String(localized: "Insights"),
-                        subtitle: String(localized: "See spending trends and category breakdowns at a glance.")
+                        title: String(localized: "Private by design"),
+                        subtitle: String(localized: "No account, no bank linking. Nothing ever leaves your iPhone.")
                     )
                 }
                 .padding(.horizontal, 24)

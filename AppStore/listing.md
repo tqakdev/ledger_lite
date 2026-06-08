@@ -1,13 +1,13 @@
 # App Store Listing — Ledger Lite
 
 ## Name
-Ledger Lite – Expense Tracker
+Ledger Lite – Payday Runway
 
 ## Subtitle (30 chars)
-On-Device Scanner, No Account
+Forecast your money to payday
 
 ## Promotional Text (170 chars)
-Scan receipts on-device — nothing uploaded, ever. Get a daily safe-to-spend target from your budgets. No account, no cloud, no tracking.
+See what you can really spend today — after the bills already heading your way. A daily safe-to-spend that forecasts to payday. No bank login. Nothing leaves your phone.
 
 ## Category
 Finance
@@ -22,42 +22,47 @@ https://tqakdev.github.io/ledgerlite-privacy/
 https://tqakdev.github.io/ledgerlite-privacy/
 
 ## Keywords (100 chars)
-receipt scanner,safe to spend,on-device ocr,subscriptions,budgets,no account,multi-currency,private
+safe to spend,payday,cash flow,forecast,budget,no bank,subscriptions,private,on-device,runway
 
 ## Description
-Ledger Lite is a privacy-first expense tracker built on three ideas most apps don't combine: receipts scanned entirely on your device, a daily safe-to-spend number calculated from your own budgets, and zero servers — ever.
+Most money apps show you the past — a pile of charts about money you already spent. Ledger Lite shows you the future. It answers the one question that actually causes money stress: "what can I safely spend today and still make it to payday?"
 
-**Receipt scanning with Apple's Vision framework — nothing leaves your iPhone**
-Point the camera at a paper receipt or import a screenshot. Ledger Lite uses Apple's on-device OCR (Vision) to extract the total, merchant, date, and a suggested category in seconds. No image is uploaded. No account is required to scan. Cloud-based OCR, a staple of most receipt apps, is architecturally impossible here.
+**Your runway to payday**
+Enter your available balance and your next payday. Ledger Lite projects your balance forward day by day — subtracting the subscription bills you've already committed to and your recent spending pace — and shows you a single "truly safe to spend" number for today. If your balance is heading for zero before payday, it tells you the day, before it happens.
 
-**Daily Safe-to-Spend**
-Set monthly budgets per category. Ledger Lite subtracts what you've spent so far this month and divides the remaining budget across the days left — giving you a single "safe to spend today" number on the Today screen. It's proactive guidance, not just a scorecard.
+This is not "budget ÷ days left." It nets out the rent share, the streaming bundle, and the gym fee that hit before your next paycheck — so the number you see is the number you can actually trust.
+
+**No bank login — and that's the point**
+Every cash-flow forecaster on the App Store wants your bank password. Ledger Lite forecasts entirely from data you control: the balance you type, the subscriptions you track, and the spending you log. Nothing is linked. Nothing leaves your iPhone. It is structurally impossible for this app to transmit your financial data — there is no server to send it to.
+
+**On-device receipt scanning**
+Point the camera at a paper receipt or import a screenshot. Apple's on-device Vision OCR extracts the total, merchant, date, and a suggested category in seconds — fully offline, no upload, no account.
 
 **Subscription auto-detect**
-Paste a billing email or SMS confirmation and Ledger Lite extracts the service name, amount, currency, and billing cycle automatically. Your inbox becomes your subscription tracker.
+Paste a billing email or SMS and Ledger Lite pulls out the service, amount, currency, and billing cycle automatically — then folds those bills straight into your runway.
 
 **Historically accurate multi-currency**
-Exchange rates are frozen at the moment you log an entry. Past totals never drift when rates change — a correctness guarantee most multi-currency apps skip.
+Exchange rates are frozen the moment you log an entry, so past totals never drift when rates move. Works abroad, fully offline.
 
 **What's inside:**
+• Payday Runway — a forward balance forecast with a daily "truly safe to spend" that accounts for upcoming bills
+• Runway chart — see exactly which day your balance dips, with bill markers
 • On-device receipt scanner (Apple Vision, camera + photo library, no upload)
-• Daily Safe-to-Spend chip — budget ÷ days remaining, shown on Today
 • Subscription auto-detect — paste a billing message, get a filled-in subscription
-• Today view — daily total with velocity badge (vs. your 30-day average) and streak counter
 • Budgets — monthly limits per category with 80 % and 100 % local notifications
-• Insights — interactive donut chart and daily/monthly bar chart for any period
+• Insights — donut chart, trend chart, and a 13-week spending heatmap
 • History — swipe by day, full-text search, monthly running total
-• Multi-currency — live rates via Frankfurter; amounts frozen at entry for accuracy
-• Home screen & Lock Screen widget — daily total at a glance
+• Multi-currency — live rates; amounts frozen at entry for accuracy
+• Home screen & Lock Screen widget
 • Biometric lock — Face ID / Touch ID
 • Siri Shortcuts — log an expense or check your total with your voice
-• CSV export — one tap
+• CSV import & export
 • On-device only — SwiftData, no iCloud, no backend, no tracking
 
-No ads. No account. No data collection.
+No ads. No account. No bank linking. No data collection.
 
 ## What's New (Version 1.0)
-Initial release — on-device receipt scanning, Daily Safe-to-Spend, subscription auto-detect, multi-currency with frozen exchange rates, and zero data collection.
+Meet Payday Runway: a forward-looking forecast that tells you what's truly safe to spend today after your upcoming bills — calculated entirely on your device, with no bank login. Plus on-device receipt scanning, subscription auto-detect, and multi-currency with frozen rates.
 
 ## Age Rating
 4+ (no objectionable content)
@@ -77,19 +82,28 @@ logged on-device only (os.Logger). In App Store Connect → App Privacy, answer
 ## App Review Information
 - Sign-in required: No (the app has no account or login).
 - Demo account: Not applicable.
-- Notes: "All data is stored on-device; no backend. To test receipt scanning,
-  point the camera at any printed receipt or tap 'Choose Photo' to pick one —
-  all OCR runs on-device. Subscriptions, budgets, and Insights populate as
-  expenses are added."
+- Notes: "All data is stored on-device; there is no backend and no bank linking.
+  TO SEE THE KEY FEATURE (Payday Runway): open the app → on the Today screen tap
+  'See your runway to payday' → enter any balance (e.g. 600) and a payday a couple
+  of weeks out → Save. The Today screen then shows a daily 'truly safe to spend'
+  number, and tapping the card opens a forward balance-projection chart. Add a few
+  subscriptions (Subscriptions tab → +, or paste a billing email to auto-detect)
+  to see upcoming bills netted out of the forecast. To test receipt scanning, point
+  the camera at any printed receipt or tap 'Choose Photo' — all OCR runs on-device."
 
 ## Screenshots
-6.9" iPhone set (1320×2868, RGB, no alpha) ready in `.lazyweb/appstore-shots/final/`:
-01-today · 02-scan · 03-insights · 04-subscriptions · 05-settings. Upload to the
-iPhone 6.9" slot; App Store Connect scales it to smaller devices.
+Lead with the differentiator. Recommended 6.9" iPhone set (1320×2868, RGB, no alpha):
+01-runway (Today screen with the runway card + safe-to-spend, the FIRST screenshot)
+· 02-runway-chart (the forward projection with bill markers) · 03-scan (on-device
+OCR) · 04-insights (heatmap) · 05-subscriptions. Upload to the iPhone 6.9" slot;
+App Store Connect scales it to smaller devices. The runway shots are the ones a
+reviewer must see in the first 15 seconds — they are visually unlike any other
+expense app.
 
 ## Pre-submission checklist
 - [ ] Privacy Policy / Support URL is LIVE (https://tqakdev.github.io/ledgerlite-privacy/)
 - [ ] Accept Free Apps agreement (Agreements, Tax, and Banking)
 - [ ] Automatically manage signing enabled for app + widget targets
+- [ ] Capture NEW screenshots leading with the Runway card + projection chart
 - [ ] Archive in Xcode → Distribute → upload; attach processed build
-- [ ] Real-device smoke test: receipt scan, Face ID lock, widget, deep links
+- [ ] Real-device smoke test: set up runway, receipt scan, Face ID lock, widget
