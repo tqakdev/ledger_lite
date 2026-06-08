@@ -180,7 +180,7 @@ struct HistoryView: View {
         if present.count >= 2 {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(present) { cat in
+                    ForEach(present, id: \.id) { cat in
                         Button {
                             vm.selectedCategoryFilter = (vm.selectedCategoryFilter?.id == cat.id) ? nil : cat
                         } label: {
@@ -268,7 +268,7 @@ struct HistoryView: View {
                         } label: {
                             Label(String(localized: "Edit"), systemImage: "pencil")
                         }
-                        .tint(.blue)
+                        .tint(Theme.brand)
                     }
                 }
             }
@@ -309,7 +309,7 @@ struct HistoryView: View {
                                 } label: {
                                     Label(String(localized: "Edit"), systemImage: "pencil")
                                 }
-                                .tint(.blue)
+                                .tint(Theme.brand)
                             }
                         }
                     }

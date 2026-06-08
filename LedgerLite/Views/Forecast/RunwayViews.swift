@@ -80,7 +80,7 @@ struct RunwayForecastView: View {
     // MARK: Headline
 
     private var headline: some View {
-        let tint: Color = danger ? .red : .mint
+        let tint: Color = danger ? Theme.danger : Theme.positive
         return VStack(alignment: .leading, spacing: 4) {
             Text(String(localized: "Truly safe to spend"))
                 .font(.subheadline)
@@ -100,7 +100,7 @@ struct RunwayForecastView: View {
                     systemImage: "exclamationmark.triangle.fill"
                 )
                 .font(.caption)
-                .foregroundStyle(.red)
+                .foregroundStyle(Theme.danger)
             } else {
                 Text(subtitle)
                     .font(.caption)
@@ -123,7 +123,7 @@ struct RunwayForecastView: View {
     private var chart: some View {
         let places = Money.decimals(for: currencyCode)
         let divisor = pow(10.0, Double(places))
-        let tint: Color = danger ? .red : .mint
+        let tint: Color = danger ? Theme.danger : Theme.positive
 
         return Chart {
             ForEach(result.dailyBalances, id: \.date) { point in
@@ -145,7 +145,7 @@ struct RunwayForecastView: View {
 
             // Zero "danger line".
             RuleMark(y: .value(String(localized: "Zero"), 0.0))
-                .foregroundStyle(.red.opacity(0.5))
+                .foregroundStyle(Theme.danger.opacity(0.5))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
 
             // Bill markers.
@@ -156,11 +156,11 @@ struct RunwayForecastView: View {
                 )
                 .symbol(.circle)
                 .symbolSize(60)
-                .foregroundStyle(Color.orange)
+                .foregroundStyle(Theme.caution)
                 .annotation(position: .top, spacing: 2) {
                     Text(compactMoney(bill.amountMinor, currency: currencyCode))
                         .font(.system(size: 8, weight: .medium))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Theme.caution)
                 }
             }
         }
@@ -201,7 +201,7 @@ struct RunwayForecastView: View {
             ForEach(result.upcomingBills) { bill in
                 HStack {
                     Image(systemName: "repeat.circle.fill")
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Theme.caution)
                     Text(bill.name)
                         .font(.subheadline)
                         .lineLimit(1)
@@ -228,9 +228,7 @@ struct RunwayForecastView: View {
                     .monospacedDigit()
             }
         }
-        .padding()
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .card()
     }
 
     // MARK: Explainer

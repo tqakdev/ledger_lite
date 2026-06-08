@@ -208,21 +208,21 @@ struct SubscriptionsView: View {
                 } label: {
                     Label(String(localized: "Pause"), systemImage: "pause.fill")
                 }
-                .tint(.orange)
+                .tint(Theme.caution)
             case .paused:
                 Button {
                     viewModel.resumeSubscription(sub)
                 } label: {
                     Label(String(localized: "Resume"), systemImage: "play.fill")
                 }
-                .tint(.green)
+                .tint(Theme.positive)
             case .cancelled:
                 Button {
                     viewModel.resumeSubscription(sub)
                 } label: {
                     Label(String(localized: "Restore"), systemImage: "arrow.uturn.left")
                 }
-                .tint(.blue)
+                .tint(Theme.brand)
             }
         }
     }

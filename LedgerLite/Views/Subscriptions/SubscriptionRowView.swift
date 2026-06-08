@@ -92,7 +92,7 @@ struct SubscriptionRowView: View {
                 Text(daysLabel)
                     .font(.caption)
                     .monospacedDigit()
-                    .foregroundStyle(daysUntil <= 2 ? .orange : .secondary)
+                    .foregroundStyle(daysUntil <= 2 ? Theme.caution : .secondary)
                     .scaleEffect(pulsing && daysUntil <= 2 ? 1.08 : 1.0)
                     .onAppear {
                         guard daysUntil <= 2, !reduceMotion else { return }
@@ -103,23 +103,23 @@ struct SubscriptionRowView: View {
             }
             .padding(.horizontal, daysUntil <= 2 ? 6 : 0)
             .padding(.vertical, daysUntil <= 2 ? 2 : 0)
-            .background(daysUntil <= 2 ? Color.orange.opacity(0.1) : Color.clear)
+            .background(daysUntil <= 2 ? Theme.caution.opacity(0.1) : Color.clear)
             .clipShape(Capsule())
         case .paused:
             Text(String(localized: "Paused"))
                 .font(.caption)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(.yellow.opacity(0.2))
-                .foregroundStyle(.orange)
+                .background(Theme.caution.opacity(0.2))
+                .foregroundStyle(Theme.caution)
                 .clipShape(Capsule())
         case .cancelled:
             Text(String(localized: "Cancelled"))
                 .font(.caption)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(.red.opacity(0.1))
-                .foregroundStyle(.red)
+                .background(Theme.danger.opacity(0.1))
+                .foregroundStyle(Theme.danger)
                 .clipShape(Capsule())
         }
     }

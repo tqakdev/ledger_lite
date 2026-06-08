@@ -157,17 +157,11 @@ struct RunwayView: View {
             let isAbove = viewModel.todayTotalMinor > viewModel.dailyAverageMinor
             HStack(spacing: 4) {
                 Image(systemName: isAbove ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
-                    .font(.caption)
                 Text(isAbove
                      ? String(localized: "above avg")
                      : String(localized: "below avg"))
-                    .font(.caption)
             }
-            .foregroundStyle(isAbove ? .orange : .green)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background((isAbove ? Color.orange : Color.green).opacity(0.12))
-            .clipShape(Capsule())
+            .chip(isAbove ? Theme.caution : Theme.positive)
             .transition(.opacity.combined(with: .scale(scale: 0.9)))
         }
     }
@@ -176,15 +170,10 @@ struct RunwayView: View {
     private func streakChip(_ viewModel: TodayViewModel) -> some View {
         if viewModel.currentStreak >= 2 {
             HStack(spacing: 4) {
-                Text("🔥").font(.caption)
+                Text("🔥")
                 Text(String(localized: "\(viewModel.currentStreak)-day streak"))
-                    .font(.caption)
             }
-            .foregroundStyle(.orange)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(Color.orange.opacity(0.12))
-            .clipShape(Capsule())
+            .chip(Theme.caution)
             .transition(.opacity.combined(with: .scale(scale: 0.9)))
         }
     }

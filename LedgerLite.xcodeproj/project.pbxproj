@@ -113,6 +113,7 @@
 		D84FF5D7150BCFC7EE33A479 /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FAA0AF08CB3D75578139EBC /* UserPreferences.swift */; };
 		DA9796FB55E7AE361B8CE6D2 /* TodayTotalIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E54CBC4C62C65273058438C /* TodayTotalIntent.swift */; };
 		DBCCEA3DE6332906B7D6939B /* SubscriptionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58B037E833B436BA0C471AF8 /* SubscriptionRepository.swift */; };
+		DEDAA718152C4C6593336ADC /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 008DA2B34F61C747A99D9083 /* Theme.swift */; };
 		DFDE41A0C20BC29625987294 /* ScreenshotSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F406C3137CEF4D709B0E8C9 /* ScreenshotSeeder.swift */; };
 		E0CFBCA5E736CCABA2FD4D25 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 47408B01CB67E6B7FE22BE28 /* Localizable.strings */; };
 		E193A504F42AAEA68F6E85A4 /* ExchangeRateCacheRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C57347530EC026F9D0B46A1 /* ExchangeRateCacheRepository.swift */; };
@@ -169,6 +170,7 @@
 
 /* Begin PBXFileReference section */
 		006BFF771F47ECF6474A5BEC /* AppNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNotificationDelegate.swift; sourceTree = "<group>"; };
+		008DA2B34F61C747A99D9083 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		056F5F2B2DEE4574107DCD7A /* SubscriptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionsView.swift; sourceTree = "<group>"; };
 		06AD7435FF24139D361BC2E1 /* LedgerLiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLiteApp.swift; sourceTree = "<group>"; };
 		0A3C401CC94E345F43BEB406 /* SubscriptionCycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionCycleTests.swift; sourceTree = "<group>"; };
@@ -225,8 +227,8 @@
 		6EDE95DDBF1732F5543B213B /* LogExpenseIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogExpenseIntent.swift; sourceTree = "<group>"; };
 		711C1DE0795D9B1A42AA5DE2 /* SafeToSpendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeToSpendTests.swift; sourceTree = "<group>"; };
 		71E5B097F392DC908D14D1A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		7480844D5F3C9EC21451E073 /* LedgerLiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LedgerLiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		771B38E3CC6CB7DA7B0F9AB4 /* LedgerLiteWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LedgerLiteWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		7480844D5F3C9EC21451E073 /* LedgerLiteTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LedgerLiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		771B38E3CC6CB7DA7B0F9AB4 /* LedgerLiteWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = LedgerLiteWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		793630AF81CD9EB4A1111343 /* ReceiptTextParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptTextParserTests.swift; sourceTree = "<group>"; };
 		79DAF8C48A1BB6AA48B9E123 /* InsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsViewModel.swift; sourceTree = "<group>"; };
 		7ED0184B05EDB0298C0C2EBA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -259,9 +261,9 @@
 		C1A47E9868F3F6134AA561D6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		C1ED6C76295B332AE1FE9384 /* AmountNumpad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountNumpad.swift; sourceTree = "<group>"; };
 		C4C0C99F4E2685C2FEF0DD60 /* exchangerate_host_latest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = exchangerate_host_latest.json; sourceTree = "<group>"; };
-		C62FBBDFDEBC3FE2BD14C84E /* LedgerLite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LedgerLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C62FBBDFDEBC3FE2BD14C84E /* LedgerLite.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LedgerLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC58A133197AB31DC8915E63 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		D0461609C0FCC1E589F15BAC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D0461609C0FCC1E589F15BAC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D05C71D095137D6336BEE1E3 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		D296D92E43C1D64758B47399 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		D2C86C81983FD4C6C68F82DA /* APIRateDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRateDecoder.swift; sourceTree = "<group>"; };
@@ -277,10 +279,10 @@
 		ECE944CE912A50BE602494A4 /* BlinkingCaret.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlinkingCaret.swift; sourceTree = "<group>"; };
 		EF36F43D34865D64F594D76E /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
 		EF3EF5189A9A9CB44CA225EC /* SubscriptionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionsViewModel.swift; sourceTree = "<group>"; };
-		F49F00666E74FD3CC649AE33 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F49F00666E74FD3CC649AE33 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		FAFC2876C3543629571BAFA3 /* AutoDetectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoDetectTests.swift; sourceTree = "<group>"; };
 		FB82380910B610F5D8400BE4 /* ExpenseFormScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseFormScanTests.swift; sourceTree = "<group>"; };
-		"TEMP_9DC6E75C-DDDA-4A1B-821D-9B710B90D147" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		"TEMP_C6C3435C-D0AB-4916-B294-E1E91906BB47" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -569,20 +571,13 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
-		BC7924462FD760CD002C738D /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_9DC6E75C-DDDA-4A1B-821D-9B710B90D147" /* Local.xcconfig */,
-			);
-			name = "Recovered References";
-			sourceTree = "<group>";
-		};
 		BFE335D17EE23006A7E2C91C /* Components */ = {
 			isa = PBXGroup;
 			children = (
 				C1ED6C76295B332AE1FE9384 /* AmountNumpad.swift */,
 				ECE944CE912A50BE602494A4 /* BlinkingCaret.swift */,
 				5A751C1B023F11918BB29EC7 /* ExpenseFABs.swift */,
+				008DA2B34F61C747A99D9083 /* Theme.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -611,7 +606,6 @@
 				568F0B7157259E5219EB115F /* LedgerLiteWidget */,
 				23F93357A1376396D760A2D4 /* Frameworks */,
 				0186FCC67E4792B18B42CC84 /* Products */,
-				BC7924462FD760CD002C738D /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -654,6 +648,14 @@
 				836BFFC733FD4F0535A706A2 /* SubscriptionService.swift */,
 			);
 			path = Subscription;
+			sourceTree = "<group>";
+		};
+		"TEMP_C2F6D7C6-341F-455C-8B6C-FC6EE8455BBE" /* Ledger Lite */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_C6C3435C-D0AB-4916-B294-E1E91906BB47" /* Local.xcconfig */,
+			);
+			path = "Ledger Lite";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -724,7 +726,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2650;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					A5E848B0D64E663C4D261ED2 = {
 						DevelopmentTeam = "";
@@ -873,6 +875,7 @@
 				01654F74A3975A84DABDA62B /* SubscriptionService.swift in Sources */,
 				35963B4574AE3927AA749C5A /* SubscriptionsView.swift in Sources */,
 				CE3B068DA05A68F25AF3E660 /* SubscriptionsViewModel.swift in Sources */,
+				DEDAA718152C4C6593336ADC /* Theme.swift in Sources */,
 				DA9796FB55E7AE361B8CE6D2 /* TodayTotalIntent.swift in Sources */,
 				202907D76B1B239E7C9FDF53 /* TodayViewModel.swift in Sources */,
 				D84FF5D7150BCFC7EE33A479 /* UserPreferences.swift in Sources */,
@@ -948,10 +951,9 @@
 /* Begin XCBuildConfiguration section */
 		3B2F164CD79B9819946D0E3B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_9DC6E75C-DDDA-4A1B-821D-9B710B90D147" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_C6C3435C-D0AB-4916-B294-E1E91906BB47" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -987,7 +989,6 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -1009,7 +1010,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;
@@ -1052,10 +1052,9 @@
 		};
 		65BA2CED960B86314443BB53 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_9DC6E75C-DDDA-4A1B-821D-9B710B90D147" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_C6C3435C-D0AB-4916-B294-E1E91906BB47" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1091,7 +1090,6 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -1106,7 +1104,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;

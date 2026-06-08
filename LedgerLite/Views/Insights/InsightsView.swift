@@ -579,11 +579,11 @@ struct InsightsView: View {
         }
 
         var progressColor: Color {
-            guard budgetMinor > 0 else { return .green }
+            guard budgetMinor > 0 else { return Theme.positive }
             let ratio = Double(spentMinor) / Double(budgetMinor)
-            if ratio >= 1.0  { return .red }
-            if ratio >= 0.80 { return .orange }
-            return .green
+            if ratio >= 1.0  { return Theme.danger }
+            if ratio >= 0.80 { return Theme.caution }
+            return Theme.positive
         }
     }
 }
