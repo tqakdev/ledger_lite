@@ -46,10 +46,26 @@ schemes:
     archive:
       config: Release
 
-  # The LedgerLiteWidget target contains two widget kinds.
-  # Xcode requires _XCWidgetKind to know which one to launch when debugging.
-  # Use "LedgerLiteTodayWidget" scheme for the today widget,
-  # and "LedgerLiteSubscriptionsWidget" for the subscriptions widget.
+  # The LedgerLiteWidget target contains three widget kinds. Xcode requires
+  # _XCWidgetKind to know which one to launch when debugging, so each kind
+  # gets its own scheme: "LedgerLiteRunwayWidget", "LedgerLiteTodayWidget",
+  # and "LedgerLiteSubscriptionsWidget". Run `xcodegen generate` after
+  # editing this file so the schemes exist locally (they are not committed).
+
+  LedgerLiteRunwayWidget:
+    build:
+      targets:
+        LedgerLiteWidget: all
+    run:
+      config: Debug
+      environmentVariables:
+        _XCWidgetKind: LedgerLiteRunwayWidget
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
 
   LedgerLiteTodayWidget:
     build:
