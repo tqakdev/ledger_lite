@@ -88,6 +88,11 @@ struct RunwayForecastView: View {
             explainer
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear {
+            #if DEBUG
+            applyScreenshotWhatIf()
+            #endif
+        }
     }
 
     // MARK: Headline
@@ -245,6 +250,20 @@ struct RunwayForecastView: View {
         }
     }
 
+    #if DEBUG
+    /// Opens the what-if simulator pre-filled for App Store screenshots: `--whatif 150`.
+    private func applyScreenshotWhatIf() {
+        guard !showWhatIf, lastInput != nil else { return }
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "--whatif"), i + 1 < args.count,
+              let major = Double(args[i + 1]) else { return }
+        let minor = Int((major * pow(10.0, Double(Money.decimals(for: currencyCode)))).rounded())
+        showWhatIf = true
+        whatIfText = parser.parse(String(Int(major))).display
+        applyWhatIf(minorUnits: minor)
+    }
+    #endif
+
     private func applyWhatIf(minorUnits: Int) {
         guard minorUnits > 0, let input = lastInput else { whatIfResult = nil; return }
         let modified = RunwayForecast.Input(
@@ -265,15 +284,11 @@ struct RunwayForecastView: View {
         let wasNeg = result.firstNegativeDate != nil
         let nowNeg = newNegDate != nil
 
-        let icon: String
-        let tint: Color
-        if safeAfter > 0 && !nowNeg {
-            icon = "checkmark.circle.fill"; tint = Theme.positive
-        } else if safeAfter > 0 {
-            icon = "exclamationmark.triangle.fill"; tint = Theme.caution
-        } else {
-            icon = "xmark.circle.fill"; tint = Theme.danger
-        }
+        let safePositive = safeAfter > 0
+        let icon = safePositive && !nowNeg ? "checkmark.circle.fill"
+            : (safePositive ? "exclamationmark.triangle.fill" : "xmark.circle.fill")
+        let tint: Color = safePositive && !nowNeg ? Theme.positive
+            : (safePositive ? Theme.caution : Theme.danger)
 
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {

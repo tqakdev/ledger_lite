@@ -63,6 +63,16 @@ struct ExpenseFormSheet: View {
             // Camera-FAB entry opens straight into the scanner.
             if autoScan && !didAutoScan {
                 didAutoScan = true
+                #if DEBUG
+                // App Store screenshots: the document camera can't run in the Simulator,
+                // so show the *result* of a scan — a pre-filled, auto-categorised entry.
+                if ProcessInfo.processInfo.arguments.contains("--seed-screenshots") {
+                    applyDemoScannedReceipt()
+                    detailsExpanded = true
+                    amountActive = false
+                    return
+                }
+                #endif
                 showScanner = true
             }
         }
@@ -486,6 +496,32 @@ struct ExpenseFormSheet: View {
         if case .edit = mode { return String(localized: "Save Changes") }
         return String(localized: "Add Expense")
     }
+
+    // MARK: - Screenshot demo
+
+    #if DEBUG
+    /// Feeds the form a deterministic, fully-parsed Nike receipt so the App Store
+    /// "on-device OCR" screenshot shows a real, auto-filled result on the Simulator,
+    /// where the document camera is unavailable. Line items sum to the $563.99 total
+    /// (matches the scanned Nike entry in ScreenshotSeeder).
+    private func applyDemoScannedReceipt() {
+        let receipt = ParsedReceipt(
+            amountMinor: 56_399,
+            currencyCode: "USD",
+            merchant: "Nike Store",
+            date: Date(),
+            amountConfident: true,
+            lineItems: [
+                ReceiptLineItem(name: "Air Jordan 4 (Men's)", amountMinor: 48_900),
+                ReceiptLineItem(name: "Premium sneaker cleaner", amountMinor: 3_299),
+                ReceiptLineItem(name: "Crew socks (2-pack)", amountMinor: 2_800),
+                ReceiptLineItem(name: "Lace set (extra)", amountMinor: 1_400),
+            ],
+            rawText: ""
+        )
+        viewModel?.applyParsedReceipt(receipt)
+    }
+    #endif
 
     // MARK: - Save
 
