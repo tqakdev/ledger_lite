@@ -273,6 +273,7 @@
 "Safe to spend: %@/day" = "Жұмсауға болады: %@/күн";
 "↑ %@/day more than now" = "↑ қазіргіден %@/күн артық";
 "↓ %@/day less than now" = "↓ қазіргіден %@/күн кем";
+"⚠ This would leave nothing safe to spend before payday" = "⚠ Жалақыға дейін жұмсауға қаражат қалмайды";
 "⚠ You'd run out around %@" = "⚠ Қаражат шамамен %@ күні таусылады";
 "✓ You'd still make it to payday" = "✓ Жалақыға дейін жетесіз";
 "At your current pace, you run out around %@." = "Қазіргі қарқынмен қаражат шамамен %@ күні таусылады.";

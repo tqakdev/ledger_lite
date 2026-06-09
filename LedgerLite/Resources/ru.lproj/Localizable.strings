@@ -273,6 +273,7 @@
 "Safe to spend: %@/day" = "Можно тратить: %@/день";
 "↑ %@/day more than now" = "↑ на %@/день больше, чем сейчас";
 "↓ %@/day less than now" = "↓ на %@/день меньше, чем сейчас";
+"⚠ This would leave nothing safe to spend before payday" = "⚠ До зарплаты не останется денег, которые можно спокойно тратить";
 "⚠ You'd run out around %@" = "⚠ Деньги закончатся примерно %@";
 "✓ You'd still make it to payday" = "✓ Вы всё равно дотянете до зарплаты";
 "At your current pace, you run out around %@." = "При текущем темпе деньги закончатся примерно %@.";

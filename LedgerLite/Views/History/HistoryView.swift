@@ -9,6 +9,7 @@ struct HistoryView: View {
     @State private var showDatePicker = false
     @State private var pickerDate: Date = Calendar.current.startOfDay(for: Date())
     @State private var fabVisible = false
+    @State private var showTrends = false
 
     var body: some View {
         NavigationStack {
@@ -21,10 +22,11 @@ struct HistoryView: View {
             }
             .navigationTitle(String(localized: "Spending"))
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(isPresented: $showTrends) { InsightsView() }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink {
-                        InsightsView()
+                    Button {
+                        showTrends = true
                     } label: {
                         Image(systemName: "chart.bar.xaxis")
                     }
@@ -45,15 +47,17 @@ struct HistoryView: View {
                     }
                 }
             }
-        }
-        .overlay(alignment: .bottomTrailing) {
-            if let vm = viewModel {
-                ExpenseFABCluster(
-                    isVisible: $fabVisible,
-                    isSheetOpen: vm.activeSheet != nil,
-                    onAdd: { vm.presentAdd() },
-                    onScan: { vm.presentScan() }
-                )
+            // Inside the NavigationStack on purpose: the FABs belong to the Spending
+            // root only, and slide away with it when Trends/Budgets are pushed.
+            .overlay(alignment: .bottomTrailing) {
+                if let vm = viewModel {
+                    ExpenseFABCluster(
+                        isVisible: $fabVisible,
+                        isSheetOpen: vm.activeSheet != nil,
+                        onAdd: { vm.presentAdd() },
+                        onScan: { vm.presentScan() }
+                    )
+                }
             }
         }
         .onAppear {
@@ -61,6 +65,16 @@ struct HistoryView: View {
                 viewModel = HistoryViewModel(context: modelContext)
             }
             viewModel?.refresh()
+            #if DEBUG
+            // `--screen trends` (App Store screenshots / UI verification): land
+            // directly on the pushed Trends screen.
+            if ProcessInfo.processInfo.arguments.contains("--screen"),
+               let i = ProcessInfo.processInfo.arguments.firstIndex(of: "--screen"),
+               ProcessInfo.processInfo.arguments.indices.contains(i + 1),
+               ["trends", "insights"].contains(ProcessInfo.processInfo.arguments[i + 1]) {
+                showTrends = true
+            }
+            #endif
         }
         .sheet(isPresented: $showDatePicker) {
             NavigationStack {

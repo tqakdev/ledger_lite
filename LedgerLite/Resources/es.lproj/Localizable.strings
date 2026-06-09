@@ -274,6 +274,7 @@
 "Safe to spend: %@/day" = "Gasto seguro: %@/día";
 "↑ %@/day more than now" = "↑ %@/día más que ahora";
 "↓ %@/day less than now" = "↓ %@/día menos que ahora";
+"⚠ This would leave nothing safe to spend before payday" = "⚠ No quedaría nada seguro para gastar antes del día de pago";
 "⚠ You'd run out around %@" = "⚠ Te quedarías sin saldo hacia el %@";
 "✓ You'd still make it to payday" = "✓ Aun así llegarías al día de pago";
 "At your current pace, you run out around %@." = "A tu ritmo actual, te quedarás sin saldo hacia el %@.";

@@ -49,17 +49,6 @@
 		5DC047C1941702D7EBCAA2F0 /* Expense.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4104D40C539063099494792E /* Expense.swift */; };
 		5F471D5D7A64B5B20BF68FEA /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614F270504B6946EA41E0C5B /* Subscription.swift */; };
 		61D56CAA365CE339E92EF76B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D60035B5AA0BCB3FEED1187B /* Localizable.strings */; };
-		F1BB000000000000000000A1 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E1 /* Localizable.stringsdict */; };
-		F1BB000000000000000000A2 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E2 /* Localizable.stringsdict */; };
-		F1BB000000000000000000A3 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E3 /* Localizable.stringsdict */; };
-		F1BB000000000000000000A4 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E4 /* Localizable.stringsdict */; };
-		F1CC000000000000000000B1 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E1 /* Localizable.stringsdict */; };
-		F1CC000000000000000000B2 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E2 /* Localizable.stringsdict */; };
-		F1CC000000000000000000B3 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E3 /* Localizable.stringsdict */; };
-		F1CC000000000000000000B4 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E4 /* Localizable.stringsdict */; };
-		F1CC000000000000000000B5 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B67A82D4336DF11E373D0078 /* Localizable.strings */; };
-		F1CC000000000000000000B6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 47408B01CB67E6B7FE22BE28 /* Localizable.strings */; };
-		F1CC000000000000000000B7 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D60035B5AA0BCB3FEED1187B /* Localizable.strings */; };
 		6ACD2DE1D62E555792B83813 /* SafeToSpendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711C1DE0795D9B1A42AA5DE2 /* SafeToSpendTests.swift */; };
 		6B01F795E4358536E34EBB02 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05C71D095137D6336BEE1E3 /* Logging.swift */; };
 		6C575747624F7DD00E1AA636 /* SubscriptionCycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3C401CC94E345F43BEB406 /* SubscriptionCycleTests.swift */; };
@@ -141,6 +130,17 @@
 		ECF685828672F96411E65EE6 /* RateFetching.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0AB072B7CA91F52A5A3FA33 /* RateFetching.swift */; };
 		ED7B5A1ECD340700ADDAF929 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 549A52EE1ED6C184F9A55B32 /* WidgetKit.framework */; };
 		EDE8F672D66701154AF09A8C /* MoneyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B5668DCAA02B684F8B7F1B /* MoneyTests.swift */; };
+		F1BB000000000000000000A1 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E1 /* Localizable.stringsdict */; };
+		F1BB000000000000000000A2 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E2 /* Localizable.stringsdict */; };
+		F1BB000000000000000000A3 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E3 /* Localizable.stringsdict */; };
+		F1BB000000000000000000A4 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E4 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B1 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E1 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B2 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E2 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B3 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E3 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B4 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E4 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B5 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B67A82D4336DF11E373D0078 /* Localizable.strings */; };
+		F1CC000000000000000000B6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 47408B01CB67E6B7FE22BE28 /* Localizable.strings */; };
+		F1CC000000000000000000B7 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D60035B5AA0BCB3FEED1187B /* Localizable.strings */; };
 		F2CD76905AF62258AF31A003 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF36F43D34865D64F594D76E /* HistoryViewModel.swift */; };
 		F8CDC1853FD51E232A11E685 /* Expense.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4104D40C539063099494792E /* Expense.swift */; };
 		FD8E0315EE424FF4B4F0244F /* LedgerLiteWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C1E0CBCADF3C8910B9D1A00 /* LedgerLiteWidget.swift */; };
@@ -214,10 +214,6 @@
 		41685CF99DCE4268688341AE /* frankfurter_latest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = frankfurter_latest.json; sourceTree = "<group>"; };
 		45AD717977C12511921BB347 /* CategoryPickerStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryPickerStrip.swift; sourceTree = "<group>"; };
 		47408B01CB67E6B7FE22BE28 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = kk.lproj/Localizable.strings; sourceTree = "<group>"; };
-		F1AA000000000000000000E1 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		F1AA000000000000000000E2 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		F1AA000000000000000000E3 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = ru.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		F1AA000000000000000000E4 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = kk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		4C7C0527DC429BCFE5CC405A /* AddCategorySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCategorySheet.swift; sourceTree = "<group>"; };
 		4E8B437B7F22797B0D872957 /* InsightsSupportingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsSupportingViews.swift; sourceTree = "<group>"; };
 		4F3F9C54C1D2DA72AF0A7E20 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -242,8 +238,8 @@
 		6EDE95DDBF1732F5543B213B /* LogExpenseIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogExpenseIntent.swift; sourceTree = "<group>"; };
 		711C1DE0795D9B1A42AA5DE2 /* SafeToSpendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeToSpendTests.swift; sourceTree = "<group>"; };
 		71E5B097F392DC908D14D1A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		7480844D5F3C9EC21451E073 /* LedgerLiteTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LedgerLiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		771B38E3CC6CB7DA7B0F9AB4 /* LedgerLiteWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = LedgerLiteWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		7480844D5F3C9EC21451E073 /* LedgerLiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LedgerLiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		771B38E3CC6CB7DA7B0F9AB4 /* LedgerLiteWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LedgerLiteWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		793630AF81CD9EB4A1111343 /* ReceiptTextParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptTextParserTests.swift; sourceTree = "<group>"; };
 		79DAF8C48A1BB6AA48B9E123 /* InsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsViewModel.swift; sourceTree = "<group>"; };
 		7ED0184B05EDB0298C0C2EBA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -276,9 +272,9 @@
 		C1A47E9868F3F6134AA561D6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		C1ED6C76295B332AE1FE9384 /* AmountNumpad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountNumpad.swift; sourceTree = "<group>"; };
 		C4C0C99F4E2685C2FEF0DD60 /* exchangerate_host_latest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = exchangerate_host_latest.json; sourceTree = "<group>"; };
-		C62FBBDFDEBC3FE2BD14C84E /* LedgerLite.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LedgerLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C62FBBDFDEBC3FE2BD14C84E /* LedgerLite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LedgerLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC58A133197AB31DC8915E63 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		D0461609C0FCC1E589F15BAC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D0461609C0FCC1E589F15BAC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D05C71D095137D6336BEE1E3 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		D296D92E43C1D64758B47399 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		D2C86C81983FD4C6C68F82DA /* APIRateDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRateDecoder.swift; sourceTree = "<group>"; };
@@ -294,7 +290,11 @@
 		ECE944CE912A50BE602494A4 /* BlinkingCaret.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlinkingCaret.swift; sourceTree = "<group>"; };
 		EF36F43D34865D64F594D76E /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
 		EF3EF5189A9A9CB44CA225EC /* SubscriptionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionsViewModel.swift; sourceTree = "<group>"; };
-		F49F00666E74FD3CC649AE33 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F1AA000000000000000000E1 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		F1AA000000000000000000E2 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		F1AA000000000000000000E3 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = ru.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		F1AA000000000000000000E4 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = kk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		F49F00666E74FD3CC649AE33 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		FAFC2876C3543629571BAFA3 /* AutoDetectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoDetectTests.swift; sourceTree = "<group>"; };
 		FB82380910B610F5D8400BE4 /* ExpenseFormScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseFormScanTests.swift; sourceTree = "<group>"; };
 		"TEMP_C6C3435C-D0AB-4916-B294-E1E91906BB47" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
@@ -590,6 +590,14 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		BCEA778F2FD8CADD00DC9AB6 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_C6C3435C-D0AB-4916-B294-E1E91906BB47" /* Local.xcconfig */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		BFE335D17EE23006A7E2C91C /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -625,6 +633,7 @@
 				568F0B7157259E5219EB115F /* LedgerLiteWidget */,
 				23F93357A1376396D760A2D4 /* Frameworks */,
 				0186FCC67E4792B18B42CC84 /* Products */,
+				BCEA778F2FD8CADD00DC9AB6 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -667,14 +676,6 @@
 				836BFFC733FD4F0535A706A2 /* SubscriptionService.swift */,
 			);
 			path = Subscription;
-			sourceTree = "<group>";
-		};
-		"TEMP_C2F6D7C6-341F-455C-8B6C-FC6EE8455BBE" /* Ledger Lite */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_C6C3435C-D0AB-4916-B294-E1E91906BB47" /* Local.xcconfig */,
-			);
-			path = "Ledger Lite";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -745,18 +746,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-					A5E848B0D64E663C4D261ED2 = {
-						DevelopmentTeam = "";
-					};
-					BDF4773BCA746FDF3176514D = {
-						DevelopmentTeam = "";
-					};
-					E4F417C32D77E092E1A2ACDF = {
-						DevelopmentTeam = "";
-					};
-				};
+				LastUpgradeCheck = 2650;
 			};
 			buildConfigurationList = 98CFBB1FE4530ABFE8C8BE73 /* Build configuration list for PBXProject "LedgerLite" */;
 			developmentRegion = en;
@@ -984,6 +974,7 @@
 			baseConfigurationReference = "TEMP_C6C3435C-D0AB-4916-B294-E1E91906BB47" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1016,9 +1007,10 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = Q4934W8MQH;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -1040,6 +1032,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;
@@ -1085,6 +1078,7 @@
 			baseConfigurationReference = "TEMP_C6C3435C-D0AB-4916-B294-E1E91906BB47" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1117,9 +1111,10 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = Q4934W8MQH;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -1134,6 +1129,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;

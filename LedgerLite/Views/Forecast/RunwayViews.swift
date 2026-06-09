@@ -124,6 +124,13 @@ struct RunwayForecastView: View {
             applyScreenshotWhatIf()
             #endif
         }
+        // Keep an open what-if in sync when the forecast refreshes underneath it
+        // (logging an expense, pull-to-refresh) — otherwise it compares against
+        // stale inputs.
+        .onChange(of: result) { _, _ in
+            guard showWhatIf else { return }
+            applyWhatIf(minorUnits: parser.parse(whatIfText).minorUnits)
+        }
     }
 
     // MARK: Headline
@@ -316,14 +323,16 @@ struct RunwayForecastView: View {
         let safeAfter = wir.trulySafePerDayMinor
         let safeBefore = result.trulySafePerDayMinor
         let newNegDate = wir.firstNegativeDate
-        let wasNeg = result.firstNegativeDate != nil
-        let nowNeg = newNegDate != nil
 
-        let safePositive = safeAfter > 0
-        let icon = safePositive && !nowNeg ? "checkmark.circle.fill"
-            : (safePositive ? "exclamationmark.triangle.fill" : "xmark.circle.fill")
-        let tint: Color = safePositive && !nowNeg ? Theme.OnInk.positive
-            : (safePositive ? Theme.OnInk.caution : Theme.OnInk.danger)
+        // One coherent verdict. `broke` = the spend would leave nothing after the
+        // bills already committed (the allowance clamps to zero); the curve date
+        // is the softer "at your current pace" signal. Red beats amber beats mint —
+        // icon, tint, and message always agree.
+        let broke = safeAfter <= 0
+        let icon = broke ? "xmark.circle.fill"
+            : (newNegDate != nil ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+        let tint: Color = broke ? Theme.OnInk.danger
+            : (newNegDate != nil ? Theme.OnInk.caution : Theme.OnInk.positive)
 
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
@@ -332,19 +341,24 @@ struct RunwayForecastView: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(Theme.OnInk.primary)
             }
-            if safeBefore != safeAfter {
-                let delta = abs(safeAfter - safeBefore)
-                Text(safeAfter < safeBefore
-                     ? String(localized: "↓ \(Money(minorUnits: delta, currencyCode: currencyCode).formatted())/day less than now")
-                     : String(localized: "↑ \(Money(minorUnits: delta, currencyCode: currencyCode).formatted())/day more than now"))
+            // Spending more can only lower the allowance, so only the ↓ case exists.
+            if safeAfter < safeBefore {
+                let delta = safeBefore - safeAfter
+                Text(String(localized: "↓ \(Money(minorUnits: delta, currencyCode: currencyCode).formatted())/day less than now"))
                     .font(.caption)
                     .foregroundStyle(Theme.OnInk.secondary)
             }
-            if nowNeg, !wasNeg, let neg = newNegDate {
+            if let neg = newNegDate {
+                // Always show the projected run-out date — even if the runway was
+                // already negative, the splurge moves the date earlier.
                 Text(String(localized: "⚠ You'd run out around \(neg.formatted(.dateTime.month(.abbreviated).day()))"))
                     .font(.caption)
                     .foregroundStyle(Theme.OnInk.danger)
-            } else if !nowNeg {
+            } else if broke {
+                Text(String(localized: "⚠ This would leave nothing safe to spend before payday"))
+                    .font(.caption)
+                    .foregroundStyle(Theme.OnInk.danger)
+            } else {
                 Text(String(localized: "✓ You'd still make it to payday"))
                     .font(.caption)
                     .foregroundStyle(Theme.OnInk.positive)

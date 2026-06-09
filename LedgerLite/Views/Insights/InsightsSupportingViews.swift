@@ -94,7 +94,6 @@ struct SpendingHeatmapSection: View {
     let currencyCode: String
 
     private let weeks = 13
-    private let cellSize: CGFloat = 13
     private let gap: CGFloat = 3
     private let cal = Calendar.current
 
@@ -146,38 +145,46 @@ struct SpendingHeatmapSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
+            // Flexible equal-width columns so the grid fills the card on any device;
+            // cells stay square via aspectRatio instead of a hard-coded size.
             HStack(alignment: .top, spacing: gap) {
                 ForEach(0..<weeks, id: \.self) { col in
                     VStack(spacing: gap) {
                         // Month label row — same height for every column so cells align.
+                        // `fixedSize` lets "Apr" overflow its narrow column instead of
+                        // truncating to "A…"; month changes are ≥4 columns apart, so
+                        // labels never collide.
                         Group {
                             if let label = monthLabel(for: col) {
                                 Text(label)
-                                    .font(.system(size: 8, weight: .medium))
+                                    .font(.system(size: 9, weight: .medium))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
+                                    .fixedSize()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             } else {
                                 Color.clear
                             }
                         }
-                        .frame(width: cellSize, height: 11)
+                        .frame(height: 12)
 
                         // Day cells
                         ForEach(0..<7, id: \.self) { row in
                             let date = gridDates[col][row]
-                            RoundedRectangle(cornerRadius: 2)
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
                                 .fill(cellColor(for: date))
+                                .aspectRatio(1, contentMode: .fit)
                                 .overlay {
                                     // Today gets an accent border.
                                     if date.isSameDay(as: todayStart) {
-                                        RoundedRectangle(cornerRadius: 2)
-                                            .stroke(Color.accentColor, lineWidth: 1)
+                                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                            .stroke(Color.accentColor, lineWidth: 1.5)
                                     }
                                 }
-                                .frame(width: cellSize, height: cellSize)
                         }
                     }
+                    .frame(maxWidth: .infinity)
                 }
             }
 
@@ -187,9 +194,9 @@ struct SpendingHeatmapSection: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 ForEach([Double(0), 0.30, 0.55, 0.75, 1.0], id: \.self) { opacity in
-                    RoundedRectangle(cornerRadius: 2)
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
                         .fill(opacity == 0 ? Color(.systemFill) : Color.accentColor.opacity(opacity))
-                        .frame(width: cellSize, height: cellSize)
+                        .frame(width: 13, height: 13)
                 }
                 Text(String(localized: "More"))
                     .font(.caption2)
