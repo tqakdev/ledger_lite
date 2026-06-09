@@ -1,6 +1,8 @@
 import SwiftUI
 import LocalAuthentication
 
+/// Privacy is the product's identity, so the lock screen is a full-bleed brand
+/// moment: the ink surface with a glow lock, mirroring the runway hero.
 struct LockScreenView: View {
     let onUnlock: () -> Void
 
@@ -8,29 +10,37 @@ struct LockScreenView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            Theme.heroGradient.ignoresSafeArea()
             VStack(spacing: 32) {
                 Spacer()
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(Color.accentColor)
+                ZStack {
+                    Circle()
+                        .fill(Theme.glow.opacity(0.12))
+                        .frame(width: 132, height: 132)
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 56, weight: .medium))
+                        .foregroundStyle(Theme.glow)
+                }
                 VStack(spacing: 8) {
                     Text(String(localized: "Ledger Lite is Locked"))
-                        .font(.title2.bold())
+                        .font(.system(.title2, design: .rounded, weight: .bold))
+                        .foregroundStyle(Theme.OnInk.primary)
                     if failed {
                         Text(String(localized: "Authentication failed. Try again."))
                             .font(.subheadline)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Theme.OnInk.danger)
                     }
                 }
                 Spacer()
                 Button { authenticate() } label: {
                     Label(String(localized: "Unlock"), systemImage: "lock.open.fill")
                         .font(.headline)
+                        .foregroundStyle(Theme.ink)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 15)
+                        .background(Theme.glow, in: Capsule())
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.plain)
                 .padding(.horizontal, 32)
                 Spacer().frame(height: 48)
             }

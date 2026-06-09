@@ -372,16 +372,17 @@ struct LedgerLiteSubscriptionsWidgetEntryView: View {
             to: Calendar.current.startOfDay(for: date)
         ).day ?? 0
 
+        // Palette v2 (the widget target doesn't compile Theme, so hex literals).
         switch days {
         case 0:
             Text(String(localized: "Today"))
-                .foregroundStyle(.red)
+                .foregroundStyle(Color(hex: "#E5484D"))
         case 1:
             Text(String(localized: "Tomorrow"))
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color(hex: "#E08A00"))
         case 2...7:
             Text(String(localized: "In \(days) days"))
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color(hex: "#E08A00"))
         default:
             Text(String(localized: "In \(days) days"))
                 .foregroundStyle(.secondary)
@@ -450,35 +451,43 @@ struct LedgerLiteRunwayWidgetEntryView: View {
     }
 
     private var smallView: some View {
+        // The home-screen brand surface: same "night runway" ink as the in-app hero.
+        // The widget target doesn't compile Theme, so the ink palette is inlined.
         VStack(alignment: .leading, spacing: 4) {
             Text(String(localized: "Payday Runway"))
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(Color.white.opacity(0.55))
             Spacer()
             if entry.isConfigured, let minor = entry.safeToSpendMinor {
                 Text(String(localized: "Safe to spend"))
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.white.opacity(0.55))
                 Text(Money(minorUnits: minor, currencyCode: entry.currencyCode).formatted())
                     .font(.system(.title3, design: .rounded, weight: .bold))
                     .monospacedDigit()
-                    .foregroundStyle(.mint)
+                    .foregroundStyle(Color(hex: "#3BE8C5"))
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
                 Spacer()
                 Text(String(localized: "/ day to payday"))
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color.white.opacity(0.40))
             } else {
                 Text(String(localized: "Set up runway"))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.white.opacity(0.70))
                     .minimumScaleFactor(0.8)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding()
-        .containerBackground(.fill.tertiary, for: .widget)
+        .containerBackground(for: .widget) {
+            LinearGradient(
+                colors: [Color(hex: "#10453C"), Color(hex: "#082C27")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
         .widgetURL(URL(string: "ledgerlite://runway")!)
     }
 

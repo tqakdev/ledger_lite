@@ -14,9 +14,10 @@ struct AddExpenseFAB: View {
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(.white)
                 .frame(width: 60, height: 60)
-                .background(Color.accentColor)
+                .background(Theme.accentGradient)
                 .clipShape(Circle())
-                .shadow(color: Color.accentColor.opacity(0.35), radius: 10, x: 0, y: 5)
+                .overlay(Circle().strokeBorder(Color.white.opacity(0.18), lineWidth: 1))
+                .shadow(color: Theme.brand.opacity(0.38), radius: 12, x: 0, y: 6)
                 .rotationEffect(reduceMotion ? .zero : .degrees(isSheetOpen ? 45 : 0))
                 .animation(.spring(response: 0.3), value: isSheetOpen)
         }

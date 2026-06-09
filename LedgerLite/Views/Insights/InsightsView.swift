@@ -116,18 +116,29 @@ struct InsightsView: View {
     // MARK: - Trend chart section
 
     private func trendSection(_ vm: InsightsViewModel) -> some View {
-        GroupBox {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(String(localized: "Spending Over Time"), systemImage: "chart.bar.fill")
             if vm.dailyTotals.isEmpty {
                 emptyLabel
             } else {
                 trendChart(vm)
             }
-        } label: {
-            Label(String(localized: "Spending Over Time"), systemImage: "chart.bar.fill")
-                .font(.headline)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
         .padding(.horizontal)
         .padding(.vertical, 8)
+    }
+
+    /// Shared header treatment for the dashboard cards: tinted icon + rounded title.
+    private func sectionHeader(_ title: String, systemImage: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.brand)
+            Text(title)
+                .font(Theme.cardTitle)
+        }
     }
 
     private func trendChart(_ vm: InsightsViewModel) -> some View {
@@ -145,8 +156,14 @@ struct InsightsView: View {
                     x: .value(byMonth ? String(localized: "Month") : String(localized: "Day"), item.date, unit: unit),
                     y: .value(String(localized: "Amount"), item.minorUnits)
                 )
-                .foregroundStyle(Color.accentColor)
-                .cornerRadius(3)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Theme.brand, Theme.brand.opacity(0.55)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .cornerRadius(4)
             }
             if avg > 0 {
                 RuleMark(y: .value(String(localized: "Average"), avg))
@@ -163,8 +180,6 @@ struct InsightsView: View {
         }
         .chartXAxis {
             AxisMarks(values: .automatic(desiredCount: totals.count == 1 ? 1 : 6)) { _ in
-                AxisGridLine()
-                AxisTick()
                 AxisValueLabel(format: xFmt)
             }
         }
@@ -189,7 +204,17 @@ struct InsightsView: View {
 
     private func budgetSection(_ vm: InsightsViewModel) -> some View {
         let entries = budgetEntries(from: vm)
-        return GroupBox {
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                sectionHeader(String(localized: "Budget Progress"), systemImage: "chart.bar.xaxis")
+                Spacer()
+                NavigationLink {
+                    BudgetsSettingsView()
+                } label: {
+                    Text(String(localized: "Manage"))
+                        .font(.caption.weight(.medium))
+                }
+            }
             if entries.isEmpty {
                 Text(String(localized: "Set budgets in Settings to track progress."))
                     .font(.subheadline)
@@ -203,19 +228,9 @@ struct InsightsView: View {
                     }
                 }
             }
-        } label: {
-            HStack {
-                Label(String(localized: "Budget Progress"), systemImage: "chart.bar.xaxis")
-                    .font(.headline)
-                Spacer()
-                NavigationLink {
-                    BudgetsSettingsView()
-                } label: {
-                    Text(String(localized: "Manage"))
-                        .font(.caption)
-                }
-            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
         .padding(.horizontal)
         .padding(.vertical, 8)
     }
@@ -245,15 +260,15 @@ struct InsightsView: View {
     // MARK: - Heatmap section
 
     private func heatmapSection(_ vm: InsightsViewModel) -> some View {
-        GroupBox {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(String(localized: "Daily Activity"), systemImage: "calendar.badge.clock")
             SpendingHeatmapSection(
                 dailyTotals: vm.heatmapDailyTotals,
                 currencyCode: vm.homeCurrencyCode
             )
-        } label: {
-            Label(String(localized: "Daily Activity"), systemImage: "calendar.badge.clock")
-                .font(.headline)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
         .padding(.horizontal)
         .padding(.vertical, 8)
     }
@@ -261,7 +276,8 @@ struct InsightsView: View {
     // MARK: - Top merchant section
 
     private func topMerchantSection(_ vm: InsightsViewModel) -> some View {
-        GroupBox {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(String(localized: "Top Merchant"), systemImage: "trophy.fill")
             if let top = vm.topMerchant {
                 HStack(spacing: 4) {
                     Text(top.merchant)
@@ -270,7 +286,7 @@ struct InsightsView: View {
                         .lineLimit(1)
                     Spacer(minLength: 8)
                     Text(Money(minorUnits: top.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
-                        .font(.subheadline)
+                        .font(Theme.figure(.subheadline, weight: .semibold))
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                         .lineLimit(1)
@@ -283,10 +299,9 @@ struct InsightsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 4)
             }
-        } label: {
-            Label(String(localized: "Top Merchant"), systemImage: "trophy.fill")
-                .font(.headline)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
         .padding(.horizontal)
         .padding(.vertical, 8)
     }

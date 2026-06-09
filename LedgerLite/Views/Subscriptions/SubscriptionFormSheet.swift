@@ -267,7 +267,7 @@ struct SubscriptionFormSheet: View {
                     onComplete()
                     dismiss()
                 }
-                .foregroundStyle(.orange)
+                .foregroundStyle(Theme.caution)
 
             case .paused:
                 Button(String(localized: "Resume Subscription")) {
@@ -277,7 +277,7 @@ struct SubscriptionFormSheet: View {
                     onComplete()
                     dismiss()
                 }
-                .foregroundStyle(.green)
+                .foregroundStyle(Theme.positive)
 
             case .cancelled:
                 EmptyView()

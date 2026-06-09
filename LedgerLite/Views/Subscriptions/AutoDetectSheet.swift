@@ -73,6 +73,7 @@ struct AutoDetectSheet: View {
                         }
                     }
                     .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
 
                     Spacer()
 
@@ -80,13 +81,14 @@ struct AutoDetectSheet: View {
                         viewModel.runDetection()
                     }
                     .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
                     .disabled(viewModel.rawText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
 
                 if let error = viewModel.errorMessage {
                     Text(error)
                         .font(.caption)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Theme.danger)
                 }
             }
             .padding()

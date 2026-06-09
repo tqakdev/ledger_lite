@@ -31,8 +31,8 @@ struct SummaryCard<Supplement: View>: View {
             HStack(spacing: 6) {
                 if let icon {
                     Image(systemName: icon)
-                        .foregroundStyle(Color.accentColor)
-                        .font(.subheadline)
+                        .foregroundStyle(Theme.brand)
+                        .font(.subheadline.weight(.medium))
                 }
                 Text(title)
                     .font(.subheadline)
@@ -51,16 +51,7 @@ struct SummaryCard<Supplement: View>: View {
                 .foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(
-            LinearGradient(
-                colors: [Color.accentColor.opacity(0.10), Color(.secondarySystemGroupedBackground)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .card(padding: 16)
     }
 
     private var amountText: Text {

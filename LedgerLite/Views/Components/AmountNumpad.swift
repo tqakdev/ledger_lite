@@ -73,11 +73,8 @@ struct AmountNumpad: View {
             if let saveTitle, let onSave {
                 Button(action: onSave) {
                     Text(saveTitle)
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(BrandButtonStyle())
                 .disabled(!canSave)
             }
         }

@@ -229,9 +229,9 @@ struct SettingsView: View {
         Image(systemName: systemName)
             .font(.system(size: 14, weight: .medium))
             .foregroundStyle(.white)
-            .frame(width: 28, height: 28)
-            .background(color)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .frame(width: 29, height: 29)
+            .background(color.gradient)
+            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
     }
 
     // MARK: - Notifications

@@ -239,11 +239,12 @@ struct SubscriptionsView: View {
                 Button(String(localized: "Add Subscription")) {
                     viewModel.presentAdd()
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(BrandButtonStyle(fullWidth: false))
                 Button(String(localized: "Scan from email or SMS")) {
                     viewModel.presentAutoDetect()
                 }
                 .buttonStyle(.bordered)
+                .buttonBorderShape(.capsule)
             }
         }
     }
@@ -442,16 +443,11 @@ private struct BillingDaySheet: View {
             List {
                 ForEach(subscriptions, id: \.id) { sub in
                     HStack(spacing: 12) {
-                        let hex = sub.category?.colorHex ?? "#BDC3C7"
-                        let icon = sub.category?.iconName ?? "repeat.circle.fill"
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color(hex: hex).opacity(0.15))
-                                .frame(width: 44, height: 44)
-                            Image(systemName: icon)
-                                .font(.body.weight(.medium))
-                                .foregroundStyle(Color(hex: hex))
-                        }
+                        IconTile(
+                            systemName: sub.category?.iconName ?? "repeat.circle.fill",
+                            color: Color(hex: sub.category?.colorHex ?? "#BDC3C7"),
+                            size: 44
+                        )
                         VStack(alignment: .leading, spacing: 2) {
                             Text(sub.name)
                                 .font(.body)

@@ -185,7 +185,7 @@ struct HistoryView: View {
                             vm.selectedCategoryFilter = (vm.selectedCategoryFilter?.id == cat.id) ? nil : cat
                         } label: {
                             Text(cat.name)
-                                .font(.subheadline)
+                                .font(.subheadline.weight(.medium))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(vm.selectedCategoryFilter?.id == cat.id
@@ -195,6 +195,14 @@ struct HistoryView: View {
                                     ? Color.white
                                     : Color.primary)
                                 .clipShape(Capsule())
+                                .overlay(
+                                    Capsule().strokeBorder(
+                                        vm.selectedCategoryFilter?.id == cat.id
+                                            ? Color.clear
+                                            : Color.primary.opacity(0.06),
+                                        lineWidth: 1
+                                    )
+                                )
                         }
                         .buttonStyle(.plain)
                     }

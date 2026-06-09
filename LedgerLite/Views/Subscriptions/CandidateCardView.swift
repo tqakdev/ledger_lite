@@ -114,6 +114,7 @@ struct CandidateCardView: View {
                 }
             }
             .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
             .controlSize(.small)
             .disabled(candidate.isDuplicate || isConfirming)
         }

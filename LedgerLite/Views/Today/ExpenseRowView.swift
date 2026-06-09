@@ -33,7 +33,7 @@ struct ExpenseRowView: View {
                     if let dateLabel {
                         Text(dateLabel)
                             .font(.caption)
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(Theme.caution)
                     }
                     Text(timeText)
                         .font(.caption)
@@ -43,8 +43,7 @@ struct ExpenseRowView: View {
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(expense.money.formatted())
-                    .font(.body)
-                    .fontWeight(.semibold)
+                    .font(Theme.figure(.body, weight: .semibold))
                     .monospacedDigit()
                     .accessibilityLabel("\(subtitle), \(expense.money.formatted()), \(timeText)")
                 if expense.currencyCode != homeCurrencyCode {
@@ -55,7 +54,7 @@ struct ExpenseRowView: View {
                 if expense.needsRateRefresh {
                     Image(systemName: "arrow.triangle.2.circlepath")
                         .font(.caption2)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Theme.caution)
                         .accessibilityLabel(String(localized: "Rate pending refresh"))
                 }
             }
@@ -65,17 +64,11 @@ struct ExpenseRowView: View {
 
     @ViewBuilder
     private var categoryIcon: some View {
-        let hex  = expense.category?.colorHex ?? "#BDC3C7"
-        let icon = expense.category?.iconName  ?? "square.grid.2x2.fill"
-        ZStack {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(hex: hex).opacity(0.15))
-                .frame(width: 44, height: 44)
-            Image(systemName: icon)
-                .font(.body.weight(.medium))
-                .foregroundStyle(Color(hex: hex))
-        }
-        .accessibilityHidden(true)
+        IconTile(
+            systemName: expense.category?.iconName ?? "square.grid.2x2.fill",
+            color: Color(hex: expense.category?.colorHex ?? "#BDC3C7"),
+            size: 44
+        )
     }
 
     private var homeEquivalent: String {

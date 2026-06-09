@@ -28,29 +28,23 @@ struct RunwaySetupPromptView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
-                        .font(.title2)
-                        .foregroundStyle(Color.accentColor)
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(Theme.glow)
                     Text(String(localized: "Set up your runway"))
-                        .font(.headline)
-                        .foregroundStyle(.primary)
+                        .font(Theme.cardTitle)
+                        .foregroundStyle(Theme.OnInk.primary)
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(Theme.OnInk.tertiary)
                 }
                 Text(String(localized: "Add your available balance and next payday to see a daily safe-to-spend that already accounts for the bills heading your way — calculated entirely on your device."))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.OnInk.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
-            .background(Color(.secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(Color.accentColor.opacity(0.25), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
-            )
+            .heroCard(padding: 18)
         }
         .buttonStyle(.plain)
     }
@@ -68,29 +62,23 @@ struct PaydayArrivedPromptView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
                     Image(systemName: "calendar.badge.checkmark")
-                        .font(.title2)
-                        .foregroundStyle(Color.accentColor)
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(Theme.glow)
                     Text(String(localized: "Payday has arrived"))
-                        .font(.headline)
-                        .foregroundStyle(.primary)
+                        .font(Theme.cardTitle)
+                        .foregroundStyle(Theme.OnInk.primary)
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(Theme.OnInk.tertiary)
                 }
                 Text(String(localized: "Your payday has passed. Update your balance and set your next payday to restart the runway."))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.OnInk.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
-            .background(Color(.secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(Color.accentColor.opacity(0.25), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
-            )
+            .heroCard(padding: 18)
         }
         .buttonStyle(.plain)
     }
@@ -117,13 +105,16 @@ struct RunwayForecastView: View {
     private var parser: AmountInputParser { AmountInputParser(currencyCode: currencyCode, locale: .current) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 16) {
+            // The signature surface: forecast figure, envelope, what-if, and curve
+            // all live on one dark ink card — the "night runway".
+            VStack(alignment: .leading, spacing: 12) {
                 headline
                 envelopeBar
                 whatIfSection
+                chart
             }
-            chart
+            .heroCard()
             if !result.upcomingBills.isEmpty { billsList }
             explainer
         }
@@ -138,19 +129,21 @@ struct RunwayForecastView: View {
     // MARK: Headline
 
     private var headline: some View {
-        let tint: Color = danger ? Theme.danger : Theme.positive
+        let tint: Color = danger ? Theme.OnInk.danger : Theme.glow
         return VStack(alignment: .leading, spacing: 4) {
             Text(String(localized: "Truly safe to spend"))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.caption.weight(.semibold))
+                .kerning(1.1)
+                .textCase(.uppercase)
+                .foregroundStyle(Theme.OnInk.secondary)
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(Money(minorUnits: result.trulySafePerDayMinor, currencyCode: currencyCode).formatted())
                     .font(.system(.largeTitle, design: .rounded, weight: .bold))
                     .monospacedDigit()
                     .foregroundStyle(tint)
                 Text(String(localized: "/ day"))
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .font(.system(.title3, design: .rounded, weight: .semibold))
+                    .foregroundStyle(Theme.OnInk.secondary)
             }
             if danger, let neg = result.firstNegativeDate {
                 Label(
@@ -158,11 +151,11 @@ struct RunwayForecastView: View {
                     systemImage: "exclamationmark.triangle.fill"
                 )
                 .font(.caption)
-                .foregroundStyle(Theme.danger)
+                .foregroundStyle(Theme.OnInk.danger)
             } else {
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.OnInk.tertiary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -187,13 +180,13 @@ struct RunwayForecastView: View {
         let spent = todayTotalMinor
         let remaining = safe - spent
         let fraction = min(1.0, max(0.0, Double(spent) / Double(safe)))
-        let barTint: Color = fraction < 0.75 ? Theme.positive : fraction < 1.0 ? Theme.caution : Theme.danger
+        let barTint: Color = fraction < 0.75 ? Theme.glow : fraction < 1.0 ? Theme.OnInk.caution : Theme.OnInk.danger
 
         VStack(alignment: .leading, spacing: 5) {
             HStack {
                 Text(String(localized: "Today"))
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.OnInk.tertiary)
                 Spacer()
                 if remaining >= 0 {
                     Text(String(localized: "\(Money(minorUnits: remaining, currencyCode: currencyCode).formatted()) left today"))
@@ -202,21 +195,21 @@ struct RunwayForecastView: View {
                 } else {
                     Text(String(localized: "\(Money(minorUnits: abs(remaining), currencyCode: currencyCode).formatted()) over today"))
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(Theme.danger)
+                        .foregroundStyle(Theme.OnInk.danger)
                 }
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color(.tertiarySystemFill))
-                        .frame(height: 7)
+                        .fill(Theme.OnInk.fill)
+                        .frame(height: 8)
                     RoundedRectangle(cornerRadius: 4)
                         .fill(barTint)
-                        .frame(width: geo.size.width * fraction, height: 7)
+                        .frame(width: geo.size.width * fraction, height: 8)
                         .animation(.spring(duration: 0.4), value: fraction)
                 }
             }
-            .frame(height: 7)
+            .frame(height: 8)
         }
         .contentTransition(.numericText())
         .animation(.easeInOut(duration: 0.3), value: todayTotalMinor)
@@ -238,12 +231,12 @@ struct RunwayForecastView: View {
                             Image(systemName: "questionmark.circle")
                                 .font(.caption)
                             Text(String(localized: "What if I spend...?"))
-                                .font(.caption)
+                                .font(.caption.weight(.medium))
                         }
-                        .foregroundStyle(Color.accentColor)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Color.accentColor.opacity(0.08))
+                        .foregroundStyle(Theme.OnInk.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(Theme.OnInk.fill)
                         .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -252,10 +245,12 @@ struct RunwayForecastView: View {
                         HStack(spacing: 6) {
                             Text(Money.symbol(for: currencyCode))
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Theme.OnInk.secondary)
                             TextField(String(localized: "Amount"), text: $whatIfText)
                                 .keyboardType(.decimalPad)
                                 .font(.subheadline.monospacedDigit())
+                                .foregroundStyle(Theme.OnInk.primary)
+                                .tint(Theme.glow)
                                 .onChange(of: whatIfText) { _, v in
                                     let parsed = parser.parse(v)
                                     whatIfText = parsed.display
@@ -270,14 +265,14 @@ struct RunwayForecastView: View {
                                 }
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Theme.OnInk.secondary)
                             }
                             .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 9)
-                        .background(Color(.secondarySystemGroupedBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .background(Theme.OnInk.fill)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                         if let wir = whatIfResult {
                             whatIfOutcome(wir)
@@ -327,14 +322,15 @@ struct RunwayForecastView: View {
         let safePositive = safeAfter > 0
         let icon = safePositive && !nowNeg ? "checkmark.circle.fill"
             : (safePositive ? "exclamationmark.triangle.fill" : "xmark.circle.fill")
-        let tint: Color = safePositive && !nowNeg ? Theme.positive
-            : (safePositive ? Theme.caution : Theme.danger)
+        let tint: Color = safePositive && !nowNeg ? Theme.OnInk.positive
+            : (safePositive ? Theme.OnInk.caution : Theme.OnInk.danger)
 
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Image(systemName: icon).foregroundStyle(tint)
                 Text(String(localized: "Safe to spend: \(Money(minorUnits: max(0, safeAfter), currencyCode: currencyCode).formatted())/day"))
                     .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Theme.OnInk.primary)
             }
             if safeBefore != safeAfter {
                 let delta = abs(safeAfter - safeBefore)
@@ -342,22 +338,22 @@ struct RunwayForecastView: View {
                      ? String(localized: "↓ \(Money(minorUnits: delta, currencyCode: currencyCode).formatted())/day less than now")
                      : String(localized: "↑ \(Money(minorUnits: delta, currencyCode: currencyCode).formatted())/day more than now"))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.OnInk.secondary)
             }
             if nowNeg, !wasNeg, let neg = newNegDate {
                 Text(String(localized: "⚠ You'd run out around \(neg.formatted(.dateTime.month(.abbreviated).day()))"))
                     .font(.caption)
-                    .foregroundStyle(Theme.danger)
+                    .foregroundStyle(Theme.OnInk.danger)
             } else if !nowNeg {
                 Text(String(localized: "✓ You'd still make it to payday"))
                     .font(.caption)
-                    .foregroundStyle(Theme.positive)
+                    .foregroundStyle(Theme.OnInk.positive)
             }
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tint.opacity(0.07))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(tint.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     // MARK: Chart
@@ -365,7 +361,7 @@ struct RunwayForecastView: View {
     private var chart: some View {
         let places = Money.decimals(for: currencyCode)
         let divisor = pow(10.0, Double(places))
-        let tint: Color = danger ? Theme.danger : Theme.positive
+        let tint: Color = danger ? Theme.OnInk.danger : Theme.glow
 
         return Chart {
             ForEach(result.dailyBalances, id: \.date) { point in
@@ -374,20 +370,36 @@ struct RunwayForecastView: View {
                     y: .value(String(localized: "Balance"), Double(point.balanceMinor) / divisor)
                 )
                 .foregroundStyle(
-                    LinearGradient(colors: [tint.opacity(0.35), tint.opacity(0.05)],
+                    LinearGradient(colors: [tint.opacity(0.30), tint.opacity(0.02)],
                                    startPoint: .top, endPoint: .bottom)
                 )
+                .interpolationMethod(.monotone)
                 LineMark(
                     x: .value(String(localized: "Date"), point.date),
                     y: .value(String(localized: "Balance"), Double(point.balanceMinor) / divisor)
                 )
                 .foregroundStyle(tint)
+                .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
                 .interpolationMethod(.monotone)
+            }
+
+            // "You are here" — a glowing marker on today's balance.
+            if let today = result.dailyBalances.first {
+                PointMark(
+                    x: .value(String(localized: "Date"), today.date),
+                    y: .value(String(localized: "Balance"), Double(today.balanceMinor) / divisor)
+                )
+                .symbol {
+                    ZStack {
+                        Circle().fill(tint.opacity(0.25)).frame(width: 18, height: 18)
+                        Circle().fill(tint).frame(width: 8, height: 8)
+                    }
+                }
             }
 
             // Zero "danger line".
             RuleMark(y: .value(String(localized: "Zero"), 0.0))
-                .foregroundStyle(Theme.danger.opacity(0.5))
+                .foregroundStyle(Theme.OnInk.danger.opacity(0.55))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
 
             // Bill markers.
@@ -397,34 +409,35 @@ struct RunwayForecastView: View {
                     y: .value(String(localized: "Balance"), billBalance(on: bill.date, divisor: divisor))
                 )
                 .symbol(.circle)
-                .symbolSize(60)
-                .foregroundStyle(Theme.caution)
+                .symbolSize(55)
+                .foregroundStyle(Theme.OnInk.caution)
                 .annotation(position: .top, spacing: 2) {
                     Text(compactMoney(bill.amountMinor, currency: currencyCode))
                         .font(.system(size: 8, weight: .medium))
-                        .foregroundStyle(Theme.caution)
+                        .foregroundStyle(Theme.OnInk.caution)
                 }
             }
         }
         .chartYAxis {
             AxisMarks(values: .automatic(desiredCount: 4)) { value in
                 AxisGridLine()
+                    .foregroundStyle(Theme.OnInk.hairline)
                 AxisValueLabel {
                     if let major = value.as(Double.self) {
                         Text(compactMoney(Int(major * divisor), currency: currencyCode))
                             .font(.caption2)
+                            .foregroundStyle(Theme.OnInk.tertiary)
                     }
                 }
             }
         }
         .chartXAxis {
             AxisMarks(values: .automatic(desiredCount: 5)) { _ in
-                AxisGridLine()
-                AxisTick()
                 AxisValueLabel(format: .dateTime.month(.abbreviated).day())
+                    .foregroundStyle(Theme.OnInk.tertiary)
             }
         }
-        .frame(height: 200)
+        .frame(height: 190)
     }
 
     /// The projected balance on a bill's day, for placing its marker on the curve.
@@ -437,20 +450,19 @@ struct RunwayForecastView: View {
     // MARK: Bills list
 
     private var billsList: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(String(localized: "Bills before payday"))
-                .font(.headline)
+                .font(Theme.cardTitle)
             ForEach(result.upcomingBills) { bill in
-                HStack {
-                    Image(systemName: "repeat.circle.fill")
-                        .foregroundStyle(Theme.caution)
+                HStack(spacing: 10) {
+                    IconTile(systemName: "repeat", color: Theme.caution, size: 32)
                     Text(bill.name)
                         .font(.subheadline)
                         .lineLimit(1)
                     Spacer()
                     VStack(alignment: .trailing, spacing: 1) {
                         Text(Money(minorUnits: bill.amountMinor, currencyCode: currencyCode).formatted())
-                            .font(.subheadline.weight(.medium))
+                            .font(Theme.figure(.subheadline, weight: .semibold))
                             .monospacedDigit()
                         Text(bill.date.formatted(.dateTime.month(.abbreviated).day()))
                             .font(.caption2)
@@ -466,7 +478,7 @@ struct RunwayForecastView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 Text(Money(minorUnits: result.totalUpcomingBillsMinor, currencyCode: currencyCode).formatted())
-                    .font(.subheadline.weight(.semibold))
+                    .font(Theme.figure(.subheadline, weight: .semibold))
                     .monospacedDigit()
             }
         }

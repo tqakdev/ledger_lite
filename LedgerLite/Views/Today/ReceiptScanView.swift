@@ -64,11 +64,9 @@ struct ReceiptScanView: View {
 
     private var chooser: some View {
         VStack(spacing: 16) {
-            Image(systemName: "doc.text.viewfinder")
-                .font(.system(size: 56))
-                .foregroundStyle(Color.accentColor)
+            IconTile(systemName: "doc.text.viewfinder", color: Theme.brand, size: 96)
             Text(String(localized: "Scan a receipt"))
-                .font(.title2.weight(.semibold))
+                .font(.system(.title2, design: .rounded, weight: .semibold))
             Text(String(localized: "Snap a photo or pick one from your library. Everything is read on your device — nothing is uploaded."))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -81,10 +79,8 @@ struct ReceiptScanView: View {
                     showCamera = true
                 } label: {
                     Label(String(localized: "Take Photo"), systemImage: "camera.fill")
-                        .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(BrandButtonStyle())
             }
 
             PhotosPicker(selection: $photoItem, matching: .images) {
@@ -92,6 +88,7 @@ struct ReceiptScanView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
+            .buttonBorderShape(.capsule)
             .controlSize(.large)
         }
         .padding(.horizontal, 24)

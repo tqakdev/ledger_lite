@@ -55,13 +55,27 @@ struct OnboardingView: View {
             VStack(spacing: 0) {
                 Spacer().frame(height: 80)
 
+                // The app mark: glow glyph on the ink surface — same identity as the
+                // runway hero, the lock screen, and the app icon.
                 ZStack {
-                    Circle()
-                        .fill(Color.accentColor.opacity(0.12))
-                        .frame(width: 120, height: 120)
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .fill(Theme.heroGradient)
+                        .frame(width: 112, height: 112)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                                .strokeBorder(
+                                    LinearGradient(
+                                        colors: [Color.white.opacity(0.18), Color.white.opacity(0.02)],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ),
+                                    lineWidth: 1
+                                )
+                        }
+                        .shadow(color: Theme.ink.opacity(0.35), radius: 16, x: 0, y: 8)
                     Image(systemName: "chart.line.uptrend.xyaxis")
-                        .font(.system(size: 54))
-                        .foregroundStyle(Color.accentColor)
+                        .font(.system(size: 48, weight: .semibold))
+                        .foregroundStyle(Theme.glow)
                 }
 
                 Spacer().frame(height: 28)
@@ -117,14 +131,7 @@ struct OnboardingView: View {
         VStack(spacing: 0) {
             Spacer().frame(height: 72)
 
-            ZStack {
-                Circle()
-                    .fill(Color.accentColor.opacity(0.12))
-                    .frame(width: 120, height: 120)
-                Image(systemName: "dollarsign.circle.fill")
-                    .font(.system(size: 58))
-                    .foregroundStyle(Color.accentColor)
-            }
+            IconTile(systemName: "dollarsign", color: Theme.brand, size: 112)
 
             Spacer().frame(height: 24)
 
@@ -162,14 +169,7 @@ struct OnboardingView: View {
         VStack(spacing: 0) {
             Spacer().frame(height: 80)
 
-            ZStack {
-                Circle()
-                    .fill(Color.accentColor.opacity(0.12))
-                    .frame(width: 120, height: 120)
-                Image(systemName: "bell.badge.fill")
-                    .font(.system(size: 58))
-                    .foregroundStyle(Color.accentColor)
-            }
+            IconTile(systemName: "bell.badge.fill", color: Theme.brand, size: 112)
 
             Spacer().frame(height: 28)
 
@@ -218,14 +218,7 @@ struct OnboardingView: View {
 
     private func featureRow(icon: String, color: Color, title: String, subtitle: String) -> some View {
         HStack(alignment: .top, spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(color.opacity(0.12))
-                    .frame(width: 48, height: 48)
-                Image(systemName: icon)
-                    .font(.title3.weight(.medium))
-                    .foregroundStyle(color)
-            }
+            IconTile(systemName: icon, color: color, size: 48)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
@@ -237,7 +230,10 @@ struct OnboardingView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(14)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
+        .background(
+            Color(.secondarySystemGroupedBackground),
+            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+        )
     }
 
     private func notifBenefitRow(icon: String, text: String) -> some View {
@@ -256,11 +252,8 @@ struct OnboardingView: View {
     private func nextButton(_ title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(BrandButtonStyle())
         .padding(.horizontal, 32)
     }
 

@@ -67,16 +67,11 @@ struct SubscriptionRowView: View {
     }
 
     private var categoryIcon: some View {
-        let hex  = subscription.category?.colorHex ?? "#BDC3C7"
-        let icon = subscription.category?.iconName  ?? "repeat.circle.fill"
-        return ZStack {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(hex: hex).opacity(0.15))
-                .frame(width: 44, height: 44)
-            Image(systemName: icon)
-                .font(.body.weight(.medium))
-                .foregroundStyle(Color(hex: hex))
-        }
+        IconTile(
+            systemName: subscription.category?.iconName ?? "repeat.circle.fill",
+            color: Color(hex: subscription.category?.colorHex ?? "#BDC3C7"),
+            size: 44
+        )
     }
 
     @ViewBuilder

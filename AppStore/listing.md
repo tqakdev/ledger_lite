@@ -115,6 +115,8 @@ device captures are in `AppStore/screenshots/raw/`; regenerate the framed PNGs w
       (e.g. mailto: support email) or App Review may flag 1.5 support adequacy
 - [ ] Accept Free Apps agreement (Agreements, Tax, and Banking)
 - [ ] Automatically manage signing enabled for app + widget targets
-- [x] Capture screenshots leading with Runway + what-if (AppStore/screenshots/ — 6.9" & 6.5")
+- [ ] RE-CAPTURE screenshots after the design-system overhaul (ink hero card, new
+      palette, new app icon) — the committed sets under AppStore/screenshots/ show
+      the old design and no longer match the build
 - [ ] Archive in Xcode → Distribute → upload; attach processed build
 - [ ] Real-device smoke test: set up runway, receipt scan, Face ID lock, widget

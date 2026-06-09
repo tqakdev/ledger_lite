@@ -59,7 +59,7 @@ struct SummaryShareCardView: View {
             if let top = vm.topMerchant {
                 Divider()
                 HStack(spacing: 6) {
-                    Image(systemName: "trophy.fill").foregroundStyle(.yellow)
+                    Image(systemName: "trophy.fill").foregroundStyle(Theme.caution)
                     Text(top.merchant).font(.subheadline).fontWeight(.medium).lineLimit(1)
                     Spacer()
                     Text(Money(minorUnits: top.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())

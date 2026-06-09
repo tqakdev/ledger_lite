@@ -131,7 +131,7 @@ struct ExpenseFormSheet: View {
                 if vm.scanLowConfidence {
                     Label(String(localized: "Scanned — double-check the amount."), systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Theme.caution)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
 
@@ -216,11 +216,8 @@ struct ExpenseFormSheet: View {
             Task { await save(viewModel) }
         } label: {
             Text(saveButtonTitle)
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(BrandButtonStyle())
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 8)
