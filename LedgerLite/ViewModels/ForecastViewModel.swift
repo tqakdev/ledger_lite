@@ -15,6 +15,8 @@ final class ForecastViewModel {
 
     /// nil until the user has set both a balance and a payday.
     var result: RunwayForecast.Result?
+    /// The last inputs fed to the engine — available for what-if re-projection in the UI.
+    private(set) var lastInput: RunwayForecast.Input?
     var homeCurrencyCode: String = UserPreferences.homeCurrencyCode
     var hasSetup: Bool = UserPreferences.hasRunwaySetup
 
@@ -45,15 +47,16 @@ final class ForecastViewModel {
         let bills = upcomingBills(now: now, payday: payday)
         let discretionary = projectedDailyDiscretionary(now: now)
 
-        result = RunwayForecast.project(
-            RunwayForecast.Input(
-                startingBalanceMinor: effectiveBalance,
-                today: now,
-                payday: payday,
-                bills: bills,
-                projectedDailyDiscretionaryMinor: discretionary
-            )
+        let input = RunwayForecast.Input(
+            startingBalanceMinor: effectiveBalance,
+            today: now,
+            payday: payday,
+            bills: bills,
+            projectedDailyDiscretionaryMinor: discretionary
         )
+        lastInput = input
+        result = RunwayForecast.project(input)
+        UserPreferences.cachedSafeToSpendMinor = result?.trulySafePerDayMinor
     }
 
     // MARK: - Input builders
@@ -164,6 +167,8 @@ final class ForecastViewModel {
         UserPreferences.balanceAsOfDate = nil
         UserPreferences.nextPayday = nil
         UserPreferences.paydayIncomeMinor = nil
+        UserPreferences.cachedSafeToSpendMinor = nil
+        lastInput = nil
         refresh()
     }
 }

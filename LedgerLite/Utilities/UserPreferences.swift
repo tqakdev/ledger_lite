@@ -1,11 +1,12 @@
 import Foundation
 
 enum UserPreferences {
-    private static let homeCurrencyKey = "homeCurrencyCode"
-    private static let balanceKey      = "availableBalanceMinor"
-    private static let balanceAsOfKey  = "balanceAsOfDate"
-    private static let paydayKey       = "nextPayday"
-    private static let incomeKey       = "paydayIncomeMinor"
+    private static let homeCurrencyKey  = "homeCurrencyCode"
+    private static let balanceKey       = "availableBalanceMinor"
+    private static let balanceAsOfKey   = "balanceAsOfDate"
+    private static let paydayKey        = "nextPayday"
+    private static let incomeKey        = "paydayIncomeMinor"
+    private static let safeToSpendKey   = "cachedSafeToSpendMinor"
     // Use the App Group suite so the widget extension can read the same value.
     // Falls back to UserDefaults.standard when the group container is unavailable (CI / free team).
     private static let defaults = UserDefaults(suiteName: Constants.App.appGroupIdentifier)
@@ -59,5 +60,18 @@ enum UserPreferences {
     /// True once the user has supplied both a balance and a payday — the runway needs both.
     static var hasRunwaySetup: Bool {
         availableBalanceMinor != nil && nextPayday != nil
+    }
+
+    // MARK: - Widget cache
+
+    /// Last computed "truly safe to spend / day" in home-currency minor units.
+    /// Written by ForecastViewModel after every refresh so the Runway widget can display
+    /// it without re-running the full projection engine.
+    static var cachedSafeToSpendMinor: Int? {
+        get { defaults.object(forKey: safeToSpendKey) as? Int }
+        set {
+            if let newValue { defaults.set(newValue, forKey: safeToSpendKey) }
+            else { defaults.removeObject(forKey: safeToSpendKey) }
+        }
     }
 }

@@ -82,19 +82,19 @@ struct OnboardingView: View {
                 VStack(spacing: 12) {
                     featureRow(
                         icon: "chart.line.uptrend.xyaxis",
-                        color: .mint,
+                        color: Theme.brand,
                         title: String(localized: "Payday Runway"),
                         subtitle: String(localized: "A daily safe-to-spend that accounts for the bills already heading your way.")
                     )
                     featureRow(
                         icon: "repeat.circle.fill",
-                        color: .purple,
-                        title: String(localized: "Subscriptions"),
-                        subtitle: String(localized: "Track recurring bills and see them netted out of your forecast.")
+                        color: Theme.caution,
+                        title: String(localized: "Bills"),
+                        subtitle: String(localized: "Track recurring charges and see them netted out of your forecast.")
                     )
                     featureRow(
                         icon: "lock.shield.fill",
-                        color: .orange,
+                        color: Color.indigo,
                         title: String(localized: "Private by design"),
                         subtitle: String(localized: "No account, no bank linking. Nothing ever leaves your iPhone.")
                     )

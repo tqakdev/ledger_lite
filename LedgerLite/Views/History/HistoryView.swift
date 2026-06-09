@@ -8,6 +8,7 @@ struct HistoryView: View {
     @State private var errorText = ""
     @State private var showDatePicker = false
     @State private var pickerDate: Date = Calendar.current.startOfDay(for: Date())
+    @State private var fabVisible = false
 
     var body: some View {
         NavigationStack {
@@ -18,9 +19,17 @@ struct HistoryView: View {
                     ProgressView()
                 }
             }
-            .navigationTitle(String(localized: "History"))
+            .navigationTitle(String(localized: "Spending"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink {
+                        InsightsView()
+                    } label: {
+                        Image(systemName: "chart.bar.xaxis")
+                    }
+                    .accessibilityLabel(String(localized: "Trends"))
+                }
                 if let vm = viewModel, !vm.isGlobalSearch {
                     ToolbarItem(placement: .principal) {
                         dateNavBar(vm)
@@ -35,6 +44,16 @@ struct HistoryView: View {
                         .accessibilityLabel(String(localized: "Jump to date"))
                     }
                 }
+            }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if let vm = viewModel {
+                ExpenseFABCluster(
+                    isVisible: $fabVisible,
+                    isSheetOpen: vm.activeSheet != nil,
+                    onAdd: { vm.presentAdd() },
+                    onScan: { vm.presentScan() }
+                )
             }
         }
         .onAppear {
@@ -105,7 +124,7 @@ struct HistoryView: View {
         .searchable(text: $vm.searchText, prompt: String(localized: "Search all expenses"))
         .onChange(of: vm.searchText) { _, _ in vm.scheduleSearch() }
         .sheet(item: $vm.activeSheet) { sheet in
-            ExpenseFormSheet(mode: sheet.formMode) { vm.dismissSheet() }
+            ExpenseFormSheet(mode: sheet.formMode, autoScan: sheet.startsWithScan) { vm.dismissSheet() }
         }
     }
 
@@ -161,7 +180,7 @@ struct HistoryView: View {
         if present.count >= 2 {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(present) { cat in
+                    ForEach(present, id: \.id) { cat in
                         Button {
                             vm.selectedCategoryFilter = (vm.selectedCategoryFilter?.id == cat.id) ? nil : cat
                         } label: {
@@ -249,7 +268,7 @@ struct HistoryView: View {
                         } label: {
                             Label(String(localized: "Edit"), systemImage: "pencil")
                         }
-                        .tint(.blue)
+                        .tint(Theme.brand)
                     }
                 }
             }
@@ -290,7 +309,7 @@ struct HistoryView: View {
                                 } label: {
                                     Label(String(localized: "Edit"), systemImage: "pencil")
                                 }
-                                .tint(.blue)
+                                .tint(Theme.brand)
                             }
                         }
                     }

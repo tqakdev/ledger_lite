@@ -45,14 +45,12 @@ Paste a billing email or SMS and Ledger Lite pulls out the service, amount, curr
 Exchange rates are frozen the moment you log an entry, so past totals never drift when rates move. Works abroad, fully offline.
 
 **What's inside:**
-• Payday Runway — a forward balance forecast with a daily "truly safe to spend" that accounts for upcoming bills
-• Runway chart — see exactly which day your balance dips, with bill markers
-• On-device receipt scanner (Apple Vision, camera + photo library, no upload)
-• Subscription auto-detect — paste a billing message, get a filled-in subscription
-• Budgets — monthly limits per category with 80 % and 100 % local notifications
-• Insights — donut chart, trend chart, and a 13-week spending heatmap
-• History — swipe by day, full-text search, monthly running total
-• Multi-currency — live rates; amounts frozen at entry for accuracy
+• Runway (home) — a forward balance forecast with a daily "truly safe to spend" that accounts for upcoming bills, a live today-envelope bar that fills as you spend, and a balance-to-payday chart showing the day you'd dip
+• What-if — type a hypothetical spend (say $150) and the runway re-projects instantly: your new safe-to-spend, the daily hit, and whether you'd still make it to payday. On-device, before the money is gone — the answer no bank-linked app can give
+• Spending — log expenses by day, full-text search, on-device receipt scanner (Apple Vision, no upload)
+• Bills — track recurring charges, paste a billing message to auto-detect, see them netted into your runway
+• Trends — spending trend chart, 13-week heatmap, budgets with 80 % / 100 % local alerts
+• Multi-currency — live rates; amounts frozen at entry for accuracy, works offline abroad
 • Home screen & Lock Screen widget
 • Biometric lock — Face ID / Touch ID
 • Siri Shortcuts — log an expense or check your total with your voice
@@ -62,7 +60,7 @@ Exchange rates are frozen the moment you log an entry, so past totals never drif
 No ads. No account. No bank linking. No data collection.
 
 ## What's New (Version 1.0)
-Meet Payday Runway: a forward-looking forecast that tells you what's truly safe to spend today after your upcoming bills — calculated entirely on your device, with no bank login. Plus on-device receipt scanning, subscription auto-detect, and multi-currency with frozen rates.
+Meet Payday Runway: a forward-looking forecast that tells you what's truly safe to spend today after your upcoming bills — calculated entirely on your device, with no bank login. A live envelope bar tracks today's spending, and a "what-if" simulator shows how a splurge changes your runway before you spend it. Plus on-device receipt scanning, subscription auto-detect, and multi-currency with frozen rates.
 
 ## Age Rating
 4+ (no objectionable content)
@@ -83,27 +81,36 @@ logged on-device only (os.Logger). In App Store Connect → App Privacy, answer
 - Sign-in required: No (the app has no account or login).
 - Demo account: Not applicable.
 - Notes: "All data is stored on-device; there is no backend and no bank linking.
-  TO SEE THE KEY FEATURE (Payday Runway): open the app → on the Today screen tap
-  'See your runway to payday' → enter any balance (e.g. 600) and a payday a couple
-  of weeks out → Save. The Today screen then shows a daily 'truly safe to spend'
-  number, and tapping the card opens a forward balance-projection chart. Add a few
-  subscriptions (Subscriptions tab → +, or paste a billing email to auto-detect)
-  to see upcoming bills netted out of the forecast. To test receipt scanning, point
-  the camera at any printed receipt or tap 'Choose Photo' — all OCR runs on-device."
+  The app OPENS on the Runway forecast (its home and core concept). If it shows a
+  'Set up your runway' card, tap it, enter any balance (e.g. 600) and a payday ~2
+  weeks out, then Save — the home screen then renders a daily 'truly safe to spend'
+  figure and a balance-to-payday chart with markers for upcoming bills. Add a few
+  recurring charges in the Bills tab (+ or paste a billing email to auto-detect) to
+  see them netted out of the forecast. Log/scan expenses from the Spending tab or
+  the + / scan buttons; all receipt OCR runs on-device (works in Airplane Mode)."
 
 ## Screenshots
-Lead with the differentiator. Recommended 6.9" iPhone set (1320×2868, RGB, no alpha):
-01-runway (Today screen with the runway card + safe-to-spend, the FIRST screenshot)
-· 02-runway-chart (the forward projection with bill markers) · 03-scan (on-device
-OCR) · 04-insights (heatmap) · 05-subscriptions. Upload to the iPhone 6.9" slot;
-App Store Connect scales it to smaller devices. The runway shots are the ones a
-reviewer must see in the first 15 seconds — they are visually unlike any other
-expense app.
+Final framed sets are committed under `AppStore/screenshots/` — **6.9"**
+(`6.9-inch/`, 1320×2868) and **6.5"** (`6.5-inch/`, 1242×2688), both RGB, no alpha.
+Lead with the differentiator. Upload order:
+
+1. **01-runway** — the home screen: "truly safe to spend / day", the live today-envelope
+   bar, and the balance-to-payday chart. The shot a reviewer must see in the first 15 seconds.
+2. **02-whatif** — the what-if simulator in action ("$150 → new safe-to-spend + you'd still
+   make it to payday"). The differentiator no bank-linked app can show — slide 2 on purpose.
+3. **03-bills** — recurring charges, netted into the runway.
+4. **04-scan** — on-device receipt OCR auto-filling an entry.
+5. **05-spending** — the daily expense log with search.
+
+Captured with the `--seed-screenshots` launch arg (pre-fills balance + payday so the
+runway renders); slide 2 adds `--whatif 150`, slide 4 uses `--screen scan`. Unframed raw
+device captures are in `AppStore/screenshots/raw/`; regenerate the framed PNGs with
+`AppStore/screenshots/make_frames.py` (teal gradient + headline + device, via headless Chrome).
 
 ## Pre-submission checklist
 - [ ] Privacy Policy / Support URL is LIVE (https://tqakdev.github.io/ledgerlite-privacy/)
 - [ ] Accept Free Apps agreement (Agreements, Tax, and Banking)
 - [ ] Automatically manage signing enabled for app + widget targets
-- [ ] Capture NEW screenshots leading with the Runway card + projection chart
+- [x] Capture screenshots leading with Runway + what-if (AppStore/screenshots/ — 6.9" & 6.5")
 - [ ] Archive in Xcode → Distribute → upload; attach processed build
 - [ ] Real-device smoke test: set up runway, receipt scan, Face ID lock, widget

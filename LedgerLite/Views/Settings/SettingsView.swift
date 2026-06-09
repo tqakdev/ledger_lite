@@ -174,7 +174,7 @@ struct SettingsView: View {
                             .font(.subheadline)
                     }
                 } icon: {
-                    settingsIcon("chart.line.uptrend.xyaxis", color: .mint)
+                    settingsIcon("chart.line.uptrend.xyaxis", color: Theme.brand)
                 }
             }
             .id(runwayRefresh)   // re-read UserPreferences after the sheet saves
@@ -203,7 +203,7 @@ struct SettingsView: View {
                 Label {
                     Text(String(localized: "Manage Categories"))
                 } icon: {
-                    settingsIcon("tag.fill", color: .blue)
+                    settingsIcon("tag.fill", color: Color.indigo)
                 }
             }
         }

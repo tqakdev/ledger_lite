@@ -15,12 +15,12 @@ private enum SafeToSpendHarness {
         return try ModelContainer(for: schema, configurations: [config])
     }
 
-    static func makeCategory(name: String, budgetMinor: Int?) -> Category {
-        Category(name: name, iconName: "circle", colorHex: "#FFFFFF",
-                 monthlyBudgetMinor: budgetMinor)
+    static func makeCategory(name: String, budgetMinor: Int?) -> LedgerLite.Category {
+        LedgerLite.Category(name: name, iconName: "circle", colorHex: "#FFFFFF",
+                            monthlyBudgetMinor: budgetMinor)
     }
 
-    static func makeExpense(amountMinor: Int, category: Category?) -> Expense {
+    static func makeExpense(amountMinor: Int, category: LedgerLite.Category?) -> Expense {
         let e = Expense(
             amountMinor: amountMinor,
             currencyCode: "USD",

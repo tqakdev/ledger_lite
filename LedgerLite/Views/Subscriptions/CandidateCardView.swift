@@ -67,7 +67,7 @@ struct CandidateCardView: View {
                     if candidate.confidenceTier == .strong {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.caption)
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Theme.positive)
                     }
                     Text(candidate.name)
                         .font(.headline)
