@@ -209,9 +209,8 @@ struct HistoryView: View {
 
     private func summaryCard(_ vm: HistoryViewModel) -> some View {
         let count = vm.filteredExpenses.count
-        let label = count == 1
-            ? String(localized: "1 expense")
-            : String(localized: "\(count) expenses")
+        // Pluralised via Localizable.stringsdict ("%lld expenses").
+        let label = String(localized: "\(count) expenses")
         return SummaryCard(
             title: String(localized: "Day Total"),
             money: Money(minorUnits: vm.dayTotalMinor, currencyCode: vm.homeCurrencyCode),
@@ -272,6 +271,11 @@ struct HistoryView: View {
                     }
                 }
             }
+
+            // Clearance for the stacked FAB cluster so it never covers the last row.
+            Section { Color.clear.frame(height: 140) }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
         }
         .listStyle(.insetGrouped)
         .listSectionSpacing(.compact)
@@ -287,7 +291,7 @@ struct HistoryView: View {
                     .frame(maxHeight: .infinity)
             } else {
                 List {
-                    Section(String(localized: "\(vm.searchResults.count) result\(vm.searchResults.count == 1 ? "" : "s")")) {
+                    Section(String(localized: "\(vm.searchResults.count) results")) {
                         ForEach(vm.searchResults, id: \.id) { expense in
                             ExpenseRowView(
                                 expense: expense,

@@ -181,7 +181,7 @@ struct SettingsView: View {
         } header: {
             Text(String(localized: "Runway Forecast"))
         } footer: {
-            Text(String(localized: "Powers the daily safe-to-spend on the Today screen. Calculated entirely on your device."))
+            Text(String(localized: "Powers the daily safe-to-spend on the Runway screen. Calculated entirely on your device."))
         }
     }
 
@@ -586,6 +586,8 @@ private struct HomeCurrencyPickerView: View {
             } label: {
                 HStack {
                     Text(code).foregroundStyle(.primary)
+                    Text(Money.localizedName(for: code))
+                        .foregroundStyle(.secondary)
                     Spacer()
                     if code == selected {
                         Image(systemName: "checkmark")

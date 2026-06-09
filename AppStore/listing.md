@@ -7,7 +7,7 @@ Ledger Lite – Payday Runway
 Forecast your money to payday
 
 ## Promotional Text (170 chars)
-See what you can really spend today — after the bills already heading your way. A daily safe-to-spend that forecasts to payday. No bank login. Nothing leaves your phone.
+See what you can really spend today — after the bills already heading your way. A daily safe-to-spend that forecasts to payday. No bank login. Your data stays on your phone.
 
 ## Category
 Finance
@@ -33,7 +33,7 @@ Enter your available balance and your next payday. Ledger Lite projects your bal
 This is not "budget ÷ days left." It nets out the rent share, the streaming bundle, and the gym fee that hit before your next paycheck — so the number you see is the number you can actually trust.
 
 **No bank login — and that's the point**
-Every cash-flow forecaster on the App Store wants your bank password. Ledger Lite forecasts entirely from data you control: the balance you type, the subscriptions you track, and the spending you log. Nothing is linked. Nothing leaves your iPhone. It is structurally impossible for this app to transmit your financial data — there is no server to send it to.
+Every cash-flow forecaster on the App Store wants your bank password. Ledger Lite forecasts entirely from data you control: the balance you type, the subscriptions you track, and the spending you log. Nothing is linked, and your financial data never leaves your iPhone — there are no accounts and no backend. The app's only network traffic is fetching public exchange rates; no personal data is ever sent.
 
 **On-device receipt scanning**
 Point the camera at a paper receipt or import a screenshot. Apple's on-device Vision OCR extracts the total, merchant, date, and a suggested category in seconds — fully offline, no upload, no account.
@@ -76,6 +76,8 @@ logged on-device only (os.Logger). In App Store Connect → App Privacy, answer
 - Camera: used to scan receipts; images are processed on-device and not stored or collected.
 - Face ID / Touch ID: handled by the system (Secure Enclave); not collected.
 - Notifications: local only (renewal/budget reminders).
+- Network: the app fetches public exchange rates (api.frankfurter.app,
+  open.er-api.com). Requests contain only currency codes — no personal data.
 
 ## App Review Information
 - Sign-in required: No (the app has no account or login).
@@ -109,6 +111,8 @@ device captures are in `AppStore/screenshots/raw/`; regenerate the framed PNGs w
 
 ## Pre-submission checklist
 - [ ] Privacy Policy / Support URL is LIVE (https://tqakdev.github.io/ledgerlite-privacy/)
+- [ ] The page doubles as the Support URL — it MUST show a contact method
+      (e.g. mailto: support email) or App Review may flag 1.5 support adequacy
 - [ ] Accept Free Apps agreement (Agreements, Tax, and Banking)
 - [ ] Automatically manage signing enabled for app + widget targets
 - [x] Capture screenshots leading with Runway + what-if (AppStore/screenshots/ — 6.9" & 6.5")

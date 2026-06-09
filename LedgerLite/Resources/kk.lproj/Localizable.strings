@@ -256,3 +256,96 @@
 "Budget limit warnings" = "Бюджет шегіне жақындаған кезде ескерту";
 "No spam — only what matters" = "Спам жоқ — тек маңызды нәрселер";
 "Skip for Now" = "Қазір өткізіп жіберу";
+
+/* Runway re-center (v1.0) — tabs */
+"Runway" = "Болжам";
+"Spending" = "Шығындар";
+"Bills" = "Төлемдер";
+"Trends" = "Талдау";
+
+/* Runway home */
+"Truly safe to spend" = "Шынымен жұмсауға болады";
+"/ day" = "/ күн";
+"Spent Today" = "Бүгін жұмсалды";
+"%@ left today" = "Бүгінге %@ қалды";
+"%@ over today" = "Бүгін %@ артық жұмсалды";
+"What if I spend...?" = "Егер жұмсасам ше...?";
+"Safe to spend: %@/day" = "Жұмсауға болады: %@/күн";
+"↑ %@/day more than now" = "↑ қазіргіден %@/күн артық";
+"↓ %@/day less than now" = "↓ қазіргіден %@/күн кем";
+"⚠ You'd run out around %@" = "⚠ Қаражат шамамен %@ күні таусылады";
+"✓ You'd still make it to payday" = "✓ Жалақыға дейін жетесіз";
+"At your current pace, you run out around %@." = "Қазіргі қарқынмен қаражат шамамен %@ күні таусылады.";
+"Bills before payday" = "Жалақыға дейінгі төлемдер";
+"Total committed" = "Барлық міндеттеме";
+"Zero" = "Нөл";
+"Balance" = "Баланс";
+"Projected from your upcoming bills and recent spending pace. Calculated entirely on your device — no bank connection." = "Алдағы төлемдер мен соңғы жұмсау қарқыныңызға негізделген. Толықтай құрылғыңызда есептеледі — банк байланысы жоқ.";
+
+/* Runway setup */
+"Set up your runway" = "Болжамыңызды баптаңыз";
+"Set Up Runway" = "Болжамды баптау";
+"Set up runway" = "Болжамды баптау";
+"Edit Runway" = "Болжамды өзгерту";
+"Edit runway" = "Болжамды өзгерту";
+"Turn off runway" = "Болжамды өшіру";
+"Runway Forecast" = "Жалақыға дейінгі болжам";
+"Runway not set up" = "Болжам бапталмаған";
+"Balance & Payday" = "Баланс және жалақы күні";
+"Available balance" = "Қолжетімді баланс";
+"Current balance" = "Ағымдағы баланс";
+"Next payday" = "Келесі жалақы күні";
+"Off" = "Өшірулі";
+"Add your available balance and next payday to see a daily safe-to-spend that already accounts for the bills heading your way — calculated entirely on your device." = "Күн сайын қанша жұмсауға болатынын көру үшін қолжетімді баланс пен келесі жалақы күнін енгізіңіз — алдағы төлемдер ескеріледі, бәрі құрылғыңызда есептеледі.";
+"What you have available to spend right now, in %@. Expenses you log will be subtracted automatically." = "Дәл қазір жұмсауға қолжетімді сома (%@). Тіркелген шығындар автоматты түрде шегеріледі.";
+"The runway projects your balance forward to this date." = "Болжам балансыңызды осы күнге дейін есептейді.";
+"Powers the daily safe-to-spend on the Runway screen. Calculated entirely on your device." = "«Болжам» экранындағы күнделікті лимитті анықтайды. Толықтай құрылғыңызда есептеледі.";
+
+/* Payday arrived */
+"Payday has arrived" = "Жалақы күні келді";
+"Your payday has passed. Update your balance and set your next payday to restart the runway." = "Жалақы күні өтіп кетті. Болжамды қайта бастау үшін балансты жаңартып, келесі жалақы күнін көрсетіңіз.";
+
+/* Onboarding (runway) */
+"Know what you can safely spend today — forecast all the way to payday, entirely on your device." = "Бүгін қанша жұмсауға болатынын біліңіз — жалақыға дейінгі болжам, толықтай құрылғыңызда.";
+"Payday Runway" = "Жалақыға дейінгі болжам";
+"A daily safe-to-spend that accounts for the bills already heading your way." = "Алдағы төлемдерді ескеретін күнделікті қауіпсіз жұмсау сомасы.";
+"Track recurring charges and see them netted out of your forecast." = "Қайталанатын төлемдерді бақылаңыз — олар болжамнан автоматты шегеріледі.";
+"Private by design" = "Әу бастан құпия";
+"No account, no bank linking. Your financial data never leaves your iPhone." = "Аккаунтсыз, банк байланыстырусыз. Қаржы деректеріңіз iPhone-нан ешқашан шықпайды.";
+
+/* Receipt scanning */
+"Scan Receipt" = "Чекті сканерлеу";
+"Scan a receipt" = "Чекті сканерлеу";
+"Scan receipt" = "Чекті сканерлеу";
+"Reading receipt…" = "Чек оқылуда…";
+"Scanned — double-check the amount." = "Сканерленді — соманы тексеріңіз.";
+"Take Photo" = "Фото түсіру";
+"Choose Photo" = "Фото таңдау";
+"Couldn't load that image." = "Суретті жүктеу мүмкін болмады.";
+"Couldn't read that image." = "Суретті оқу мүмкін болмады.";
+"Couldn't read the receipt. Try again or enter it manually." = "Чекті оқу мүмкін болмады. Қайталап көріңіз немесе қолмен енгізіңіз.";
+"Snap a photo or pick one from your library. Everything is read on your device — nothing is uploaded." = "Фото түсіріңіз немесе галереядан таңдаңыз. Барлығы құрылғыңызда өңделеді — ештеңе жүктелмейді.";
+
+/* Expense form */
+"Details" = "Мәліметтер";
+"Add merchant, note, date" = "Дүкен, ескертпе, күн қосу";
+"Save Changes" = "Өзгерістерді сақтау";
+"Decimal point" = "Ондық бөлгіш";
+"Hide keypad" = "Пернетақтаны жасыру";
+"%@, selected" = "%@, таңдалды";
+"%@, not selected" = "%@, таңдалмаған";
+
+/* Insights extras */
+"Daily Activity" = "Күнделікті белсенділік";
+"Less" = "Аз";
+"More" = "Көп";
+
+/* Widget & Siri */
+"LedgerLite" = "Ledger Lite";
+"Safe to spend" = "Жұмсауға болады";
+"Safe to spend / day" = "Жұмсауға болады / күн";
+"/ day to payday" = "/ күн, жалақыға дейін";
+"to payday" = "жалақыға дейін";
+"Your daily safe-to-spend after upcoming bills — calculated on-device, no bank login." = "Алдағы төлемдер ескерілген күнделікті лимит — құрылғыда есептеледі, банкке кірусіз.";
+"You've spent %@ across 1 expense today." = "Бүгін %@ жұмсадыңыз (1 шығын).";
+"You've spent %@ across %lld expenses today." = "Бүгін %@ жұмсадыңыз (%lld шығын).";

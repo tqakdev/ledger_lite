@@ -257,3 +257,96 @@
 "Budget limit warnings" = "Avisos al acercarte al límite del presupuesto";
 "No spam — only what matters" = "Sin spam, solo lo que importa";
 "Skip for Now" = "Ahora no";
+
+/* Runway re-center (v1.0) — tabs */
+"Runway" = "Pronóstico";
+"Spending" = "Gastos";
+"Bills" = "Facturas";
+"Trends" = "Análisis";
+
+/* Runway home */
+"Truly safe to spend" = "Gasto realmente seguro";
+"/ day" = "/ día";
+"Spent Today" = "Gastado hoy";
+"%@ left today" = "Te quedan %@ hoy";
+"%@ over today" = "Hoy te has pasado %@";
+"What if I spend...?" = "¿Y si gasto...?";
+"Safe to spend: %@/day" = "Gasto seguro: %@/día";
+"↑ %@/day more than now" = "↑ %@/día más que ahora";
+"↓ %@/day less than now" = "↓ %@/día menos que ahora";
+"⚠ You'd run out around %@" = "⚠ Te quedarías sin saldo hacia el %@";
+"✓ You'd still make it to payday" = "✓ Aun así llegarías al día de pago";
+"At your current pace, you run out around %@." = "A tu ritmo actual, te quedarás sin saldo hacia el %@.";
+"Bills before payday" = "Facturas antes del día de pago";
+"Total committed" = "Total comprometido";
+"Zero" = "Cero";
+"Balance" = "Saldo";
+"Projected from your upcoming bills and recent spending pace. Calculated entirely on your device — no bank connection." = "Proyectado a partir de tus próximas facturas y tu ritmo de gasto reciente. Calculado por completo en tu dispositivo, sin conexión bancaria.";
+
+/* Runway setup */
+"Set up your runway" = "Configura tu pronóstico";
+"Set Up Runway" = "Configurar pronóstico";
+"Set up runway" = "Configurar pronóstico";
+"Edit Runway" = "Editar pronóstico";
+"Edit runway" = "Editar pronóstico";
+"Turn off runway" = "Desactivar pronóstico";
+"Runway Forecast" = "Pronóstico hasta el pago";
+"Runway not set up" = "Pronóstico sin configurar";
+"Balance & Payday" = "Saldo y día de pago";
+"Available balance" = "Saldo disponible";
+"Current balance" = "Saldo actual";
+"Next payday" = "Próximo día de pago";
+"Off" = "Desactivado";
+"Add your available balance and next payday to see a daily safe-to-spend that already accounts for the bills heading your way — calculated entirely on your device." = "Añade tu saldo disponible y tu próximo día de pago para ver un gasto diario seguro que ya descuenta las facturas que se avecinan, calculado por completo en tu dispositivo.";
+"What you have available to spend right now, in %@. Expenses you log will be subtracted automatically." = "Lo que tienes disponible para gastar ahora mismo, en %@. Los gastos que registres se restarán automáticamente.";
+"The runway projects your balance forward to this date." = "El pronóstico proyecta tu saldo hasta esta fecha.";
+"Powers the daily safe-to-spend on the Runway screen. Calculated entirely on your device." = "Alimenta el gasto diario seguro de la pantalla Pronóstico. Calculado por completo en tu dispositivo.";
+
+/* Payday arrived */
+"Payday has arrived" = "¡Llegó el día de pago!";
+"Your payday has passed. Update your balance and set your next payday to restart the runway." = "Tu día de pago ya pasó. Actualiza tu saldo y elige el próximo día de pago para reiniciar el pronóstico.";
+
+/* Onboarding (runway) */
+"Know what you can safely spend today — forecast all the way to payday, entirely on your device." = "Descubre cuánto puedes gastar hoy con seguridad: un pronóstico hasta el día de pago, todo en tu dispositivo.";
+"Payday Runway" = "Pronóstico hasta el pago";
+"A daily safe-to-spend that accounts for the bills already heading your way." = "Un gasto diario seguro que tiene en cuenta las facturas que ya están en camino.";
+"Track recurring charges and see them netted out of your forecast." = "Controla los cargos recurrentes y míralos ya descontados de tu pronóstico.";
+"Private by design" = "Privado por diseño";
+"No account, no bank linking. Your financial data never leaves your iPhone." = "Sin cuenta y sin vincular bancos. Tus datos financieros nunca salen de tu iPhone.";
+
+/* Receipt scanning */
+"Scan Receipt" = "Escanear recibo";
+"Scan a receipt" = "Escanear un recibo";
+"Scan receipt" = "Escanear recibo";
+"Reading receipt…" = "Leyendo recibo…";
+"Scanned — double-check the amount." = "Escaneado: verifica el importe.";
+"Take Photo" = "Hacer foto";
+"Choose Photo" = "Elegir foto";
+"Couldn't load that image." = "No se pudo cargar la imagen.";
+"Couldn't read that image." = "No se pudo leer la imagen.";
+"Couldn't read the receipt. Try again or enter it manually." = "No se pudo leer el recibo. Inténtalo de nuevo o introdúcelo manualmente.";
+"Snap a photo or pick one from your library. Everything is read on your device — nothing is uploaded." = "Haz una foto o elige una de tu galería. Todo se procesa en tu dispositivo: no se sube nada.";
+
+/* Expense form */
+"Details" = "Detalles";
+"Add merchant, note, date" = "Añadir comercio, nota, fecha";
+"Save Changes" = "Guardar cambios";
+"Decimal point" = "Separador decimal";
+"Hide keypad" = "Ocultar teclado";
+"%@, selected" = "%@, seleccionado";
+"%@, not selected" = "%@, no seleccionado";
+
+/* Insights extras */
+"Daily Activity" = "Actividad diaria";
+"Less" = "Menos";
+"More" = "Más";
+
+/* Widget & Siri */
+"LedgerLite" = "Ledger Lite";
+"Safe to spend" = "Gasto seguro";
+"Safe to spend / day" = "Gasto seguro / día";
+"/ day to payday" = "/ día hasta el pago";
+"to payday" = "hasta el pago";
+"Your daily safe-to-spend after upcoming bills — calculated on-device, no bank login." = "Tu gasto diario seguro tras las próximas facturas: calculado en el dispositivo, sin acceso bancario.";
+"You've spent %@ across 1 expense today." = "Hoy has gastado %@ en 1 gasto.";
+"You've spent %@ across %lld expenses today." = "Hoy has gastado %@ en %lld gastos.";

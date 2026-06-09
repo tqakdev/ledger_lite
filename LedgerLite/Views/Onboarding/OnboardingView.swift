@@ -96,7 +96,7 @@ struct OnboardingView: View {
                         icon: "lock.shield.fill",
                         color: Color.indigo,
                         title: String(localized: "Private by design"),
-                        subtitle: String(localized: "No account, no bank linking. Nothing ever leaves your iPhone.")
+                        subtitle: String(localized: "No account, no bank linking. Your financial data never leaves your iPhone.")
                     )
                 }
                 .padding(.horizontal, 24)
@@ -143,7 +143,7 @@ struct OnboardingView: View {
 
             Picker(String(localized: "Currency"), selection: $homeCurrencyCode) {
                 ForEach(Constants.App.supportedCurrencies, id: \.self) { code in
-                    Text(code).tag(code)
+                    Text(verbatim: "\(code) · \(Money.localizedName(for: code))").tag(code)
                 }
             }
             .pickerStyle(.wheel)

@@ -15,7 +15,9 @@ struct TodayTotalIntent: AppIntent {
         let count   = summary.expenses.count
         let dialog: IntentDialog = count == 0
             ? IntentDialog(stringLiteral: String(localized: "You haven't logged any expenses today."))
-            : IntentDialog(stringLiteral: String(localized: "You've spent \(total) across \(count) expense\(count == 1 ? "" : "s") today."))
+            : IntentDialog(stringLiteral: count == 1
+                ? String(localized: "You've spent \(total) across 1 expense today.")
+                : String(localized: "You've spent \(total) across \(count) expenses today."))
         return .result(dialog: dialog)
     }
 }

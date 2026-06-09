@@ -56,6 +56,46 @@ struct RunwaySetupPromptView: View {
     }
 }
 
+// MARK: - Payday arrived prompt
+
+/// Shown in place of the forecast once the configured payday is in the past:
+/// the projection is meaningless until the user enters their new balance and payday.
+struct PaydayArrivedPromptView: View {
+    let onUpdate: () -> Void
+
+    var body: some View {
+        Button(action: onUpdate) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "calendar.badge.checkmark")
+                        .font(.title2)
+                        .foregroundStyle(Color.accentColor)
+                    Text(String(localized: "Payday has arrived"))
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                Text(String(localized: "Your payday has passed. Update your balance and set your next payday to restart the runway."))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(18)
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(Color.accentColor.opacity(0.25), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - Inline forecast
 
 /// The forward projection rendered inline on the Runway home: the headline
@@ -471,7 +511,10 @@ struct RunwaySetupSheet: View {
         self.onClear = onClear
         let parser = AmountInputParser(currencyCode: currencyCode, locale: .current)
         _amountText = State(initialValue: initialBalanceMinor.map { parser.format(minorUnits: $0) } ?? "")
-        _payday = State(initialValue: initialPayday ?? Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date())
+        // A payday already in the past (the "payday arrived" case) would clash with the
+        // picker's `Date()...` range — suggest the next cycle two weeks out instead.
+        let futurePayday = initialPayday.flatMap { $0 >= Calendar.current.startOfDay(for: Date()) ? $0 : nil }
+        _payday = State(initialValue: futurePayday ?? Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date())
     }
 
     private var parser: AmountInputParser { AmountInputParser(currencyCode: currencyCode, locale: .current) }

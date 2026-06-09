@@ -5,10 +5,10 @@ private enum CalendarMode: Equatable { case list, calendar }
 
 private func billingCycleLabel(_ cycle: BillingCycle) -> String {
     switch cycle {
-    case .weekly:            return "Weekly"
-    case .monthly:           return "Monthly"
-    case .yearly:            return "Yearly"
-    case .customDays(let n): return "Every \(n) days"
+    case .weekly:            return String(localized: "Weekly")
+    case .monthly:           return String(localized: "Monthly")
+    case .yearly:            return String(localized: "Yearly")
+    case .customDays(let n): return String(localized: "Every \(n) days")
     }
 }
 
@@ -425,7 +425,7 @@ private struct SubscriptionsBillingCalendar: View {
         .accessibilityLabel(
             billings.isEmpty
                 ? date.formatted(.dateTime.month().day())
-                : String(localized: "\(date.formatted(.dateTime.month().day())), \(billings.count) billing")
+                : String(localized: "\(date.formatted(.dateTime.month().day())), \(billings.count) billings")
         )
     }
 }

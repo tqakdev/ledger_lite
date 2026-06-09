@@ -77,6 +77,12 @@ struct Money: Hashable, Codable {
     private static let symbolLock = NSLock()
     private static var symbolCache: [String: String] = [:]
 
+    /// The localized display name for an ISO 4217 code (e.g. "USD" → "US Dollar"),
+    /// falling back to the code itself for currencies the locale can't name.
+    static func localizedName(for code: String) -> String {
+        Locale.current.localizedString(forCurrencyCode: code)?.localizedCapitalized ?? code
+    }
+
     // MARK: Conversion
 
     /// Returns a new Money in `targetCode` at the given exchange rate.

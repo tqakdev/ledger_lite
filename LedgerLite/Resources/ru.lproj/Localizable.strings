@@ -256,3 +256,96 @@
 "Budget limit warnings" = "Предупреждения о приближении к лимиту бюджета";
 "No spam — only what matters" = "Без спама — только важное";
 "Skip for Now" = "Пропустить";
+
+/* Runway re-center (v1.0) — tabs */
+"Runway" = "Прогноз";
+"Spending" = "Расходы";
+"Bills" = "Платежи";
+"Trends" = "Аналитика";
+
+/* Runway home */
+"Truly safe to spend" = "Действительно можно тратить";
+"/ day" = "/ день";
+"Spent Today" = "Потрачено сегодня";
+"%@ left today" = "Осталось %@ на сегодня";
+"%@ over today" = "Перерасход %@ сегодня";
+"What if I spend...?" = "А если потратить...?";
+"Safe to spend: %@/day" = "Можно тратить: %@/день";
+"↑ %@/day more than now" = "↑ на %@/день больше, чем сейчас";
+"↓ %@/day less than now" = "↓ на %@/день меньше, чем сейчас";
+"⚠ You'd run out around %@" = "⚠ Деньги закончатся примерно %@";
+"✓ You'd still make it to payday" = "✓ Вы всё равно дотянете до зарплаты";
+"At your current pace, you run out around %@." = "При текущем темпе деньги закончатся примерно %@.";
+"Bills before payday" = "Платежи до зарплаты";
+"Total committed" = "Всего обязательств";
+"Zero" = "Ноль";
+"Balance" = "Баланс";
+"Projected from your upcoming bills and recent spending pace. Calculated entirely on your device — no bank connection." = "Прогноз построен по предстоящим платежам и вашему темпу трат. Рассчитывается полностью на устройстве — без подключения банка.";
+
+/* Runway setup */
+"Set up your runway" = "Настройте прогноз";
+"Set Up Runway" = "Настройка прогноза";
+"Set up runway" = "Настроить прогноз";
+"Edit Runway" = "Изменить прогноз";
+"Edit runway" = "Изменить прогноз";
+"Turn off runway" = "Отключить прогноз";
+"Runway Forecast" = "Прогноз до зарплаты";
+"Runway not set up" = "Прогноз не настроен";
+"Balance & Payday" = "Баланс и зарплата";
+"Available balance" = "Доступный баланс";
+"Current balance" = "Текущий баланс";
+"Next payday" = "Следующая зарплата";
+"Off" = "Выкл.";
+"Add your available balance and next payday to see a daily safe-to-spend that already accounts for the bills heading your way — calculated entirely on your device." = "Укажите доступный баланс и дату зарплаты, чтобы видеть дневной лимит, который уже учитывает предстоящие платежи. Всё рассчитывается на вашем устройстве.";
+"What you have available to spend right now, in %@. Expenses you log will be subtracted automatically." = "Сумма, доступная вам прямо сейчас, в %@. Записанные расходы будут вычитаться автоматически.";
+"The runway projects your balance forward to this date." = "Прогноз рассчитывает ваш баланс до этой даты.";
+"Powers the daily safe-to-spend on the Runway screen. Calculated entirely on your device." = "Определяет дневной лимит на экране «Прогноз». Рассчитывается полностью на устройстве.";
+
+/* Payday arrived */
+"Payday has arrived" = "Зарплата пришла";
+"Your payday has passed. Update your balance and set your next payday to restart the runway." = "День зарплаты прошёл. Обновите баланс и укажите следующую дату зарплаты, чтобы перезапустить прогноз.";
+
+/* Onboarding (runway) */
+"Know what you can safely spend today — forecast all the way to payday, entirely on your device." = "Знайте, сколько можно спокойно потратить сегодня, — прогноз до самой зарплаты, полностью на вашем устройстве.";
+"Payday Runway" = "Прогноз до зарплаты";
+"A daily safe-to-spend that accounts for the bills already heading your way." = "Дневной лимит, который уже учитывает предстоящие платежи.";
+"Track recurring charges and see them netted out of your forecast." = "Отслеживайте регулярные списания — они автоматически вычитаются из прогноза.";
+"Private by design" = "Приватность по умолчанию";
+"No account, no bank linking. Your financial data never leaves your iPhone." = "Без аккаунта и без подключения банка. Ваши финансовые данные никогда не покидают iPhone.";
+
+/* Receipt scanning */
+"Scan Receipt" = "Сканировать чек";
+"Scan a receipt" = "Сканировать чек";
+"Scan receipt" = "Сканировать чек";
+"Reading receipt…" = "Чтение чека…";
+"Scanned — double-check the amount." = "Отсканировано — проверьте сумму.";
+"Take Photo" = "Сделать фото";
+"Choose Photo" = "Выбрать фото";
+"Couldn't load that image." = "Не удалось загрузить изображение.";
+"Couldn't read that image." = "Не удалось распознать изображение.";
+"Couldn't read the receipt. Try again or enter it manually." = "Не удалось распознать чек. Попробуйте ещё раз или введите вручную.";
+"Snap a photo or pick one from your library. Everything is read on your device — nothing is uploaded." = "Сфотографируйте чек или выберите фото из галереи. Всё распознаётся на устройстве — ничего никуда не загружается.";
+
+/* Expense form */
+"Details" = "Подробности";
+"Add merchant, note, date" = "Продавец, заметка, дата";
+"Save Changes" = "Сохранить изменения";
+"Decimal point" = "Десятичный разделитель";
+"Hide keypad" = "Скрыть клавиатуру";
+"%@, selected" = "%@, выбрано";
+"%@, not selected" = "%@, не выбрано";
+
+/* Insights extras */
+"Daily Activity" = "Дневная активность";
+"Less" = "Меньше";
+"More" = "Больше";
+
+/* Widget & Siri */
+"LedgerLite" = "Ledger Lite";
+"Safe to spend" = "Можно тратить";
+"Safe to spend / day" = "Можно тратить / день";
+"/ day to payday" = "/ день до зарплаты";
+"to payday" = "до зарплаты";
+"Your daily safe-to-spend after upcoming bills — calculated on-device, no bank login." = "Дневной лимит с учётом предстоящих платежей — расчёт на устройстве, без входа в банк.";
+"You've spent %@ across 1 expense today." = "Сегодня вы потратили %@ (1 запись).";
+"You've spent %@ across %lld expenses today." = "Сегодня вы потратили %@ (записей: %lld).";

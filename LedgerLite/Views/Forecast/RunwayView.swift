@@ -110,7 +110,9 @@ struct RunwayView: View {
                     .listRowSeparator(.hidden)
             }
 
-            Section { Color.clear.frame(height: 80) }
+            // Clearance for the stacked FAB cluster (~122pt) so it never sits on the
+            // bills card when scrolled to the bottom.
+            Section { Color.clear.frame(height: 140) }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
         }
@@ -126,7 +128,9 @@ struct RunwayView: View {
 
     @ViewBuilder
     private func runwayHero(_ viewModel: TodayViewModel, _ forecastVM: ForecastViewModel) -> some View {
-        if forecastVM.hasSetup, let result = forecastVM.result {
+        if forecastVM.hasSetup, forecastVM.paydayPassed {
+            PaydayArrivedPromptView { showRunwaySetup = true }
+        } else if forecastVM.hasSetup, let result = forecastVM.result {
             RunwayForecastView(
                 result: result,
                 currencyCode: forecastVM.homeCurrencyCode,

@@ -49,6 +49,17 @@
 		5DC047C1941702D7EBCAA2F0 /* Expense.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4104D40C539063099494792E /* Expense.swift */; };
 		5F471D5D7A64B5B20BF68FEA /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614F270504B6946EA41E0C5B /* Subscription.swift */; };
 		61D56CAA365CE339E92EF76B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D60035B5AA0BCB3FEED1187B /* Localizable.strings */; };
+		F1BB000000000000000000A1 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E1 /* Localizable.stringsdict */; };
+		F1BB000000000000000000A2 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E2 /* Localizable.stringsdict */; };
+		F1BB000000000000000000A3 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E3 /* Localizable.stringsdict */; };
+		F1BB000000000000000000A4 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E4 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B1 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E1 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B2 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E2 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B3 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E3 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B4 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F1AA000000000000000000E4 /* Localizable.stringsdict */; };
+		F1CC000000000000000000B5 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B67A82D4336DF11E373D0078 /* Localizable.strings */; };
+		F1CC000000000000000000B6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 47408B01CB67E6B7FE22BE28 /* Localizable.strings */; };
+		F1CC000000000000000000B7 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D60035B5AA0BCB3FEED1187B /* Localizable.strings */; };
 		6ACD2DE1D62E555792B83813 /* SafeToSpendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711C1DE0795D9B1A42AA5DE2 /* SafeToSpendTests.swift */; };
 		6B01F795E4358536E34EBB02 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05C71D095137D6336BEE1E3 /* Logging.swift */; };
 		6C575747624F7DD00E1AA636 /* SubscriptionCycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3C401CC94E345F43BEB406 /* SubscriptionCycleTests.swift */; };
@@ -203,6 +214,10 @@
 		41685CF99DCE4268688341AE /* frankfurter_latest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = frankfurter_latest.json; sourceTree = "<group>"; };
 		45AD717977C12511921BB347 /* CategoryPickerStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryPickerStrip.swift; sourceTree = "<group>"; };
 		47408B01CB67E6B7FE22BE28 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = kk.lproj/Localizable.strings; sourceTree = "<group>"; };
+		F1AA000000000000000000E1 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		F1AA000000000000000000E2 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		F1AA000000000000000000E3 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = ru.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		F1AA000000000000000000E4 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = Localizable.stringsdict; path = kk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		4C7C0527DC429BCFE5CC405A /* AddCategorySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCategorySheet.swift; sourceTree = "<group>"; };
 		4E8B437B7F22797B0D872957 /* InsightsSupportingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsSupportingViews.swift; sourceTree = "<group>"; };
 		4F3F9C54C1D2DA72AF0A7E20 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -501,6 +516,10 @@
 				B67A82D4336DF11E373D0078 /* Localizable.strings */,
 				47408B01CB67E6B7FE22BE28 /* Localizable.strings */,
 				D60035B5AA0BCB3FEED1187B /* Localizable.strings */,
+				F1AA000000000000000000E1 /* Localizable.stringsdict */,
+				F1AA000000000000000000E2 /* Localizable.stringsdict */,
+				F1AA000000000000000000E3 /* Localizable.stringsdict */,
+				F1AA000000000000000000E4 /* Localizable.stringsdict */,
 				F49F00666E74FD3CC649AE33 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Resources;
@@ -768,6 +787,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F1CC000000000000000000B5 /* Localizable.strings in Resources */,
+				F1CC000000000000000000B6 /* Localizable.strings in Resources */,
+				F1CC000000000000000000B7 /* Localizable.strings in Resources */,
+				F1CC000000000000000000B1 /* Localizable.stringsdict in Resources */,
+				F1CC000000000000000000B2 /* Localizable.stringsdict in Resources */,
+				F1CC000000000000000000B3 /* Localizable.stringsdict in Resources */,
+				F1CC000000000000000000B4 /* Localizable.stringsdict in Resources */,
 				E356865F5F7D2C26AE3ACE08 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -790,6 +816,10 @@
 				D03E5444890F77B1B1A382B4 /* Localizable.strings in Resources */,
 				E0CFBCA5E736CCABA2FD4D25 /* Localizable.strings in Resources */,
 				61D56CAA365CE339E92EF76B /* Localizable.strings in Resources */,
+				F1BB000000000000000000A1 /* Localizable.stringsdict in Resources */,
+				F1BB000000000000000000A2 /* Localizable.stringsdict in Resources */,
+				F1BB000000000000000000A3 /* Localizable.stringsdict in Resources */,
+				F1BB000000000000000000A4 /* Localizable.stringsdict in Resources */,
 				75610ED687BB5D975AEB99AD /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

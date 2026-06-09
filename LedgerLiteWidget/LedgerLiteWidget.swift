@@ -80,9 +80,8 @@ struct LedgerLiteTodayWidgetEntryView: View {
                     .minimumScaleFactor(0.65)
                     .lineLimit(1)
                 let count = summary.expenses.count
-                Text(count == 1
-                     ? String(localized: "1 expense")
-                     : String(localized: "\(count) expenses"))
+                // Pluralised via Localizable.stringsdict ("%lld expenses").
+                Text(String(localized: "\(count) expenses"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             } else {
@@ -114,9 +113,8 @@ struct LedgerLiteTodayWidgetEntryView: View {
                     .lineLimit(1)
                 Spacer()
                 let count = summary.expenses.count
-                Text(count == 1
-                     ? String(localized: "1 expense")
-                     : String(localized: "\(count) expenses"))
+                // Pluralised via Localizable.stringsdict ("%lld expenses").
+                Text(String(localized: "\(count) expenses"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(Date.now.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))

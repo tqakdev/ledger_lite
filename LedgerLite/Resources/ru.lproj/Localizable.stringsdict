@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%lld days until payday</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld день до зарплаты</string>
+			<key>few</key>
+			<string>%lld дня до зарплаты</string>
+			<key>many</key>
+			<string>%lld дней до зарплаты</string>
+			<key>other</key>
+			<string>%lld дня до зарплаты</string>
+		</dict>
+	</dict>
+	<key>After %@ in bills · %lld days to payday</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>С учётом платежей на %@ · %#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld день до зарплаты</string>
+			<key>few</key>
+			<string>%lld дня до зарплаты</string>
+			<key>many</key>
+			<string>%lld дней до зарплаты</string>
+			<key>other</key>
+			<string>%lld дня до зарплаты</string>
+		</dict>
+	</dict>
+	<key>%lld expenses</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@expenses@</string>
+		<key>expenses</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld расход</string>
+			<key>few</key>
+			<string>%lld расхода</string>
+			<key>many</key>
+			<string>%lld расходов</string>
+			<key>other</key>
+			<string>%lld расхода</string>
+		</dict>
+	</dict>
+	<key>%lld results</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@results@</string>
+		<key>results</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld результат</string>
+			<key>few</key>
+			<string>%lld результата</string>
+			<key>many</key>
+			<string>%lld результатов</string>
+			<key>other</key>
+			<string>%lld результата</string>
+		</dict>
+	</dict>
+	<key>%@, %lld billings</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%@, %#@billings@</string>
+		<key>billings</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld списание</string>
+			<key>few</key>
+			<string>%lld списания</string>
+			<key>many</key>
+			<string>%lld списаний</string>
+			<key>other</key>
+			<string>%lld списания</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

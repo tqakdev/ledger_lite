@@ -58,7 +58,9 @@ private struct CategoryChip: View {
             )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(String(localized: "\(category.name), \(isSelected ? "selected" : "not selected")"))
+        .accessibilityLabel(isSelected
+            ? String(localized: "\(category.name), selected")
+            : String(localized: "\(category.name), not selected"))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

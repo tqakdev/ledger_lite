@@ -19,6 +19,9 @@ final class ForecastViewModel {
     private(set) var lastInput: RunwayForecast.Input?
     var homeCurrencyCode: String = UserPreferences.homeCurrencyCode
     var hasSetup: Bool = UserPreferences.hasRunwaySetup
+    /// True when the configured payday is in the past. Projecting beyond it would be
+    /// meaningless, so the UI swaps the forecast for an "update your runway" prompt.
+    private(set) var paydayPassed = false
 
     // MARK: - Dependencies
 
@@ -39,8 +42,20 @@ final class ForecastViewModel {
         guard let balanceMinor = UserPreferences.availableBalanceMinor,
               let payday = UserPreferences.nextPayday else {
             result = nil
+            paydayPassed = false
             return
         }
+
+        let cal = Calendar.current
+        if cal.startOfDay(for: payday) < cal.startOfDay(for: now) {
+            paydayPassed = true
+            result = nil
+            lastInput = nil
+            UserPreferences.cachedSafeToSpendMinor = nil
+            return
+        }
+        paydayPassed = false
+
         let asOf = UserPreferences.balanceAsOfDate ?? now
 
         let effectiveBalance = balanceMinor - spentSince(asOf, now: now)

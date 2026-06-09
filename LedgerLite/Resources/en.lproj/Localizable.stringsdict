@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%lld days until payday</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld day until payday</string>
+			<key>other</key>
+			<string>%lld days until payday</string>
+		</dict>
+	</dict>
+	<key>After %@ in bills · %lld days to payday</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>After %@ in bills · %#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld day to payday</string>
+			<key>other</key>
+			<string>%lld days to payday</string>
+		</dict>
+	</dict>
+	<key>%lld expenses</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@expenses@</string>
+		<key>expenses</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 expense</string>
+			<key>other</key>
+			<string>%lld expenses</string>
+		</dict>
+	</dict>
+	<key>%lld results</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@results@</string>
+		<key>results</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 result</string>
+			<key>other</key>
+			<string>%lld results</string>
+		</dict>
+	</dict>
+	<key>%@, %lld billings</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%@, %#@billings@</string>
+		<key>billings</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld billing</string>
+			<key>other</key>
+			<string>%lld billings</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

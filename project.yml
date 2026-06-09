@@ -146,6 +146,16 @@ targets:
           - PreviewContainer.swift   # preview-only; not needed in widget target
           - ScreenshotSeeder.swift   # DEBUG screenshot data; app target only
       - path: LedgerLite/Services/WidgetDataService.swift
+      # Shared localizations so widget-facing strings (Payday Runway, Today's
+      # Total, …) are translated in the widget bundle too.
+      - path: LedgerLite/Resources/en.lproj
+        buildPhase: resources
+      - path: LedgerLite/Resources/es.lproj
+        buildPhase: resources
+      - path: LedgerLite/Resources/ru.lproj
+        buildPhase: resources
+      - path: LedgerLite/Resources/kk.lproj
+        buildPhase: resources
     dependencies:
       - sdk: WidgetKit.framework
       - sdk: SwiftUI.framework
@@ -156,6 +166,11 @@ targets:
         CFBundleDisplayName: LedgerLite Widget
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleLocalizations:
+          - en
+          - es
+          - ru
+          - kk
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:
