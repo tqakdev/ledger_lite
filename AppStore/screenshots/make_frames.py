@@ -8,7 +8,8 @@ import base64, subprocess, pathlib, html
 
 RAW = pathlib.Path("/tmp/ll_shots/raw")
 HTMLDIR = pathlib.Path("/tmp/ll_html"); HTMLDIR.mkdir(exist_ok=True)
-BASE = pathlib.Path("/Users/enes/Dev/Ledger Lite/AppStore/screenshots")
+# Output beside this script, wherever the repo is checked out.
+BASE = pathlib.Path(__file__).resolve().parent
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 # (raw file, headline html with <span class=a> accent, subhead)
