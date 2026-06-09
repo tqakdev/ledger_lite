@@ -316,7 +316,7 @@ struct LedgerLiteSubscriptionsWidgetEntryView: View {
 
     private var mediumView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(String(localized: "Upcoming Subscriptions"))
+            Text(String(localized: "Upcoming Bills"))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 16)
@@ -403,5 +403,121 @@ struct LedgerLiteSubscriptionsWidget: Widget {
         .configurationDisplayName(String(localized: "Upcoming Bills"))
         .description(String(localized: "See your next subscription billing dates."))
         .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+// MARK: - Payday Runway Widget ─────────────────────────────────────────────────
+
+struct RunwayWidgetEntry: TimelineEntry {
+    let date: Date
+    let safeToSpendMinor: Int?
+    let currencyCode: String
+    let isConfigured: Bool
+}
+
+struct RunwayWidgetProvider: TimelineProvider {
+    func placeholder(in context: Context) -> RunwayWidgetEntry {
+        RunwayWidgetEntry(date: .now, safeToSpendMinor: 4200, currencyCode: "USD", isConfigured: true)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (RunwayWidgetEntry) -> Void) {
+        completion(makeEntry())
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<RunwayWidgetEntry>) -> Void) {
+        let entry = makeEntry()
+        let next = Calendar.current.date(byAdding: .hour, value: 1, to: .now) ?? .now
+        completion(Timeline(entries: [entry], policy: .after(next)))
+    }
+
+    private func makeEntry() -> RunwayWidgetEntry {
+        RunwayWidgetEntry(
+            date: .now,
+            safeToSpendMinor: UserPreferences.cachedSafeToSpendMinor,
+            currencyCode: UserPreferences.homeCurrencyCode,
+            isConfigured: UserPreferences.hasRunwaySetup
+        )
+    }
+}
+
+struct LedgerLiteRunwayWidgetEntryView: View {
+    let entry: RunwayWidgetEntry
+    @Environment(\.widgetFamily) private var widgetFamily
+
+    var body: some View {
+        switch widgetFamily {
+        case .accessoryRectangular: accessoryRectangularView
+        default:                    smallView
+        }
+    }
+
+    private var smallView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(String(localized: "Payday Runway"))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Spacer()
+            if entry.isConfigured, let minor = entry.safeToSpendMinor {
+                Text(String(localized: "Safe to spend"))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Text(Money(minorUnits: minor, currencyCode: entry.currencyCode).formatted())
+                    .font(.system(.title3, design: .rounded, weight: .bold))
+                    .monospacedDigit()
+                    .foregroundStyle(.mint)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                Spacer()
+                Text(String(localized: "/ day to payday"))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            } else {
+                Text(String(localized: "Set up runway"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .minimumScaleFactor(0.8)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding()
+        .containerBackground(.fill.tertiary, for: .widget)
+        .widgetURL(URL(string: "ledgerlite://runway")!)
+    }
+
+    private var accessoryRectangularView: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(String(localized: "Safe to spend / day"))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            if entry.isConfigured, let minor = entry.safeToSpendMinor {
+                Text(Money(minorUnits: minor, currencyCode: entry.currencyCode).formatted())
+                    .font(.system(.headline, design: .rounded, weight: .bold))
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.65)
+                    .lineLimit(1)
+                Text(String(localized: "to payday"))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text(String(localized: "Runway not set up"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .widgetURL(URL(string: "ledgerlite://runway")!)
+    }
+}
+
+struct LedgerLiteRunwayWidget: Widget {
+    let kind = "LedgerLiteRunwayWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: RunwayWidgetProvider()) { entry in
+            LedgerLiteRunwayWidgetEntryView(entry: entry)
+        }
+        .configurationDisplayName(String(localized: "Payday Runway"))
+        .description(String(localized: "Your daily safe-to-spend after upcoming bills — calculated on-device, no bank login."))
+        .supportedFamilies([.systemSmall, .accessoryRectangular])
     }
 }

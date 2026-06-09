@@ -54,6 +54,7 @@ final class ForecastViewModel {
                 projectedDailyDiscretionaryMinor: discretionary
             )
         )
+        UserPreferences.cachedSafeToSpendMinor = result?.trulySafePerDayMinor
     }
 
     // MARK: - Input builders
@@ -164,6 +165,7 @@ final class ForecastViewModel {
         UserPreferences.balanceAsOfDate = nil
         UserPreferences.nextPayday = nil
         UserPreferences.paydayIncomeMinor = nil
+        UserPreferences.cachedSafeToSpendMinor = nil
         refresh()
     }
 }

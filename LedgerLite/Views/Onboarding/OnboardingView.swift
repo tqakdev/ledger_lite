@@ -89,8 +89,8 @@ struct OnboardingView: View {
                     featureRow(
                         icon: "repeat.circle.fill",
                         color: Theme.caution,
-                        title: String(localized: "Subscriptions"),
-                        subtitle: String(localized: "Track recurring bills and see them netted out of your forecast.")
+                        title: String(localized: "Bills"),
+                        subtitle: String(localized: "Track recurring charges and see them netted out of your forecast.")
                     )
                     featureRow(
                         icon: "lock.shield.fill",
