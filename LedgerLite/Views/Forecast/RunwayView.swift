@@ -95,7 +95,7 @@ struct RunwayView: View {
     private func content(_ viewModel: TodayViewModel, _ forecastVM: ForecastViewModel) -> some View {
         List {
             Section {
-                runwayHero(forecastVM)
+                runwayHero(viewModel, forecastVM)
                     .padding(.horizontal, 12)
                     .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                     .listRowBackground(Color.clear)
@@ -125,9 +125,14 @@ struct RunwayView: View {
     // MARK: - Runway hero
 
     @ViewBuilder
-    private func runwayHero(_ forecastVM: ForecastViewModel) -> some View {
+    private func runwayHero(_ viewModel: TodayViewModel, _ forecastVM: ForecastViewModel) -> some View {
         if forecastVM.hasSetup, let result = forecastVM.result {
-            RunwayForecastView(result: result, currencyCode: forecastVM.homeCurrencyCode)
+            RunwayForecastView(
+                result: result,
+                currencyCode: forecastVM.homeCurrencyCode,
+                lastInput: forecastVM.lastInput,
+                todayTotalMinor: viewModel.todayTotalMinor
+            )
         } else {
             RunwaySetupPromptView { showRunwaySetup = true }
         }

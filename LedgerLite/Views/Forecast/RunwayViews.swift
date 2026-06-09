@@ -59,17 +59,30 @@ struct RunwaySetupPromptView: View {
 // MARK: - Inline forecast
 
 /// The forward projection rendered inline on the Runway home: the headline
-/// "truly safe to spend" figure, the balance-to-payday curve with bill markers and
-/// a zero danger line, and the list of bills due before payday.
+/// "truly safe to spend" figure, a live today-envelope bar, a what-if simulator,
+/// the balance-to-payday curve with bill markers, and the list of bills before payday.
 struct RunwayForecastView: View {
     let result: RunwayForecast.Result
     let currencyCode: String
+    /// The inputs last used to compute `result` — nil-safe; what-if is hidden when nil.
+    let lastInput: RunwayForecast.Input?
+    /// How much has been spent today (home currency minor units), for the envelope bar.
+    let todayTotalMinor: Int
+
+    @State private var showWhatIf = false
+    @State private var whatIfText = ""
+    @State private var whatIfResult: RunwayForecast.Result? = nil
 
     private var danger: Bool { result.firstNegativeDate != nil }
+    private var parser: AmountInputParser { AmountInputParser(currencyCode: currencyCode, locale: .current) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            headline
+            VStack(alignment: .leading, spacing: 10) {
+                headline
+                envelopeBar
+                whatIfSection
+            }
             chart
             if !result.upcomingBills.isEmpty { billsList }
             explainer
@@ -116,6 +129,180 @@ struct RunwayForecastView: View {
             return String(localized: "After \(bills) in bills · \(result.daysToPayday) days to payday")
         }
         return String(localized: "\(result.daysToPayday) days until payday")
+    }
+
+    // MARK: Today envelope bar
+
+    /// Live progress bar: shows how much of today's safe-to-spend has been consumed.
+    /// Updates immediately as the user logs expenses — transforms the number from a
+    /// static fact into a live decision aid.
+    @ViewBuilder
+    private var envelopeBar: some View {
+        let safe = max(1, result.trulySafePerDayMinor)
+        let spent = todayTotalMinor
+        let remaining = safe - spent
+        let fraction = min(1.0, max(0.0, Double(spent) / Double(safe)))
+        let barTint: Color = fraction < 0.75 ? Theme.positive : fraction < 1.0 ? Theme.caution : Theme.danger
+
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Text(String(localized: "Today"))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if remaining >= 0 {
+                    Text(String(localized: "\(Money(minorUnits: remaining, currencyCode: currencyCode).formatted()) left today"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(barTint)
+                } else {
+                    Text(String(localized: "\(Money(minorUnits: abs(remaining), currencyCode: currencyCode).formatted()) over today"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Theme.danger)
+                }
+            }
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(.tertiarySystemFill))
+                        .frame(height: 7)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(barTint)
+                        .frame(width: geo.size.width * fraction, height: 7)
+                        .animation(.spring(duration: 0.4), value: fraction)
+                }
+            }
+            .frame(height: 7)
+        }
+        .contentTransition(.numericText())
+        .animation(.easeInOut(duration: 0.3), value: todayTotalMinor)
+    }
+
+    // MARK: What-if simulator
+
+    /// Interactive: "What if I spend $X?" — re-runs the forecast engine with the
+    /// entered purchase subtracted and shows the new safe-to-spend and zero-date.
+    @ViewBuilder
+    private var whatIfSection: some View {
+        if lastInput != nil {
+            VStack(alignment: .leading, spacing: 8) {
+                if !showWhatIf {
+                    Button {
+                        withAnimation(.spring(duration: 0.3)) { showWhatIf = true }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "questionmark.circle")
+                                .font(.caption)
+                            Text(String(localized: "What if I spend...?"))
+                                .font(.caption)
+                        }
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.accentColor.opacity(0.08))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 6) {
+                            Text(Money.symbol(for: currencyCode))
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            TextField(String(localized: "Amount"), text: $whatIfText)
+                                .keyboardType(.decimalPad)
+                                .font(.subheadline.monospacedDigit())
+                                .onChange(of: whatIfText) { _, v in
+                                    let parsed = parser.parse(v)
+                                    whatIfText = parsed.display
+                                    applyWhatIf(minorUnits: parsed.minorUnits)
+                                }
+                            Spacer()
+                            Button {
+                                withAnimation(.spring(duration: 0.3)) {
+                                    showWhatIf = false
+                                    whatIfText = ""
+                                    whatIfResult = nil
+                                }
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 9)
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                        if let wir = whatIfResult {
+                            whatIfOutcome(wir)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+        }
+    }
+
+    private func applyWhatIf(minorUnits: Int) {
+        guard minorUnits > 0, let input = lastInput else { whatIfResult = nil; return }
+        let modified = RunwayForecast.Input(
+            startingBalanceMinor: input.startingBalanceMinor - minorUnits,
+            today: input.today,
+            payday: input.payday,
+            bills: input.bills,
+            projectedDailyDiscretionaryMinor: input.projectedDailyDiscretionaryMinor
+        )
+        whatIfResult = RunwayForecast.project(modified)
+    }
+
+    @ViewBuilder
+    private func whatIfOutcome(_ wir: RunwayForecast.Result) -> some View {
+        let safeAfter = wir.trulySafePerDayMinor
+        let safeBefore = result.trulySafePerDayMinor
+        let newNegDate = wir.firstNegativeDate
+        let wasNeg = result.firstNegativeDate != nil
+        let nowNeg = newNegDate != nil
+
+        let icon: String
+        let tint: Color
+        if safeAfter > 0 && !nowNeg {
+            icon = "checkmark.circle.fill"; tint = Theme.positive
+        } else if safeAfter > 0 {
+            icon = "exclamationmark.triangle.fill"; tint = Theme.caution
+        } else {
+            icon = "xmark.circle.fill"; tint = Theme.danger
+        }
+
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: icon).foregroundStyle(tint)
+                Text(String(localized: "Safe to spend: \(Money(minorUnits: max(0, safeAfter), currencyCode: currencyCode).formatted())/day"))
+                    .font(.subheadline.weight(.medium))
+            }
+            if safeBefore != safeAfter {
+                let delta = abs(safeAfter - safeBefore)
+                Text(safeAfter < safeBefore
+                     ? String(localized: "↓ \(Money(minorUnits: delta, currencyCode: currencyCode).formatted())/day less than now")
+                     : String(localized: "↑ \(Money(minorUnits: delta, currencyCode: currencyCode).formatted())/day more than now"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            if nowNeg, !wasNeg, let neg = newNegDate {
+                Text(String(localized: "⚠ You'd run out around \(neg.formatted(.dateTime.month(.abbreviated).day()))"))
+                    .font(.caption)
+                    .foregroundStyle(Theme.danger)
+            } else if !nowNeg {
+                Text(String(localized: "✓ You'd still make it to payday"))
+                    .font(.caption)
+                    .foregroundStyle(Theme.positive)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(tint.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: Chart

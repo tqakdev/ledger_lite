@@ -5,8 +5,6 @@ import SwiftData
 struct InsightsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: InsightsViewModel?
-    @State private var selectedAngleValue: Int?
-    @State private var showDrillDown = false
     @State private var showShareSheet = false
     @State private var shareItems: [Any] = []
     @State private var showError = false
@@ -57,18 +55,6 @@ struct InsightsView: View {
                 UINotificationFeedbackGenerator().notificationOccurred(.error)
             }
         }
-        .sheet(isPresented: $showDrillDown) {
-            if let vm = viewModel, let cat = vm.selectedCategory,
-               let item = vm.categoryTotals.first(where: { $0.category.id == cat.id }) {
-                CategoryDrillDownSheet(
-                    category: cat,
-                    categoryMinorUnits: item.minorUnits,
-                    periodExpenses: vm.periodExpenses,
-                    homeCurrencyCode: vm.homeCurrencyCode,
-                    period: vm.period
-                )
-            }
-        }
     }
 
     // MARK: - Content
@@ -92,8 +78,6 @@ struct InsightsView: View {
                             .padding(.vertical, 40)
                     } else {
                         Group {
-                            // Trend + heatmap lead; the category donut — the universal
-                            // expense-tracker visual — is demoted to the bottom.
                             trendSection(vm)
                             heatmapSection(vm)
                             if vm.period == .month {
@@ -101,7 +85,6 @@ struct InsightsView: View {
                                     .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                             topMerchantSection(vm)
-                            donutSection(vm)
                         }
                         .id(vm.period)
                         .transition(.opacity)
@@ -114,8 +97,6 @@ struct InsightsView: View {
             .scrollBounceBehavior(.basedOnSize)
         }
         .task(id: vm.period) {
-            selectedAngleValue = nil
-            vm.selectedCategory = nil
             await vm.refresh()
         }
     }
@@ -130,155 +111,6 @@ struct InsightsView: View {
             }
         }
         .pickerStyle(.segmented)
-    }
-
-    // MARK: - Donut chart section
-
-    private func donutSection(_ vm: InsightsViewModel) -> some View {
-        GroupBox {
-            if vm.categoryTotals.isEmpty {
-                emptyLabel
-            } else {
-                VStack(spacing: 14) {
-                    donutChart(vm)
-                    if let sel = vm.selectedCategory,
-                       let item = vm.categoryTotals.first(where: { $0.category.id == sel.id }) {
-                        callout(item: item, vm: vm)
-                            .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
-                    }
-                    categoryLegend(vm)
-                }
-                .animation(.easeInOut(duration: 0.2), value: vm.selectedCategory?.id)
-            }
-        } label: {
-            Label(String(localized: "Spending by Category"), systemImage: "chart.pie.fill")
-                .font(.headline)
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-    }
-
-    private func donutChart(_ vm: InsightsViewModel) -> some View {
-        ZStack {
-            Chart(vm.categoryTotals, id: \.category.id) { item in
-                SectorMark(
-                    angle: .value(String(localized: "Amount"), item.minorUnits),
-                    innerRadius: .ratio(0.64),
-                    angularInset: vm.categoryTotals.count == 1 ? 0 : 1.5
-                )
-                .foregroundStyle(Color(hex: item.category.colorHex))
-                .opacity(sectorOpacity(item.category, selected: vm.selectedCategory))
-            }
-            .chartLegend(.hidden)
-            .chartAngleSelection(value: $selectedAngleValue)
-            .onChange(of: selectedAngleValue) { _, v in
-                vm.selectedCategory = v.flatMap { categoryForAngle($0, totals: vm.categoryTotals) }
-            }
-            // Swift Charts doesn't auto-describe sectors; provide a manual label
-            .accessibilityLabel(
-                String(localized: "\(vm.categoryTotals.count) categories, total \(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())")
-            )
-
-            VStack(spacing: 2) {
-                if let sel = vm.selectedCategory,
-                   let item = vm.categoryTotals.first(where: { $0.category.id == sel.id }) {
-                    let pct = vm.periodTotalMinor > 0
-                        ? Int(round(Double(item.minorUnits) / Double(vm.periodTotalMinor) * 100))
-                        : 0
-                    Text(item.category.name)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                        .frame(maxWidth: 120)
-                    Text(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
-                        .font(.system(.callout, design: .rounded, weight: .bold))
-                        .monospacedDigit()
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.4)
-                        .frame(maxWidth: 132)
-                    Text("\(pct)%")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text(String(localized: "Total"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(Money(minorUnits: vm.periodTotalMinor, currencyCode: vm.homeCurrencyCode).formatted())
-                        .font(.system(.callout, design: .rounded, weight: .bold))
-                        .monospacedDigit()
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.4)
-                        .frame(maxWidth: 132)
-                        .contentTransition(.numericText(value: Double(vm.periodTotalMinor)))
-                        .animation(.easeInOut(duration: 0.3), value: vm.periodTotalMinor)
-                }
-            }
-            .animation(.easeInOut(duration: 0.2), value: vm.selectedCategory?.id)
-        }
-        .frame(height: 210)
-    }
-
-    private func callout(item: (category: Category, minorUnits: Int), vm: InsightsViewModel) -> some View {
-        let pct = vm.periodTotalMinor > 0
-            ? Int(round(Double(item.minorUnits) / Double(vm.periodTotalMinor) * 100))
-            : 0
-        return VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
-                Image(systemName: item.category.iconName)
-                    .foregroundStyle(Color(hex: item.category.colorHex))
-                    .frame(width: 24)
-                Text(item.category.name)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .lineLimit(1)
-                Spacer(minLength: 4)
-                Text("\(pct)%  ·  \(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
-            Button(String(localized: "View Details")) {
-                showDrillDown = true
-            }
-            .font(.caption)
-            .foregroundStyle(Color.accentColor)
-        }
-        .padding(10)
-        .background(Color(.secondarySystemFill))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-
-    private func categoryLegend(_ vm: InsightsViewModel) -> some View {
-        VStack(spacing: 8) {
-            ForEach(vm.categoryTotals, id: \.category.id) { item in
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(Color(hex: item.category.colorHex))
-                        .frame(width: 10, height: 10)
-                    Text(item.category.name)
-                        .font(.subheadline)
-                    Spacer()
-                    Text(Money(minorUnits: item.minorUnits, currencyCode: vm.homeCurrencyCode).formatted())
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if vm.selectedCategory?.id == item.category.id {
-                        vm.selectedCategory = nil
-                        selectedAngleValue = nil
-                    } else {
-                        vm.selectedCategory = item.category
-                        selectedAngleValue = nil
-                    }
-                }
-                .opacity(vm.selectedCategory.map { $0.id == item.category.id ? 1.0 : 0.4 } ?? 1.0)
-            }
-        }
     }
 
     // MARK: - Trend chart section
@@ -477,20 +309,6 @@ struct InsightsView: View {
             .buttonStyle(.bordered)
         }
         .frame(maxWidth: .infinity, minHeight: 120)
-    }
-
-    private func sectorOpacity(_ category: Category, selected: Category?) -> Double {
-        guard let sel = selected else { return 1.0 }
-        return sel.id == category.id ? 1.0 : 0.3
-    }
-
-    private func categoryForAngle(_ value: Int, totals: [(category: Category, minorUnits: Int)]) -> Category? {
-        var cumulative = 0
-        for item in totals {
-            cumulative += item.minorUnits
-            if value <= cumulative { return item.category }
-        }
-        return totals.last?.category
     }
 
     private func budgetEntries(from vm: InsightsViewModel) -> [BudgetEntry] {
