@@ -380,39 +380,16 @@ struct SettingsView: View {
         isExporting = true
         defer { isExporting = false }
         do {
-            let iso = ISO8601DateFormatter()
-            iso.formatOptions = [.withFullDate]
-
             // Expenses
             let expenses = try ExpenseRepository(context: modelContext).fetchAll()
-            var expenseLines = ["Date,Merchant,Category,Amount,Currency,HomeAmount,HomeCurrency"]
-            for e in expenses {
-                let date       = csvEscape(iso.string(from: e.date))
-                let merchant   = csvEscape(e.merchant ?? "")
-                let category   = csvEscape(e.category?.name ?? "")
-                let amount     = e.money.decimalValue.description
-                let currency   = e.currencyCode
-                let homeAmount = (e.money.decimalValue * e.exchangeRateToHome)
-                    .rounded(scale: Money.decimals(for: e.homeCurrencyAtEntry))
-                    .description
-                let homeCurr   = e.homeCurrencyAtEntry
-                expenseLines.append("\(date),\(merchant),\(category),\(amount),\(currency),\(homeAmount),\(homeCurr)")
-            }
+            let expenseLines = [ExpenseCSV.expenseHeader] + expenses.map { ExpenseCSV.line(for: $0) }
             let expensesURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent("LedgerLite_Expenses.csv")
             try expenseLines.joined(separator: "\n").write(to: expensesURL, atomically: true, encoding: .utf8)
 
             // Subscriptions
             let subscriptions = try SubscriptionRepository(context: modelContext).fetchAll()
-            var subLines = ["Name,Amount,Currency,BillingCycle,NextBillingDate,Status"]
-            for s in subscriptions {
-                let name    = csvEscape(s.name)
-                let amount  = s.money.decimalValue.description
-                let cycle   = csvEscape(s.billingCycle.rawValue)
-                let nextDate = csvEscape(iso.string(from: s.nextBillingDate))
-                let status  = csvEscape(s.status.rawValue)
-                subLines.append("\(name),\(amount),\(s.currencyCode),\(cycle),\(nextDate),\(status)")
-            }
+            let subLines = [ExpenseCSV.subscriptionHeader] + subscriptions.map { ExpenseCSV.line(for: $0) }
             let subscriptionsURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent("LedgerLite_Subscriptions.csv")
             try subLines.joined(separator: "\n").write(to: subscriptionsURL, atomically: true, encoding: .utf8)
@@ -423,10 +400,6 @@ struct SettingsView: View {
             showError  = true
             AppLogger.data.error("CSV export failed: \(error)")
         }
-    }
-
-    private func csvEscape(_ s: String) -> String {
-        "\"" + s.replacingOccurrences(of: "\"", with: "\"\"") + "\""
     }
 
     // MARK: - CSV import
@@ -457,48 +430,17 @@ struct SettingsView: View {
             var imported = 0
 
             for line in lines.dropFirst() {
-                let fields = csvParseLine(line)
-                guard fields.count >= 7 else { continue }
-                let dateStr    = fields[0]
-                let merchant   = fields[1].isEmpty ? nil : fields[1]
-                let catName    = fields[2]
-                let amtStr     = fields[3]
-                let currency   = fields[4]
-                let homeAmtStr = fields[5]
-                let homeCurr   = fields[6]
-
-                let iso = ISO8601DateFormatter()
-                iso.formatOptions = [.withFullDate]
-                guard let date = iso.date(from: dateStr) else { continue }
-                guard let amtDecimal  = Decimal(string: amtStr),  amtDecimal  > 0 else { continue }
-                guard let homeDecimal = Decimal(string: homeAmtStr) else { continue }
-
-                let places     = Money.decimals(for: currency)
-                let homePlaces = Money.decimals(for: homeCurr)
-
-                func toMinor(_ d: Decimal, places p: Int) -> Int {
-                    let v = (d * Decimal.powerOfTen(p)).rounded(scale: 0)
-                    return NSDecimalNumber(decimal: v).intValue
-                }
-
-                let amtMinor  = toMinor(amtDecimal,  places: places)
-                guard amtMinor > 0 else { continue }
-                let homeMinor = toMinor(homeDecimal, places: homePlaces)
-                let rate: Decimal = (currency == homeCurr || amtDecimal == Decimal(0))
-                    ? Decimal(1) : (homeDecimal / amtDecimal)
-
-                let category = categories.first { $0.name == catName }
-                let expense  = Expense(
-                    amountMinor: amtMinor,
-                    currencyCode: currency,
-                    exchangeRateToHome: rate,
-                    homeCurrencyAtEntry: homeCurr,
-                    date: date,
-                    merchant: merchant,
+                guard let row = ExpenseCSV.importedExpense(fromLine: line) else { continue }
+                let expense = Expense(
+                    amountMinor: row.amountMinor,
+                    currencyCode: row.currencyCode,
+                    exchangeRateToHome: row.exchangeRateToHome,
+                    homeCurrencyAtEntry: row.homeCurrency,
+                    date: row.date,
+                    merchant: row.merchant,
                     source: .manual
                 )
-                expense.category = category
-                _ = homeMinor  // stored in exchangeRateToHome; kept for future use
+                expense.category = categories.first { $0.name == row.categoryName }
                 modelContext.insert(expense)
                 imported += 1
             }
@@ -515,33 +457,6 @@ struct SettingsView: View {
             showError  = true
             AppLogger.data.error("CSV import failed: \(error)")
         }
-    }
-
-    private func csvParseLine(_ line: String) -> [String] {
-        var fields: [String] = []
-        var current = ""
-        var inQuotes = false
-        var i = line.startIndex
-        while i < line.endIndex {
-            let ch = line[i]
-            if ch == "\"" {
-                let next = line.index(after: i)
-                if inQuotes && next < line.endIndex && line[next] == "\"" {
-                    current.append("\"")
-                    i = line.index(after: next)
-                    continue
-                }
-                inQuotes.toggle()
-            } else if ch == "," && !inQuotes {
-                fields.append(current)
-                current = ""
-            } else {
-                current.append(ch)
-            }
-            i = line.index(after: i)
-        }
-        fields.append(current)
-        return fields
     }
 
     // MARK: - Reset

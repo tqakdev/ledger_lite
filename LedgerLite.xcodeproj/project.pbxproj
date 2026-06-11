@@ -51,6 +51,7 @@
 		5DC047C1941702D7EBCAA2F0 /* Expense.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4104D40C539063099494792E /* Expense.swift */; };
 		5EA535C28FFDD635D01B8AD2 /* ForecastViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F0FAC3A40CEB3119B0F12 /* ForecastViewModelTests.swift */; };
 		5F471D5D7A64B5B20BF68FEA /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614F270504B6946EA41E0C5B /* Subscription.swift */; };
+		647A7AEF717AD921A854FBF8 /* ExpenseCSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD0F947ED632D40C4A0475CA /* ExpenseCSV.swift */; };
 		6ACD2DE1D62E555792B83813 /* SafeToSpendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711C1DE0795D9B1A42AA5DE2 /* SafeToSpendTests.swift */; };
 		6B01F795E4358536E34EBB02 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05C71D095137D6336BEE1E3 /* Logging.swift */; };
 		6C575747624F7DD00E1AA636 /* SubscriptionCycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3C401CC94E345F43BEB406 /* SubscriptionCycleTests.swift */; };
@@ -78,6 +79,7 @@
 		A25DDB2433FFCD085D8097F7 /* Money.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B2893455B4E3047FBC4A19 /* Money.swift */; };
 		A69743C2859BB0CC0D2D1BE3 /* ExpenseTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7EF3229BCAC8E659489EC3 /* ExpenseTemplate.swift */; };
 		A84AD992CABF57C05C4AD583 /* ForecastViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B43FB34CFAE909EB719398 /* ForecastViewModel.swift */; };
+		A951BC1F372A4E8B37D906C6 /* ExpenseCSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD0F947ED632D40C4A0475CA /* ExpenseCSV.swift */; };
 		AFA76602B16769543B7F0E04 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21CE5BDB6361CFAABA101EFC /* Category.swift */; };
 		B039CD25C30D5C1C48526051 /* ExpenseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A103770579CDB4ACD86549CD /* ExpenseRepository.swift */; };
 		B0C8A88D653411B1CBF54D3E /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614F270504B6946EA41E0C5B /* Subscription.swift */; };
@@ -267,6 +269,7 @@
 		B2766B9792CA40A2DF9870CB /* MockURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockURLProtocol.swift; sourceTree = "<group>"; };
 		B3D0C2E7408A30B83737B18A /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		BA3364F56DCEEBA0DDE9300D /* HTTPFetching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPFetching.swift; sourceTree = "<group>"; };
+		BD0F947ED632D40C4A0475CA /* ExpenseCSV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseCSV.swift; sourceTree = "<group>"; };
 		BE27622FC974ECC80FAD968E /* MerchantCategoryGuesserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantCategoryGuesserTests.swift; sourceTree = "<group>"; };
 		BEC4928B37FA95E685A0726F /* MetricManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricManager.swift; sourceTree = "<group>"; };
 		BF9E80D8593ACBC6D73EDDEF /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
@@ -296,7 +299,7 @@
 		F49F00666E74FD3CC649AE33 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		FAFC2876C3543629571BAFA3 /* AutoDetectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoDetectTests.swift; sourceTree = "<group>"; };
 		FB82380910B610F5D8400BE4 /* ExpenseFormScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseFormScanTests.swift; sourceTree = "<group>"; };
-		"TEMP_F83803D0-74BD-4287-A026-9F73ED219D31" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		"TEMP_BFD38D09-42B8-47CD-B096-2DE11E44DC7D" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -566,6 +569,7 @@
 				006BFF771F47ECF6474A5BEC /* AppNotificationDelegate.swift */,
 				A9890ED37D60C8905B534B1B /* BudgetAlertService.swift */,
 				4F3F9C54C1D2DA72AF0A7E20 /* Constants.swift */,
+				BD0F947ED632D40C4A0475CA /* ExpenseCSV.swift */,
 				DD7EF3229BCAC8E659489EC3 /* ExpenseTemplate.swift */,
 				D05C71D095137D6336BEE1E3 /* Logging.swift */,
 				BEC4928B37FA95E685A0726F /* MetricManager.swift */,
@@ -668,10 +672,10 @@
 			path = Subscription;
 			sourceTree = "<group>";
 		};
-		"TEMP_26F570CF-3D2D-4D93-849C-8F420E6CC503" /* ledger_lite */ = {
+		"TEMP_5D9F6EC7-2C41-4016-BBF9-2604BB44AC2C" /* ledger_lite */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_F83803D0-74BD-4287-A026-9F73ED219D31" /* Local.xcconfig */,
+				"TEMP_BFD38D09-42B8-47CD-B096-2DE11E44DC7D" /* Local.xcconfig */,
 			);
 			path = ledger_lite;
 			sourceTree = "<group>";
@@ -848,6 +852,7 @@
 				E193A504F42AAEA68F6E85A4 /* ExchangeRateCacheRepository.swift in Sources */,
 				8EF83068DDBB203CF2631BCA /* ExchangeRateHostClient.swift in Sources */,
 				F8CDC1853FD51E232A11E685 /* Expense.swift in Sources */,
+				A951BC1F372A4E8B37D906C6 /* ExpenseCSV.swift in Sources */,
 				BE5CF48D08C61765166938E1 /* ExpenseFABs.swift in Sources */,
 				4CE3B7281CDE695F294705BE /* ExpenseFormSheet.swift in Sources */,
 				3503FF064710874E7882EB5C /* ExpenseFormViewModel.swift in Sources */,
@@ -918,6 +923,7 @@
 				BDEA2CC98BB2D86228A8E0AA /* Enums.swift in Sources */,
 				C722CAF22A878FB323EAA175 /* ExchangeRateCache.swift in Sources */,
 				5DC047C1941702D7EBCAA2F0 /* Expense.swift in Sources */,
+				647A7AEF717AD921A854FBF8 /* ExpenseCSV.swift in Sources */,
 				C53052389135A3C0579940F9 /* ExpenseTemplate.swift in Sources */,
 				1A4C733FA454E838478265A5 /* LedgerLiteMigrationPlan.swift in Sources */,
 				FD8E0315EE424FF4B4F0244F /* LedgerLiteWidget.swift in Sources */,
@@ -990,7 +996,7 @@
 /* Begin XCBuildConfiguration section */
 		3B2F164CD79B9819946D0E3B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_F83803D0-74BD-4287-A026-9F73ED219D31" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_BFD38D09-42B8-47CD-B096-2DE11E44DC7D" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1091,7 +1097,7 @@
 		};
 		65BA2CED960B86314443BB53 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_F83803D0-74BD-4287-A026-9F73ED219D31" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_BFD38D09-42B8-47CD-B096-2DE11E44DC7D" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
