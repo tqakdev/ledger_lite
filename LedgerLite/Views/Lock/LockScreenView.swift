@@ -1,6 +1,24 @@
 import SwiftUI
 import LocalAuthentication
 
+/// Opaque brand surface shown while the scene is inactive (app switcher, system
+/// sheets) so the snapshot iOS captures never contains financial data.
+struct PrivacyCoverView: View {
+    var body: some View {
+        ZStack {
+            Theme.heroGradient.ignoresSafeArea()
+            ZStack {
+                Circle()
+                    .fill(Theme.glow.opacity(0.12))
+                    .frame(width: 132, height: 132)
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 56, weight: .medium))
+                    .foregroundStyle(Theme.glow)
+            }
+        }
+    }
+}
+
 /// Privacy is the product's identity, so the lock screen is a full-bleed brand
 /// moment: the ink surface with a glow lock, mirroring the runway hero.
 struct LockScreenView: View {

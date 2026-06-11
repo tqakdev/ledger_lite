@@ -140,6 +140,13 @@ struct ContentView: View {
                 LockScreenView { isLocked = false }
                     .transition(.opacity)
                     .zIndex(1)
+            } else if biometricLockEnabled && scenePhase != .active {
+                // The app-switcher snapshot is taken while the scene is inactive — cover
+                // balances and expenses before it happens. (.background alone is too late;
+                // the lock itself only engages there.)
+                PrivacyCoverView()
+                    .transition(.opacity)
+                    .zIndex(2)
             }
         }
         .fullScreenCover(isPresented: Binding(
