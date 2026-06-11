@@ -141,12 +141,16 @@ final class ForecastViewModel {
     // MARK: - Currency
 
     /// Best-effort conversion of a subscription amount to home-currency minor units.
-    /// Same currency is exact; otherwise a cached EUR-pivot cross rate is used when present,
-    /// falling back to the face amount (most users are single-currency).
+    /// Same currency is exact. Otherwise a cached EUR-pivot cross rate is used — first for
+    /// the billing date itself, then for today: future billing dates never have a cached
+    /// rate (rates are cached for today and the past), so today's rate is the freshest
+    /// estimate available. Only when no rate is cached at all does the face amount pass
+    /// through (most users are single-currency).
     private func homeAmountMinor(for sub: Subscription, on date: Date) -> Int {
         let home = homeCurrencyCode
         if sub.currencyCode == home { return sub.amountMinor }
-        guard let rate = cachedCrossRate(from: sub.currencyCode, to: home, on: date) else {
+        guard let rate = cachedCrossRate(from: sub.currencyCode, to: home, on: date)
+                ?? cachedCrossRate(from: sub.currencyCode, to: home, on: Date.utcToday) else {
             return sub.amountMinor
         }
         return sub.money.converted(to: home, rate: rate).minorUnits
