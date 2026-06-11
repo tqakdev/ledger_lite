@@ -2,6 +2,27 @@
 
 *Session: June 11, 2026 · branch `audit/e2e-improvement` · suite grew 164 → 186 tests, all green*
 
+> **Status update (June 12, 2026)** — completed since this report was written
+> (suite now 201 tests / 47 suites):
+>
+> - **B5 fixed** (`0697453`): switching home currency re-homes history at
+>   historical rates and converts the runway balance, payday income, and
+>   budgets at today's rate. (§3, P0 #1)
+> - **Receipt parser upgraded** (`ef29e8c`): discounts captured as negative
+>   line items (incl. German trailing-minus and US parens), add-on tax
+>   captured when arithmetic proves it, item search bounded by the labeled
+>   total row, German/French/Spanish/Italian/Dutch/Turkish keywords.
+> - **Optimizations #1–#4 done** (`17bdc98`): Today-tab single-fetch metrics,
+>   search predicate pushdown (+ stale-results-after-delete bug fix),
+>   `Money.formatted()` cache, widget container reuse. (§4, §6 P1 #4/#6, P2 #8)
+> - **Test-isolation fix** (`f77c8bc`): subscription generation coalescing is
+>   keyed by store, unblocking parallel test suites.
+>
+> Still open: CSV import dedup (P0 #2), the manual device QA pass (P0 #3),
+> XCUITest smoke pack (P1 #5), date-handling pass (P1 #7), Insights heatmap
+> fetch merge (§4 #5), Keychain for runway prefs and the pre-CloudKit audit
+> (P2 #9–#10).
+
 ## 1. Current state
 
 **Architecture** — SwiftUI + SwiftData (iOS 17+), MVVM with thin repositories, XcodeGen-managed project. Three layers hold financial logic: pure engines (`Money`, `RunwayForecast`, parsers — excellent test coverage), `@MainActor` services (currency, subscriptions — good coverage), and view models (partial coverage). A widget extension shares the store via App Group; Siri/Shortcuts intents open their own containers against the same store.

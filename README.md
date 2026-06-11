@@ -1,19 +1,25 @@
 # LedgerLite
 
-A clean, privacy-first expense and subscription tracker for iOS. Built with SwiftUI and SwiftData — no accounts, no cloud required.
+A clean, privacy-first expense and subscription tracker for iOS. Built with SwiftUI and SwiftData — no accounts, no cloud required, everything on device.
 
 ## Features
 
-- **Quick Add** — log an expense in seconds with a large amount field, category picker, merchant suggestions, and quick-add templates
-- **Today view** — see today's total, compare against your 30-day daily average, and swipe to edit or delete
-- **History** — browse by day with date navigation and full-text search across all expenses
-- **Subscriptions** — track recurring bills, see your estimated monthly cost, pause/resume/cancel, and get renewal reminders
-- **Auto-detect** — paste a billing email or SMS and let the app extract subscription details automatically
-- **Insights** — spending by category (donut chart), daily/monthly trends (bar chart), budget progress, and top merchant — across week, month, year, or all time
-- **Multi-currency** — live exchange rates via Frankfurter; amounts stored in minor units so rounding is exact
-- **Widget** — Today total on your Home Screen or Lock Screen
-- **CSV export** — one tap to export all expenses
-- **Budgets** — set monthly limits per category; get notified when you approach or exceed them
+- **Quick Add** — log an expense in seconds with a large amount numpad, category strip, merchant suggestions, and reusable templates
+- **Receipt scanning** — point the camera at a receipt (or pick a photo) and on-device Vision OCR pre-fills the amount, merchant, date, and currency. Line items land in the note as an itemized breakdown — including discounts and add-on tax, so the breakdown sums to what you were charged. Works across languages (English, German, Portuguese, Spanish, French, …)
+- **Runway forecast** — enter your balance and next payday to get a *truly safe to spend per day* figure, a what-if simulator, and the bills due before payday
+- **Spending log** — browse by day, with fast case- and diacritic-insensitive search across all expenses ("cafe" finds "Café") and category filters
+- **Bills** — track recurring subscriptions with any billing cycle, pause/resume/cancel, see the estimated monthly cost, and get reminders 2 days before each renewal
+- **Auto-detect** — paste a billing email or SMS and the app extracts the subscription details
+- **Insights** — spending by category, daily/monthly trends, budget progress, daily heatmap, and top merchant — across week, month, year, or all time
+- **Budgets** — monthly limits per category with alerts at 80% and 100%
+- **Multi-currency done right** — amounts are stored as integer minor units with the exchange rate frozen at entry, so historical totals never drift. Switching home currency re-converts your history at each expense's own historical rate. Live rates come from Frankfurter with an automatic fallback provider
+- **Siri & Shortcuts** — "Log an expense" and "What's today's total" work hands-free
+- **Widgets** — Today total, Runway safe-to-spend, and upcoming Bills on your Home Screen or Lock Screen
+- **Face ID lock** — optional biometric lock, with a privacy cover so balances never show in the app switcher
+- **Spotlight** — logged expenses are searchable from system-wide search
+- **CSV backup** — export expenses and subscriptions; re-import expenses on a new device
+
+Privacy: there are no accounts, no analytics, and no servers. The only network traffic is fetching exchange rates from keyless public APIs.
 
 ## Requirements
 
@@ -24,13 +30,16 @@ A clean, privacy-first expense and subscription tracker for iOS. Built with Swif
 ## Getting started
 
 ```bash
-git clone https://github.com/bluemadisonblue/ledger_lite.git
+git clone https://github.com/tqakdev/ledger_lite.git
 cd ledger_lite
 xcodegen generate
 open LedgerLite.xcodeproj
 ```
 
-The `.xcodeproj` is generated from `project.yml` and is not committed to version control. Run `xcodegen generate` whenever `project.yml` changes.
+The Xcode project is generated from `project.yml`. The generated
+`project.pbxproj` **is** committed (so the repo builds out of the box), but it
+is never edited by hand: change `project.yml`, re-run `xcodegen generate`, and
+commit the regenerated file — also after adding or removing source files.
 
 ### Run on your iPhone (free Apple ID)
 
@@ -47,23 +56,35 @@ MVVM with a clean layered separation: Views talk only to ViewModels; ViewModels 
 
 | Layer | Path | Responsibility |
 |-------|------|----------------|
-| Models | `LedgerLite/Models/` | SwiftData entities (`Expense`, `Category`, `Subscription`) |
+| Models | `LedgerLite/Models/` | SwiftData entities (`Expense`, `Category`, `Subscription`) + `Money` |
 | Views | `LedgerLite/Views/` | SwiftUI screens and components |
 | ViewModels | `LedgerLite/ViewModels/` | `@Observable` + `@MainActor`; owns UI state |
 | Repositories | `LedgerLite/Repositories/` | SwiftData fetch/insert/delete |
-| Services | `LedgerLite/Services/` | Currency rates, notifications, Spotlight, CSV |
-| Utilities | `LedgerLite/Utilities/` | `Money` type, `UserPreferences`, extensions |
-| Widget | `LedgerLiteWidget/` | WidgetKit extension |
-| Tests | `LedgerLiteTests/` | Unit tests for models, ViewModels, services |
+| Services | `LedgerLite/Services/` | Currency rates, receipt OCR, subscriptions, Siri intents, widgets |
+| Utilities | `LedgerLite/Utilities/` | CSV, Spotlight, budget alerts, `UserPreferences`, extensions |
+| Widget | `LedgerLiteWidget/` | WidgetKit extension (Today, Runway, Bills) |
+| Tests | `LedgerLiteTests/` | 200+ unit tests across models, ViewModels, services, parsers |
 
 **Key design decisions:**
 
 - All money is stored as `Int` (minor units, e.g. cents). `Double` is never used for monetary values.
-- Exchange rates are frozen at entry time (`exchangeRateToHome`) so historical totals never drift.
+- Exchange rates are frozen at entry time (`exchangeRateToHome`) so historical totals never drift; every aggregation converts through one canonical helper (`Expense.homeMinorDecimal`) and rounds once at the end.
+- Receipt parsing is pure and fully unit-tested: Vision feeds geometry-reconstructed rows (`ReceiptLineGrouper`) into stateless heuristics (`ReceiptTextParser`) — no UI, no OCR needed in tests.
 - `@Observable` macro throughout — no `ObservableObject`, no `@Published`.
 - All async work uses structured concurrency (`async/await`, `Task`). No Combine.
 - User-facing strings use `String(localized:)` — localization-ready.
-- Logging uses `os.Logger` per subsystem.
+- Logging uses `os.Logger` per subsystem, with default redaction protecting amounts and merchants in release builds.
+
+## Testing
+
+```bash
+xcodebuild -project LedgerLite.xcodeproj -scheme LedgerLite \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
+```
+
+The financial core (money math, currency conversion, forecasting, parsers) is
+covered by characterization tests pinned to real-world data — including
+real-receipt OCR output in several languages.
 
 ## CloudKit sync (future)
 
