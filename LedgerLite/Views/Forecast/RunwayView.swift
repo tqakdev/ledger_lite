@@ -53,6 +53,12 @@ struct RunwayView: View {
             if forecastVM == nil { forecastVM = ForecastViewModel(context: modelContext) }
             viewModel?.refresh()
             forecastVM?.refresh()
+            // A scan deep link may have arrived before this view was first built —
+            // the notification below only reaches an already-subscribed view.
+            if PendingDeepLink.scanRequested {
+                PendingDeepLink.scanRequested = false
+                viewModel?.presentScan()
+            }
         }
         .sheet(item: sheetBinding) { sheet in
             ExpenseFormSheet(mode: sheet.formMode, autoScan: sheet.startsWithScan) {

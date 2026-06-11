@@ -71,6 +71,14 @@ extension SummaryCard where Supplement == EmptyView {
     }
 }
 
+/// Deep-link requests that target a view the lazy TabView may not have built yet.
+/// `ledgerlite://scan` switches to the Runway tab and posts a notification, but a
+/// never-visited RunwayView has no subscriber at post time — the flag survives until
+/// its `onAppear` consumes it.
+enum PendingDeepLink {
+    static var scanRequested = false
+}
+
 struct ContentView: View {
     @State private var selectedTab: Int = 0
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
@@ -114,8 +122,16 @@ struct ContentView: View {
                 case "settings":
                     selectedTab = 3
                 case "scan":
-                    selectedTab = 0
-                    NotificationCenter.default.post(name: Notification.Name("LedgerLitePresentScan"), object: nil)
+                    if selectedTab == 0 {
+                        // Runway is visible — its onReceive can present immediately.
+                        NotificationCenter.default.post(name: Notification.Name("LedgerLitePresentScan"), object: nil)
+                    } else {
+                        // Runway is hidden (or never built): posting now would reach a view
+                        // that can't present a sheet. Park the request; RunwayView.onAppear
+                        // consumes it right after the tab switch.
+                        PendingDeepLink.scanRequested = true
+                        selectedTab = 0
+                    }
                 default: break
                 }
             }
