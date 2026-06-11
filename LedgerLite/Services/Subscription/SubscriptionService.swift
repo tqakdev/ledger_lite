@@ -27,12 +27,28 @@ final class SubscriptionService {
     /// For every active subscription whose `nextBillingDate` is strictly before `referenceDate`,
     /// generates one `Expense` per missed cycle and advances `nextBillingDate` until it is
     /// in the future. Safe to call on every app launch — already-generated dates are skipped.
+    ///
+    /// Concurrent calls are coalesced: the rate fetch suspends mid-loop, so two overlapping
+    /// passes (app launch + Bills tab refresh, or a form save) would otherwise both see the
+    /// stale `nextBillingDate` and double-generate the same cycle.
     func generatePendingExpenses(referenceDate: Date = Date.utcToday) async throws {
-        let active = try subscriptionRepository.fetchActive()
-        for sub in active {
-            try await generateExpenses(for: sub, referenceDate: referenceDate)
+        if let inFlight = Self.generationTask {
+            try await inFlight.value
+            return
         }
+        let task = Task { [self] in
+            defer { Self.generationTask = nil }
+            let active = try subscriptionRepository.fetchActive()
+            for sub in active {
+                try await generateExpenses(for: sub, referenceDate: referenceDate)
+            }
+        }
+        Self.generationTask = task
+        try await task.value
     }
+
+    /// Single in-flight generation pass shared across all service instances (MainActor-confined).
+    private static var generationTask: Task<Void, any Error>?
 
     // MARK: - Notifications
 

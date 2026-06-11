@@ -62,6 +62,15 @@ private struct AlwaysOneRateFetcher: RateFetching {
     }
 }
 
+// Rate fetcher that suspends before answering, forcing an actor hop mid-generation —
+// reproduces the window where a second generation pass can interleave.
+private struct SlowOneRateFetcher: RateFetching {
+    func fetchRates(base: String, quotes: [String], on date: Date) async throws -> [String: Decimal] {
+        try await Task.sleep(for: .milliseconds(50))
+        return Dictionary(uniqueKeysWithValues: quotes.map { ($0, Decimal(1)) })
+    }
+}
+
 // MARK: - Cycle advancement
 
 @Suite("SubscriptionService — cycle advancement", .serialized)
@@ -129,6 +138,64 @@ struct SubscriptionCycleAdvancementTests {
 
         let expenses = try container.mainContext.fetch(FetchDescriptor<Expense>())
         #expect(expenses.count == 1)
+    }
+
+    @Test("Bills tab refresh does not destroy pending expense generation")
+    @MainActor
+    func billsTabRefreshKeepsMissedCycles() async throws {
+        let container = try SubscriptionTestHarness.makeContainer()
+        let service = SubscriptionTestHarness.makeService(container: container)
+        // Two months overdue → two missed cycles that must become Expenses.
+        let twoMonthsAgo = Calendar.current.date(byAdding: .month, value: -2, to: Date())!
+        _ = try SubscriptionTestHarness.makeSub(
+            billingCycle: .monthly,
+            nextBillingDate: twoMonthsAgo,
+            context: container.mainContext
+        )
+
+        // Simulate the user opening the Bills tab *before* launch generation ran.
+        UserPreferences.homeCurrencyCode = "USD"   // match the USD sub → no network in either pass
+        let vm = SubscriptionsViewModel(context: container.mainContext)
+        vm.refresh()
+
+        // Launch generation runs afterwards — it must still see the overdue dates.
+        try await service.generatePendingExpenses()
+        await vm.refreshTask?.value   // drain the tab's own pass before teardown
+
+        let expenses = try container.mainContext.fetch(FetchDescriptor<Expense>())
+        #expect(expenses.count == 2, "missed billing cycles must be recorded as expenses, not silently skipped")
+    }
+
+    @Test("Concurrent generation passes do not double-generate")
+    @MainActor
+    func concurrentGenerationIsCoalesced() async throws {
+        let container = try SubscriptionTestHarness.makeContainer()
+        // EUR sub with USD home → the rate fetch suspends mid-loop (SlowOneRateFetcher).
+        let service = SubscriptionService(
+            context: container.mainContext,
+            homeCurrencyCode: "USD",
+            currencyService: CurrencyService(
+                context: container.mainContext,
+                primary: SlowOneRateFetcher(),
+                fallback: SlowOneRateFetcher()
+            )
+        )
+        let jan1 = SubscriptionTestHarness.jan1
+        let oneMonthAgo = Calendar.current.date(byAdding: .month, value: -1, to: jan1)!
+        _ = try SubscriptionTestHarness.makeSub(
+            currencyCode: "EUR",
+            billingCycle: .monthly,
+            nextBillingDate: oneMonthAgo,
+            context: container.mainContext
+        )
+
+        // Launch-time pass and a Bills-tab pass running concurrently.
+        async let first: Void = service.generatePendingExpenses(referenceDate: jan1)
+        async let second: Void = service.generatePendingExpenses(referenceDate: jan1)
+        _ = try await (first, second)
+
+        let expenses = try container.mainContext.fetch(FetchDescriptor<Expense>())
+        #expect(expenses.count == 1, "the one missed cycle must produce exactly one expense")
     }
 
     @Test("Future nextBillingDate — no expenses generated")

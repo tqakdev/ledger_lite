@@ -39,6 +39,8 @@ final class SubscriptionsViewModel {
     private let subscriptionRepository: SubscriptionRepository
     private let currencyService: CurrencyService
     private let subscriptionService: SubscriptionService
+    /// In-flight refresh pass. Internal so tests can await completion before teardown.
+    @ObservationIgnored private(set) var refreshTask: Task<Void, Never>?
 
     init(context: ModelContext) {
         self.subscriptionRepository = SubscriptionRepository(context: context)
@@ -50,35 +52,33 @@ final class SubscriptionsViewModel {
 
     func refresh() {
         homeCurrencyCode = UserPreferences.homeCurrencyCode
-        do {
-            subscriptions = try subscriptionRepository.fetchAll()
-            advanceOverdueBillingDates()
-            errorMessage = nil
-        } catch {
-            errorMessage = error.localizedDescription
-            AppLogger.subscriptions.error("Subscriptions refresh failed: \(error)")
-        }
-        Task {
+        loadSubscriptions()
+        refreshTask?.cancel()
+        refreshTask = Task {
+            // Record any missed billing cycles as expenses and advance the billing
+            // dates via the one shared generation pass. (An earlier version advanced
+            // overdue dates here *without* generating expenses, silently losing the
+            // missed cycles when this tab refreshed before the launch pass ran.)
+            do {
+                try await subscriptionService.generatePendingExpenses()
+            } catch {
+                AppLogger.subscriptions.error("Pending expense generation failed on Bills refresh: \(error)")
+            }
+            guard !Task.isCancelled else { return }
+            loadSubscriptions()   // pick up advanced billing dates
             await checkNotificationStatus()
+            guard !Task.isCancelled else { return }
             await computeMonthlyCost()
         }
     }
 
-    private func advanceOverdueBillingDates() {
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
-        for sub in subscriptions where sub.status == .active && sub.nextBillingDate < today {
-            var next = sub.nextBillingDate
-            while next < today {
-                switch sub.billingCycle {
-                case .weekly:            next = cal.date(byAdding: .day,   value: 7, to: next) ?? next
-                case .monthly:           next = cal.date(byAdding: .month, value: 1, to: next) ?? next
-                case .yearly:            next = cal.date(byAdding: .year,  value: 1, to: next) ?? next
-                case .customDays(let n): next = cal.date(byAdding: .day,   value: n, to: next) ?? next
-                }
-            }
-            sub.nextBillingDate = next
-            try? subscriptionRepository.update(sub)
+    private func loadSubscriptions() {
+        do {
+            subscriptions = try subscriptionRepository.fetchAll()
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+            AppLogger.subscriptions.error("Subscriptions refresh failed: \(error)")
         }
     }
 
