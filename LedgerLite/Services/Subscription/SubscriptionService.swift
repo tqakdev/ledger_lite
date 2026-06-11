@@ -10,6 +10,8 @@ final class SubscriptionService {
     private let expenseRepository: ExpenseRepository
     private let currencyService: CurrencyService
     private let homeCurrencyCode: String
+    /// Identifies the backing store so generation passes are coalesced per-store (see below).
+    private let storeID: ObjectIdentifier
 
     init(
         context: ModelContext,
@@ -20,6 +22,7 @@ final class SubscriptionService {
         self.expenseRepository = ExpenseRepository(context: context)
         self.homeCurrencyCode = homeCurrencyCode
         self.currencyService = currencyService ?? CurrencyService(context: context)
+        self.storeID = ObjectIdentifier(context.container)
     }
 
     // MARK: - Expense generation
@@ -32,23 +35,27 @@ final class SubscriptionService {
     /// passes (app launch + Bills tab refresh, or a form save) would otherwise both see the
     /// stale `nextBillingDate` and double-generate the same cycle.
     func generatePendingExpenses(referenceDate: Date = Date.utcToday) async throws {
-        if let inFlight = Self.generationTask {
+        if let inFlight = Self.generationTasks[storeID] {
             try await inFlight.value
             return
         }
         let task = Task { [self] in
-            defer { Self.generationTask = nil }
+            defer { Self.generationTasks[storeID] = nil }
             let active = try subscriptionRepository.fetchActive()
             for sub in active {
                 try await generateExpenses(for: sub, referenceDate: referenceDate)
             }
         }
-        Self.generationTask = task
+        Self.generationTasks[storeID] = task
         try await task.value
     }
 
-    /// Single in-flight generation pass shared across all service instances (MainActor-confined).
-    private static var generationTask: Task<Void, any Error>?
+    /// In-flight generation passes keyed by backing store (MainActor-confined). Coalescing
+    /// two passes is only correct when they target the same store — in the app every caller
+    /// shares the one `mainContext`, so launch + Bills-tab refresh still coalesce. Keying by
+    /// store prevents a pass against one container (e.g. a parallel test's in-memory store)
+    /// from satisfying a pass against another.
+    private static var generationTasks: [ObjectIdentifier: Task<Void, any Error>] = [:]
 
     // MARK: - Notifications
 
