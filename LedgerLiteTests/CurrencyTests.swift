@@ -236,6 +236,139 @@ struct CurrencyRehydrateTests {
     }
 }
 
+@Suite("CurrencyService — re-home on currency switch", .serialized)
+struct CurrencyRehomeTests {
+
+    private static let eurUSD = Decimal(string: "1.1643", locale: Locale(identifier: "en_US_POSIX"))!
+
+    // B5: switching home currency must convert existing history at the historical
+    // rate, not re-label $10 as €10 at face value.
+    @Test("re-home converts a home-currency expense at the historical rate")
+    @MainActor
+    func rehomeConvertsExpenseAtHistoricalRate() async throws {
+        let container = try CurrencyTestHarness.makeContainer()
+        let context = container.mainContext
+
+        // $10.00 logged while home was USD — stored verbatim, rate 1.
+        let expense = Expense(
+            amountMinor: 1000,
+            currencyCode: "USD",
+            exchangeRateToHome: 1,
+            homeCurrencyAtEntry: "USD",
+            date: Date()
+        )
+        context.insert(expense)
+        try context.save()
+
+        let primary = StubRateFetcher(label: "primary", result: .success(["USD": Self.eurUSD]))
+        let fallback = StubRateFetcher(label: "fallback", result: .success([:]))
+        let service = CurrencyTestHarness.makeService(
+            container: container, primary: primary, fallback: fallback
+        )
+
+        try await service.rehomeStoredData(from: "USD", to: "EUR")
+
+        let usdToEUR = Decimal(1) / Self.eurUSD
+        #expect(expense.homeCurrencyAtEntry == "EUR")
+        #expect(expense.needsRateRefresh == false)
+        #expect(expense.exchangeRateToHome == usdToEUR)
+
+        // The total now reads in EUR, converted — not $10 mislabeled as €10.
+        let expected = Money(minorUnits: 1000, currencyCode: "USD")
+            .converted(to: "EUR", rate: usdToEUR).minorUnits
+        #expect([expense].totalInHomeCurrency("EUR") == expected)
+        #expect(expected != 1000)   // guards against the face-value bug
+    }
+
+    // An expense already in the new home currency short-circuits to rate 1 — no
+    // network round-trip needed for that row.
+    @Test("re-home leaves an expense already in the new home at rate 1")
+    @MainActor
+    func rehomeShortCircuitsNewHomeCurrency() async throws {
+        let container = try CurrencyTestHarness.makeContainer()
+        let context = container.mainContext
+
+        // €25.00 logged while home was USD (foreign at the time).
+        let expense = Expense(
+            amountMinor: 2500,
+            currencyCode: "EUR",
+            exchangeRateToHome: Self.eurUSD,
+            homeCurrencyAtEntry: "USD",
+            date: Date()
+        )
+        context.insert(expense)
+        try context.save()
+
+        let primary = StubRateFetcher(label: "primary", result: .success([:]))
+        let fallback = StubRateFetcher(label: "fallback", result: .success([:]))
+        let service = CurrencyTestHarness.makeService(
+            container: container, primary: primary, fallback: fallback
+        )
+
+        try await service.rehomeStoredData(from: "USD", to: "EUR")
+
+        #expect(expense.homeCurrencyAtEntry == "EUR")
+        #expect(expense.exchangeRateToHome == 1)
+        #expect(expense.needsRateRefresh == false)
+        #expect([expense].totalInHomeCurrency("EUR") == 2500)
+    }
+
+    // Category budgets are denominated in home currency too — convert at today's rate.
+    @Test("re-home converts category budgets at today's rate")
+    @MainActor
+    func rehomeConvertsBudgets() async throws {
+        let container = try CurrencyTestHarness.makeContainer()
+        let context = container.mainContext
+
+        let category = Category(
+            name: "Groceries", iconName: "cart.fill", colorHex: "#45B7D1",
+            monthlyBudgetMinor: 50000   // $500.00
+        )
+        context.insert(category)
+        try context.save()
+
+        let primary = StubRateFetcher(label: "primary", result: .success(["USD": Self.eurUSD]))
+        let fallback = StubRateFetcher(label: "fallback", result: .success([:]))
+        let service = CurrencyTestHarness.makeService(
+            container: container, primary: primary, fallback: fallback
+        )
+
+        try await service.rehomeStoredData(from: "USD", to: "EUR")
+
+        let usdToEUR = Decimal(1) / Self.eurUSD
+        let expected = Money(minorUnits: 50000, currencyCode: "USD")
+            .converted(to: "EUR", rate: usdToEUR).minorUnits
+        #expect(category.monthlyBudgetMinor == expected)
+        #expect(expected != 50000)
+    }
+
+    // Tapping the already-selected currency must not rewrite anything.
+    @Test("re-home is a no-op when from == to")
+    @MainActor
+    func rehomeNoOpWhenUnchanged() async throws {
+        let container = try CurrencyTestHarness.makeContainer()
+        let context = container.mainContext
+        let expense = Expense(
+            amountMinor: 1000, currencyCode: "USD",
+            exchangeRateToHome: 1, homeCurrencyAtEntry: "USD", date: Date()
+        )
+        context.insert(expense)
+        try context.save()
+
+        let primary = StubRateFetcher(label: "primary", result: .failure(CurrencyError.decodingFailed))
+        let fallback = StubRateFetcher(label: "fallback", result: .failure(CurrencyError.decodingFailed))
+        let service = CurrencyTestHarness.makeService(
+            container: container, primary: primary, fallback: fallback
+        )
+
+        try await service.rehomeStoredData(from: "USD", to: "USD")
+
+        #expect(expense.homeCurrencyAtEntry == "USD")
+        #expect(expense.exchangeRateToHome == 1)
+        #expect(expense.needsRateRefresh == false)
+    }
+}
+
 // MARK: - FrankfurterClient (HTTP mock)
 
 @Suite("FrankfurterClient — HTTP", .serialized)

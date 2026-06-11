@@ -496,16 +496,12 @@ private struct HomeCurrencyPickerView: View {
     @AppStorage("homeCurrencyCode", store: UserDefaults(suiteName: Constants.App.appGroupIdentifier))
     private var selected = Constants.App.homeCurrencyDefault
 
+    @State private var isRehoming = false
+
     var body: some View {
         List(Constants.App.supportedCurrencies, id: \.self) { code in
             Button {
-                selected = code
-                WidgetCenter.shared.reloadAllTimelines()
-                // Background rate fetch — idempotent, failure is silent
-                Task {
-                    try? await CurrencyService(context: modelContext)
-                        .ensureTodayRates(for: Constants.App.supportedCurrencies)
-                }
+                changeCurrency(to: code)
             } label: {
                 HStack {
                     Text(code).foregroundStyle(.primary)
@@ -522,8 +518,36 @@ private struct HomeCurrencyPickerView: View {
             }
             .buttonStyle(.plain)
         }
+        .disabled(isRehoming)
+        .overlay {
+            if isRehoming {
+                ProgressView(String(localized: "Converting your data…"))
+                    .padding(20)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+            }
+        }
         .navigationTitle(String(localized: "Home Currency"))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func changeCurrency(to code: String) {
+        let oldCode = selected
+        guard code != oldCode else { return }
+        selected = code   // flip the stored home currency immediately
+        isRehoming = true
+        Task {
+            let service = CurrencyService(context: modelContext)
+            // Pre-warm today's rates; the re-home itself fetches what it needs.
+            try? await service.ensureTodayRates(for: Constants.App.supportedCurrencies)
+            do {
+                // Re-express existing expenses, balance, income, and budgets in `code`.
+                try await service.rehomeStoredData(from: oldCode, to: code)
+            } catch {
+                AppLogger.currency.error("Re-home after currency switch failed: \(error)")
+            }
+            isRehoming = false
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 }
 

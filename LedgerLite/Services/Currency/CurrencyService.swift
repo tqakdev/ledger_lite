@@ -5,6 +5,7 @@ import SwiftData
 final class CurrencyService {
     private let cacheRepository: ExchangeRateCacheRepository
     private let expenseRepository: ExpenseRepository
+    private let categoryRepository: CategoryRepository
     private let primary: RateFetching
     private let fallback: RateFetching
 
@@ -15,6 +16,7 @@ final class CurrencyService {
     ) {
         self.cacheRepository = ExchangeRateCacheRepository(context: context)
         self.expenseRepository = ExpenseRepository(context: context)
+        self.categoryRepository = CategoryRepository(context: context)
         self.primary = primary
         self.fallback = fallback
     }
@@ -74,6 +76,78 @@ final class CurrencyService {
         }
         try expenseRepository.savePendingChanges()
         AppLogger.currency.info("Rehydrated \(stale.count) stale expense rate(s)")
+    }
+
+    /// Re-homes every stored financial figure after the user changes their home currency.
+    ///
+    /// Without this, switching home currency only re-labels totals: a $10 expense logged
+    /// under a USD home would be summed as €10 once the home is EUR (B5). Here, expenses
+    /// keep their original amount and currency but are re-expressed against `newHome` —
+    /// `homeCurrencyAtEntry` is rewritten and each still-foreign row is flagged for a
+    /// historical-rate refresh, then patched via the same `needsRateRefresh` path used for
+    /// offline entry. The runway balance, payday income, and category budgets are
+    /// point-in-time figures, so they convert at today's `oldHome → newHome` rate.
+    ///
+    /// Offline-safe: expense rows that can't be refreshed stay flagged (the launch-time
+    /// rehydration heals them later); the point-in-time figures are left untouched rather
+    /// than converted with a guessed rate.
+    func rehomeStoredData(from oldHome: String, to newHome: String) async throws {
+        guard oldHome != newHome else { return }
+
+        try rehomeExpenses(to: newHome)
+
+        // Patch historical rates for the now-foreign rows. No-op offline; relaunch heals.
+        try await rehydrateStaleRates()
+
+        // Point-in-time figures convert at today's rate. Best-effort: skip rather than
+        // corrupt with a guessed rate when offline.
+        if let todayRate = try? await rate(from: oldHome, to: newHome, on: Date()) {
+            try rehomePointInTimeFigures(from: oldHome, to: newHome, rate: todayRate)
+        }
+    }
+
+    /// Rewrites each expense's home reference to `newHome`, flagging still-foreign rows
+    /// for a historical-rate refresh. Amount and source currency are never touched.
+    private func rehomeExpenses(to newHome: String) throws {
+        let all = try expenseRepository.fetchAll()
+        for expense in all {
+            expense.homeCurrencyAtEntry = newHome
+            if expense.currencyCode == newHome {
+                // Already in the new home — its own face value is the home value.
+                expense.exchangeRateToHome = 1
+                expense.needsRateRefresh = false
+            } else {
+                // Stale until rehydrated; the old rate stays as a transient placeholder.
+                expense.needsRateRefresh = true
+            }
+        }
+        try expenseRepository.savePendingChanges()
+    }
+
+    /// Converts the runway balance, payday income, and category budgets — all stored in
+    /// home-currency minor units — at the supplied `oldHome → newHome` rate.
+    private func rehomePointInTimeFigures(from oldHome: String, to newHome: String, rate: Decimal) throws {
+        func convert(_ minor: Int) -> Int {
+            Money(minorUnits: minor, currencyCode: oldHome).converted(to: newHome, rate: rate).minorUnits
+        }
+
+        if let balance = UserPreferences.availableBalanceMinor {
+            UserPreferences.availableBalanceMinor = convert(balance)
+            // The cached safe-to-spend was derived from the old-currency balance; drop it
+            // so ForecastViewModel recomputes against the converted figure.
+            UserPreferences.cachedSafeToSpendMinor = nil
+        }
+        if let income = UserPreferences.paydayIncomeMinor {
+            UserPreferences.paydayIncomeMinor = convert(income)
+        }
+
+        let categories = try categoryRepository.fetchAll()
+        for category in categories {
+            if let budget = category.monthlyBudgetMinor {
+                category.monthlyBudgetMinor = convert(budget)
+            }
+        }
+        try expenseRepository.savePendingChanges()
     }
 
     // MARK: - EUR pivot
