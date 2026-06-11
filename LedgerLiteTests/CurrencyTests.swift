@@ -173,6 +173,34 @@ struct CurrencyFallbackTests {
     }
 }
 
+@Suite("CurrencyService — rate validation", .serialized)
+struct CurrencyRateValidationTests {
+
+    /// A provider decode glitch can yield Decimal.zero (Decimal(safeString:) falls back to
+    /// .zero). Caching it would poison every cross-rate for the rest of the UTC day, because
+    /// insertIfAbsent never overwrites. Zero must be rejected at the cache boundary.
+    @Test("zero rate from a provider is not cached and does not poison the day")
+    @MainActor
+    func zeroRateRejected() async throws {
+        let container = try CurrencyTestHarness.makeContainer()
+        let primary = StubRateFetcher(label: "primary", result: .success(["USD": 0]))
+        let fallback = StubRateFetcher(label: "fallback", result: .success(["USD": 0]))
+        let service = CurrencyTestHarness.makeService(
+            container: container,
+            primary: primary,
+            fallback: fallback
+        )
+
+        await #expect(throws: CurrencyError.self) {
+            _ = try await service.rate(from: "USD", to: "EUR", on: Date.utcToday)
+        }
+
+        // The poisoned value must not be cached — a later fetch can still heal the day.
+        let repo = ExchangeRateCacheRepository(context: container.mainContext)
+        #expect(try repo.cachedRate(base: "EUR", quote: "USD", on: Date.utcToday) == nil)
+    }
+}
+
 @Suite("CurrencyService — rehydrate stale rates", .serialized)
 struct CurrencyRehydrateTests {
 

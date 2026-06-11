@@ -138,6 +138,14 @@ final class CurrencyService {
 
     private func cacheEURRates(_ rates: [String: Decimal], on date: Date) throws {
         for (quote, rate) in rates {
+            // A decode glitch can surface as Decimal.zero (Decimal(safeString:) falls back
+            // to .zero). insertIfAbsent never overwrites, so caching a non-positive rate
+            // would poison every cross-rate for the rest of the UTC day. Skip it; the next
+            // fetch attempt can still heal the cache.
+            guard rate > 0 else {
+                AppLogger.currency.error("Discarding non-positive rate EUR→\(quote): \(rate)")
+                continue
+            }
             _ = try cacheRepository.insertIfAbsent(
                 base: "EUR",
                 quote: quote,
