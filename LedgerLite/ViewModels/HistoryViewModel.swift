@@ -69,8 +69,7 @@ final class HistoryViewModel {
             result = result.filter { $0.category?.id == catId }
         }
         if !searchText.isEmpty {
-            let q = searchText.lowercased()
-            result = result.filter { matches($0, query: q) }
+            result = result.filter { matches($0, query: searchText) }
         }
         return result
     }
@@ -91,17 +90,33 @@ final class HistoryViewModel {
         searchTask = Task {
             try? await Task.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else { return }
-            performGlobalSearch()
+            runGlobalSearchNow()
         }
     }
 
-    private func performGlobalSearch() {
+    /// Search results are capped — nobody scrolls hundreds of matches, and the
+    /// cap keeps multi-year stores from being loaded into memory.
+    private static let searchResultLimit = 200
+
+    /// Executes the global search immediately (the debounce lives in
+    /// `scheduleSearch`). Internal so tests can drive it synchronously.
+    ///
+    /// The match runs in the store via `#Predicate` (`localizedStandardContains`
+    /// is case- and diacritic-insensitive) instead of fetching every expense and
+    /// filtering in memory.
+    func runGlobalSearchNow() {
         guard !searchText.isEmpty else { searchResults = []; return }
-        let q = searchText.lowercased()
-        guard let all = try? modelContext.fetch(
-            FetchDescriptor<Expense>(sortBy: [SortDescriptor(\.date, order: .reverse)])
-        ) else { return }
-        var results = all.filter { matches($0, query: q) }
+        let q = searchText
+        var descriptor = FetchDescriptor<Expense>(
+            predicate: #Predicate {
+                ($0.merchant?.localizedStandardContains(q) ?? false) ||
+                ($0.note?.localizedStandardContains(q) ?? false) ||
+                ($0.category?.name.localizedStandardContains(q) ?? false)
+            },
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        descriptor.fetchLimit = Self.searchResultLimit
+        var results = (try? modelContext.fetch(descriptor)) ?? []
         if let cat = selectedCategoryFilter {
             let catId = cat.id
             results = results.filter { $0.category?.id == catId }
@@ -146,6 +161,9 @@ final class HistoryViewModel {
             AppLogger.ui.error("History refresh failed: \(error)")
         }
         isLoading = false
+        // An active global search must reflect edits and deletes immediately —
+        // otherwise removed rows linger in the results list.
+        if isGlobalSearch { runGlobalSearchNow() }
     }
 
     func deleteExpense(_ expense: Expense) {
@@ -170,10 +188,12 @@ final class HistoryViewModel {
 
     // MARK: - Private
 
+    // Same case- and diacritic-insensitive match as the global search predicate,
+    // so the day filter and global results never disagree on what "matches".
     private func matches(_ expense: Expense, query: String) -> Bool {
-        (expense.merchant?.lowercased().contains(query) ?? false) ||
-        (expense.note?.lowercased().contains(query) ?? false) ||
-        (expense.category?.name.lowercased().contains(query) ?? false)
+        (expense.merchant?.localizedStandardContains(query) ?? false) ||
+        (expense.note?.localizedStandardContains(query) ?? false) ||
+        (expense.category?.name.localizedStandardContains(query) ?? false)
     }
 
     private func computeMonthTotal() -> Int {

@@ -74,14 +74,11 @@ final class TodayViewModel {
         // or trigger a duplicate budget check.
         metricsTask?.cancel()
         metricsTask = Task {
-            let average = computeDailyAverage()
-            let streak  = computeStreak()
-            let safe    = computeSafeToSpend()
-            guard !Task.isCancelled else { return }
-            dailyAverageMinor = average
-            currentStreak = streak
-            safeToSpendMinor = safe
-            BudgetAlertService(context: modelContext).checkBudgets()
+            guard let metrics = computeMetrics(), !Task.isCancelled else { return }
+            dailyAverageMinor = metrics.dailyAverage
+            currentStreak = metrics.streak
+            safeToSpendMinor = metrics.safeToSpend
+            BudgetAlertService(context: modelContext).checkBudgets(monthExpenses: metrics.monthExpenses)
         }
     }
 
@@ -107,18 +104,31 @@ final class TodayViewModel {
 
     // MARK: - Private
 
-    private func computeStreak() -> Int {
+    private struct Metrics {
+        let dailyAverage: Int
+        let streak: Int
+        let safeToSpend: Int?
+        let monthExpenses: [Expense]
+    }
+
+    /// Derives every Today-screen metric (streak, 30-day average, safe-to-spend)
+    /// plus the month slice for the budget check from **one** 366-day fetch.
+    /// This used to be four separate store-wide fetches per appear — re-triggered
+    /// by every sheet dismissal — all on the main actor.
+    private func computeMetrics() -> Metrics? {
         let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
-        // Cap the look-back at 366 days — no realistic streak exceeds a year
-        guard let cutoff = cal.date(byAdding: .day, value: -366, to: today) else { return 0 }
-        let since = cutoff
+        let now = Date()
+        let today = cal.startOfDay(for: now)
+        // Cap the look-back at 366 days — no realistic streak exceeds a year.
+        guard let cutoff = cal.date(byAdding: .day, value: -366, to: today) else { return nil }
         let fetched = (try? modelContext.fetch(
             FetchDescriptor<Expense>(
-                predicate: #Predicate { $0.date >= since },
+                predicate: #Predicate { $0.date >= cutoff },
                 sortBy: []
             )
         )) ?? []
+
+        // Streak: consecutive days (ending today) with at least one expense.
         let expenseDays = Set(fetched.map { cal.startOfDay(for: $0.date) })
         var streak = 0
         var checkDate = today
@@ -127,52 +137,43 @@ final class TodayViewModel {
             guard let prev = cal.date(byAdding: .day, value: -1, to: checkDate) else { break }
             checkDate = prev
         }
-        return streak
-    }
 
-    private func computeDailyAverage() -> Int {
-        let now = Date()
-        guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: now) else { return 0 }
-        do {
-            let since = thirtyDaysAgo
-            let upperBound = now
-            let recent = try modelContext.fetch(
-                FetchDescriptor<Expense>(
-                    predicate: #Predicate { $0.date >= since && $0.date <= upperBound },
-                    sortBy: []
-                )
-            )
-            guard !recent.isEmpty else { return 0 }
-            return recent.totalInHomeCurrency(homeCurrencyCode) / 30
-        } catch {
-            AppLogger.ui.error("Daily average failed: \(error)")
-            return 0
+        // 30-day daily average (future-dated entries excluded).
+        var dailyAverage = 0
+        if let thirtyDaysAgo = cal.date(byAdding: .day, value: -30, to: now) {
+            let recent = fetched.filter { $0.date >= thirtyDaysAgo && $0.date <= now }
+            if !recent.isEmpty {
+                dailyAverage = recent.totalInHomeCurrency(homeCurrencyCode) / 30
+            }
         }
+
+        // Current-month slice — feeds safe-to-spend and the budget alert check.
+        var monthComps = cal.dateComponents([.year, .month], from: now)
+        monthComps.day = 1
+        var monthExpenses: [Expense] = []
+        var safeToSpend: Int?
+        if let monthStart = cal.date(from: monthComps),
+           let monthEnd = cal.date(byAdding: .month, value: 1, to: monthStart) {
+            monthExpenses = fetched.filter { $0.date >= monthStart && $0.date < monthEnd }
+            safeToSpend = computeSafeToSpend(monthExpenses: monthExpenses, calendar: cal, now: now)
+        }
+
+        return Metrics(
+            dailyAverage: dailyAverage,
+            streak: streak,
+            safeToSpend: safeToSpend,
+            monthExpenses: monthExpenses
+        )
     }
 
     // Returns (total monthly budget - month-to-date spending in budgeted categories) / days remaining.
     // Returns nil when no category has a budget set, so the chip is hidden by default.
     // Only spending in categories that carry a budget is counted — unbudgeted categories
     // (e.g. a one-off "Travel" spend) must not reduce safe-to-spend for budgeted categories.
-    private func computeSafeToSpend() -> Int? {
-        let cal = Calendar.current
-        let now = Date()
-
+    private func computeSafeToSpend(monthExpenses: [Expense], calendar cal: Calendar, now: Date) -> Int? {
         let categories = (try? modelContext.fetch(FetchDescriptor<Category>())) ?? []
         let totalBudget = categories.compactMap(\.monthlyBudgetMinor).reduce(0, +)
         guard totalBudget > 0 else { return nil }
-
-        var monthComps = cal.dateComponents([.year, .month], from: now)
-        monthComps.day = 1
-        guard let monthStart = cal.date(from: monthComps),
-              let monthEnd = cal.date(byAdding: .month, value: 1, to: monthStart) else { return nil }
-
-        let monthExpenses = (try? modelContext.fetch(
-            FetchDescriptor<Expense>(
-                predicate: #Predicate { $0.date >= monthStart && $0.date < monthEnd },
-                sortBy: []
-            )
-        )) ?? []
 
         // Filter to only expenses whose category has a monthly budget set.
         // Unbudgeted spending should not penalise the safe-to-spend calculation.

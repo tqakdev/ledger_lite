@@ -36,6 +36,7 @@
 		38195F09B285BDB25D910913 /* SubscriptionFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281FD4452D554A280E490F71 /* SubscriptionFormViewModel.swift */; };
 		3B00C24BA1804510C1E61401 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 591CEE85DAA7DAEB5302362B /* SwiftUI.framework */; };
 		3DE88CA3DC94D956AAF96A26 /* exchangerate_host_latest.json in Resources */ = {isa = PBXBuildFile; fileRef = C4C0C99F4E2685C2FEF0DD60 /* exchangerate_host_latest.json */; };
+		402860A4F4A69B568B001F4E /* HistorySearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B8C1648CB5153F09999D6A9 /* HistorySearchTests.swift */; };
 		419728897D26BFCDBC21D1C5 /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38C2DFFC19576F0657B5AB5A /* LockScreenView.swift */; };
 		44189C2602023129D43F1E48 /* ExpenseRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C40D5537909949D08E7764B /* ExpenseRowView.swift */; };
 		46A1534732E58F5D063B95C3 /* SubscriptionCandidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA03618B0739EB21CF7851C0 /* SubscriptionCandidate.swift */; };
@@ -255,6 +256,7 @@
 		848AA91E9FCE6B3AE3E40CBB /* IntentCategoryResolutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentCategoryResolutionTests.swift; sourceTree = "<group>"; };
 		85B43FB34CFAE909EB719398 /* ForecastViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastViewModel.swift; sourceTree = "<group>"; };
 		865CCA5E9C7ABB5058030290 /* TodayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewModel.swift; sourceTree = "<group>"; };
+		8B8C1648CB5153F09999D6A9 /* HistorySearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistorySearchTests.swift; sourceTree = "<group>"; };
 		8F406C3137CEF4D709B0E8C9 /* ScreenshotSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotSeeder.swift; sourceTree = "<group>"; };
 		974C9199B80A8E09C0AF14F4 /* SubscriptionFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionFormSheet.swift; sourceTree = "<group>"; };
 		976AE718EF2B74C80E19F406 /* WidgetDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataService.swift; sourceTree = "<group>"; };
@@ -303,7 +305,7 @@
 		F49F00666E74FD3CC649AE33 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		FAFC2876C3543629571BAFA3 /* AutoDetectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoDetectTests.swift; sourceTree = "<group>"; };
 		FB82380910B610F5D8400BE4 /* ExpenseFormScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseFormScanTests.swift; sourceTree = "<group>"; };
-		"TEMP_809A9075-6836-4DB4-8282-3623FF23CCBC" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		"TEMP_6BD1E1A5-AE57-4456-A317-AAA2D9A19B70" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -361,6 +363,7 @@
 				FB82380910B610F5D8400BE4 /* ExpenseFormScanTests.swift */,
 				E208DB1AA703059BF6722FDC /* ExpenseTotalsTests.swift */,
 				D09F0FAC3A40CEB3119B0F12 /* ForecastViewModelTests.swift */,
+				8B8C1648CB5153F09999D6A9 /* HistorySearchTests.swift */,
 				8102AFC5C0CE53F5E2005341 /* InsightsTests.swift */,
 				848AA91E9FCE6B3AE3E40CBB /* IntentCategoryResolutionTests.swift */,
 				BE27622FC974ECC80FAD968E /* MerchantCategoryGuesserTests.swift */,
@@ -678,12 +681,12 @@
 			path = Subscription;
 			sourceTree = "<group>";
 		};
-		"TEMP_1DA483C4-5BE1-4831-8B25-1F8151D73895" /* ledger_lite */ = {
+		"TEMP_5E6AF60B-CC3A-4974-B061-5020FAA8E8C0" /* scanner-max-opt-docs */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_809A9075-6836-4DB4-8282-3623FF23CCBC" /* Local.xcconfig */,
+				"TEMP_6BD1E1A5-AE57-4456-A317-AAA2D9A19B70" /* Local.xcconfig */,
 			);
-			path = ledger_lite;
+			path = "scanner-max-opt-docs";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -956,6 +959,7 @@
 				D298E01AA4E34E8F6F830E88 /* ExpenseFormScanTests.swift in Sources */,
 				CC0570CCCA57D81E585C87D6 /* ExpenseTotalsTests.swift in Sources */,
 				5EA535C28FFDD635D01B8AD2 /* ForecastViewModelTests.swift in Sources */,
+				402860A4F4A69B568B001F4E /* HistorySearchTests.swift in Sources */,
 				8EB8D951EE623BC72815A61B /* InsightsTests.swift in Sources */,
 				981E53AB62BD37966AA92220 /* IntentCategoryResolutionTests.swift in Sources */,
 				D6DCA9A2ED16A2E9FB2BBD5D /* MerchantCategoryGuesserTests.swift in Sources */,
@@ -1004,7 +1008,7 @@
 /* Begin XCBuildConfiguration section */
 		3B2F164CD79B9819946D0E3B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_809A9075-6836-4DB4-8282-3623FF23CCBC" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_6BD1E1A5-AE57-4456-A317-AAA2D9A19B70" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1105,7 +1109,7 @@
 		};
 		65BA2CED960B86314443BB53 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_809A9075-6836-4DB4-8282-3623FF23CCBC" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_6BD1E1A5-AE57-4456-A317-AAA2D9A19B70" /* Local.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

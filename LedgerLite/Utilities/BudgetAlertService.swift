@@ -14,7 +14,10 @@ final class BudgetAlertService {
         self.modelContext = context
     }
 
-    func checkBudgets() {
+    /// `monthExpenses` lets a caller that already holds the current month's
+    /// expenses (TodayViewModel's consolidated metrics fetch) pass them in,
+    /// skipping a duplicate store-wide query. When nil, the service fetches.
+    func checkBudgets(monthExpenses: [Expense]? = nil) {
         let cal = Calendar.current
         let now = Date()
         var monthComps = cal.dateComponents([.year, .month], from: now)
@@ -25,12 +28,12 @@ final class BudgetAlertService {
         let monthKey = "\(year)-\(month)"
 
         guard let monthEnd = cal.date(byAdding: .month, value: 1, to: monthStart) else { return }
-        guard let expenses = try? modelContext.fetch(
+        guard let expenses = monthExpenses ?? (try? modelContext.fetch(
             FetchDescriptor<Expense>(
                 predicate: #Predicate { $0.date >= monthStart && $0.date < monthEnd },
                 sortBy: []
             )
-        ) else { return }
+        )) else { return }
 
         guard let categories = try? modelContext.fetch(FetchDescriptor<Category>()) else { return }
 

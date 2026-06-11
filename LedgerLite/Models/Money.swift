@@ -44,16 +44,34 @@ struct Money: Hashable, Codable {
 
     /// Formats the amount as a currency string.
     /// Always pass an explicit locale in tests so results are locale-independent.
+    ///
+    /// The formatter is cached per (currency, locale) — building a
+    /// `NumberFormatter` is expensive and this is hot in lists and widgets.
+    /// Safe to share: `string(from:)` is thread-safe since iOS 7, and instances
+    /// are only configured at creation, inside the lock.
     func formatted(locale: Locale = .current) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = locale
-        formatter.currencyCode = currencyCode
-        let digits = Self.decimals(for: currencyCode)
-        formatter.minimumFractionDigits = digits
-        formatter.maximumFractionDigits = digits
+        let formatter = Self.cachedFormatter(currencyCode: currencyCode, locale: locale)
         return formatter.string(from: decimalValue as NSDecimalNumber)
             ?? "\(currencyCode) \(decimalValue)"
+    }
+
+    private static let formatterLock = NSLock()
+    private static var formatterCache: [String: NumberFormatter] = [:]
+
+    private static func cachedFormatter(currencyCode: String, locale: Locale) -> NumberFormatter {
+        let key = "\(currencyCode)|\(locale.identifier)"
+        return formatterLock.withLock {
+            if let cached = formatterCache[key] { return cached }
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = locale
+            formatter.currencyCode = currencyCode
+            let digits = decimals(for: currencyCode)
+            formatter.minimumFractionDigits = digits
+            formatter.maximumFractionDigits = digits
+            formatterCache[key] = formatter
+            return formatter
+        }
     }
 
     // MARK: Currency symbol

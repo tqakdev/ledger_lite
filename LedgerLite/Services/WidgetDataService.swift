@@ -40,15 +40,22 @@ struct WidgetDataService {
 
     // MARK: - Init
 
-    init?() {
+    /// Opening a `ModelContainer` is expensive and every widget timeline refresh
+    /// constructs a fresh service — share one process-wide container instead.
+    /// (`static let` initialization is lazy and thread-safe.)
+    private static let sharedContainer: ModelContainer? = {
         guard let groupURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: Constants.App.appGroupIdentifier)
         else { return nil }
         let storeURL = groupURL.appendingPathComponent("LedgerLite.store")
         let schema = Schema([Expense.self, Subscription.self, Category.self, ExchangeRateCache.self])
         let config = ModelConfiguration(schema: schema, url: storeURL, cloudKitDatabase: .none)
-        guard let c = try? ModelContainer(for: schema, configurations: [config]) else { return nil }
-        self.container = c
+        return try? ModelContainer(for: schema, configurations: [config])
+    }()
+
+    init?() {
+        guard let container = Self.sharedContainer else { return nil }
+        self.container = container
     }
 
     // MARK: - Public API
