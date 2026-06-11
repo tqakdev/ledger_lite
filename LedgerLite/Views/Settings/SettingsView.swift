@@ -437,6 +437,7 @@ struct SettingsView: View {
                     exchangeRateToHome: row.exchangeRateToHome,
                     homeCurrencyAtEntry: row.homeCurrency,
                     date: row.date,
+                    note: row.note,
                     merchant: row.merchant,
                     source: .manual
                 )

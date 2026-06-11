@@ -4,7 +4,7 @@ import Foundation
 /// No SwiftData, no UI — extracted from SettingsView so the format is unit-testable.
 enum ExpenseCSV {
 
-    static let expenseHeader = "Date,Merchant,Category,Amount,Currency,HomeAmount,HomeCurrency"
+    static let expenseHeader = "Date,Merchant,Category,Amount,Currency,HomeAmount,HomeCurrency,Note"
     static let subscriptionHeader = "Name,Amount,Currency,BillingCycle,NextBillingDate,Status"
 
     // MARK: - Export
@@ -17,7 +17,8 @@ enum ExpenseCSV {
         let homeAmount = (e.money.decimalValue * e.exchangeRateToHome)
             .rounded(scale: Money.decimals(for: e.homeCurrencyAtEntry))
             .description
-        return "\(date),\(merchant),\(category),\(amount),\(e.currencyCode),\(homeAmount),\(e.homeCurrencyAtEntry)"
+        let note       = escape(escapeNewlines(e.note ?? ""))
+        return "\(date),\(merchant),\(category),\(amount),\(e.currencyCode),\(homeAmount),\(e.homeCurrencyAtEntry),\(note)"
     }
 
     static func line(for s: Subscription) -> String {
@@ -40,6 +41,7 @@ enum ExpenseCSV {
         let currencyCode: String
         let exchangeRateToHome: Decimal
         let homeCurrency: String
+        let note: String?
     }
 
     /// Parses one data line. Returns nil for malformed rows (wrong field count,
@@ -60,6 +62,11 @@ enum ExpenseCSV {
         let rate: Decimal = (currency == homeCurr || amtDecimal == Decimal(0))
             ? Decimal(1) : (homeDecimal / amtDecimal)
 
+        // Column 8 (Note) was added later — legacy 7-field exports import with a nil note.
+        let note: String? = fields.count >= 8 && !fields[7].isEmpty
+            ? unescapeNewlines(fields[7])
+            : nil
+
         return ImportedExpense(
             date: date,
             merchant: fields[1].isEmpty ? nil : fields[1],
@@ -67,7 +74,8 @@ enum ExpenseCSV {
             amountMinor: amtMinor,
             currencyCode: currency,
             exchangeRateToHome: rate,
-            homeCurrency: homeCurr
+            homeCurrency: homeCurr,
+            note: note
         )
     }
 
@@ -103,18 +111,51 @@ enum ExpenseCSV {
         "\"" + s.replacingOccurrences(of: "\"", with: "\"\"") + "\""
     }
 
-    // MARK: - Dates
-
-    static func dateString(for date: Date) -> String {
-        let iso = ISO8601DateFormatter()
-        iso.formatOptions = [.withFullDate]
-        return iso.string(from: date)
+    /// Notes can be multi-line (scanned receipts list their line items), but the file
+    /// format is one row per expense. Newlines are escaped reversibly: backslash first
+    /// so the two transforms can't collide, then newline → literal "\n".
+    static func escapeNewlines(_ s: String) -> String {
+        s.replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\n", with: "\\n")
     }
 
-    static func date(from string: String) -> Date? {
-        let iso = ISO8601DateFormatter()
-        iso.formatOptions = [.withFullDate]
-        return iso.date(from: string)
+    static func unescapeNewlines(_ s: String) -> String {
+        // Manual scan instead of chained replace — "\\\\n" must restore to "\\n",
+        // not become a newline.
+        var result = ""
+        var iterator = s.makeIterator()
+        while let ch = iterator.next() {
+            guard ch == "\\" else { result.append(ch); continue }
+            switch iterator.next() {
+            case "n":          result.append("\n")
+            case "\\":         result.append("\\")
+            case let other?:   result.append("\\"); result.append(other)
+            case nil:          result.append("\\")
+            }
+        }
+        return result
+    }
+
+    // MARK: - Dates
+
+    /// Writes the expense's *local* calendar day. The previous UTC formatter shifted
+    /// every evening expense to the next day for users west of UTC.
+    static func dateString(for date: Date, timeZone: TimeZone = .current) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = timeZone
+        return formatter.string(from: date)
+    }
+
+    /// Parses a yyyy-MM-dd day to that day's local midnight, so the imported expense
+    /// lands on the calendar day the file names.
+    static func date(from string: String, timeZone: TimeZone = .current) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = timeZone
+        return formatter.date(from: string)
     }
 
     // MARK: - Private
