@@ -51,13 +51,8 @@ struct LogExpenseIntent: AppIntent {
             throw AppIntentError.generic(String(localized: "Amount must be greater than zero."))
         }
 
-        // Find matching category, fall back to "Other"
-        var category: Category?
-        if let name = categoryName {
-            let all = (try? context.fetch(FetchDescriptor<Category>())) ?? []
-            category = all.first(where: { $0.name.lowercased() == name.lowercased() })
-                ?? all.first(where: { $0.name == "Other" })
-        }
+        let all = (try? context.fetch(FetchDescriptor<Category>())) ?? []
+        let category = Self.resolveCategory(named: categoryName, from: all)
 
         let expense = Expense(
             amountMinor: minorUnits,
@@ -75,6 +70,17 @@ struct LogExpenseIntent: AppIntent {
         let formatted = Money(minorUnits: minorUnits, currencyCode: homeCurrency).formatted()
         let catName = category?.name ?? String(localized: "Other")
         return .result(dialog: IntentDialog("Logged \(formatted) in \(catName)."))
+    }
+
+    /// Resolves the category for a Siri-logged expense: case-insensitive name match,
+    /// else "Other" — even when no category was spoken, so the expense is never
+    /// uncategorized (the confirmation dialog already claims "Other").
+    /// Extracted for unit testing — the intent itself cannot run in the test host.
+    static func resolveCategory(named name: String?, from all: [Category]) -> Category? {
+        if let name, let match = all.first(where: { $0.name.lowercased() == name.lowercased() }) {
+            return match
+        }
+        return all.first(where: { $0.name == "Other" })
     }
 }
 
