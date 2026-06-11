@@ -156,12 +156,17 @@ final class ExpenseFormViewModel {
             scanLowConfidence = true
         }
 
-        // List the individual purchases in the note (only when there are
-        // several and the user hasn't typed their own note).
-        if note.isEmpty, receipt.lineItems.count >= 2 {
-            note = receipt.lineItems
-                .map { "\($0.name) — \(Money(minorUnits: $0.amountMinor, currencyCode: currencyCode).formatted())" }
-                .joined(separator: "\n")
+        // List the individual purchases in the note (only when the breakdown is
+        // meaningful — 2+ lines — and the user hasn't typed their own note).
+        // Discounts appear negative and captured add-on tax is appended, so the
+        // breakdown visibly sums to the charged total.
+        var breakdown = receipt.lineItems
+            .map { "\($0.name) — \(Money(minorUnits: $0.amountMinor, currencyCode: currencyCode).formatted())" }
+        if let tax = receipt.tax {
+            breakdown.append("\(tax.name) — \(Money(minorUnits: tax.amountMinor, currencyCode: currencyCode).formatted())")
+        }
+        if note.isEmpty, breakdown.count >= 2 {
+            note = breakdown.joined(separator: "\n")
         }
 
         if let merchant = receipt.merchant, !merchant.isEmpty {

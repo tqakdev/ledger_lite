@@ -22,7 +22,14 @@ struct ParsedReceipt: Equatable {
     var amountConfident: Bool
 
     /// Individual purchases that make up the total, in receipt order.
+    /// Discounts and refunds appear here with a **negative** amount, so the
+    /// breakdown always sums to the charged total.
     var lineItems: [ReceiptLineItem]
+
+    /// Add-on sales tax, captured only when it arithmetically completes the
+    /// sum (items + discounts + tax == total). Price-inclusive VAT summaries
+    /// (EU receipts) never qualify, so they are never double-counted.
+    var tax: ReceiptLineItem?
 
     /// The raw recognized text, kept for debugging/fallback display.
     var rawText: String
@@ -34,6 +41,7 @@ struct ParsedReceipt: Equatable {
         date: Date? = nil,
         amountConfident: Bool = false,
         lineItems: [ReceiptLineItem] = [],
+        tax: ReceiptLineItem? = nil,
         rawText: String = ""
     ) {
         self.amountMinor = amountMinor
@@ -42,6 +50,7 @@ struct ParsedReceipt: Equatable {
         self.date = date
         self.amountConfident = amountConfident
         self.lineItems = lineItems
+        self.tax = tax
         self.rawText = rawText
     }
 

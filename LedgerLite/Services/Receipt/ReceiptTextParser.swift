@@ -15,9 +15,10 @@ enum ReceiptTextParser {
 
     // Strongest first — a "grand total" beats a bare "total" beats "amount".
     private static let totalKeywordTiers: [[String]] = [
-        ["grand total", "total due", "amount due", "balance due", "total to pay", "amount to pay"],
-        ["total", "balance", "to pay"],
-        ["amount"],
+        ["grand total", "total due", "amount due", "balance due", "total to pay",
+         "amount to pay", "total a pagar", "zu zahlen", "gesamtbetrag"],
+        ["total", "balance", "to pay", "summe", "gesamt", "totaal", "toplam"],
+        ["amount", "montant"],
     ]
 
     // Lines whose total-like number must be ignored — they are not the bill total.
@@ -25,6 +26,10 @@ enum ReceiptTextParser {
         "subtotal", "sub total", "tax", "vat", "gst", "tip", "gratuity",
         "change", "cash", "tendered", "savings", "discount", "points",
         "val. total", "val total", "base imp",
+        // de/fr/es/pt/it/nl/tr: subtotal, VAT, discount, change, tip.
+        "zwischensumme", "mwst", "tva", "btw", "kdv", "rabatt", "remise",
+        "descuento", "desconto", "sconto", "korting", "rückgeld", "ruckgeld",
+        "trinkgeld", "propina", "pourboire", "wisselgeld",
     ]
 
     // Words that never make a good merchant guess. Note: "store"/"shop" are
@@ -45,11 +50,31 @@ enum ReceiptTextParser {
         let currency = detectCurrency(in: text) ?? defaultCurrency
         let decimals = Money.decimals(for: currency ?? "USD")
 
-        // Reconcile line items by the universal invariant — items sum to the
-        // (sub)total. This both ends the item list (dropping summary/payment/tax
-        // rows in any language) and yields a language-agnostic total fallback.
-        let reconciled = reconcileItems(lines: lines, decimals: decimals)
-        let (amount, confident) = detectTotal(lines: lines, decimals: decimals, reconciledTotal: reconciled.total)
+        // The labeled total row, when present, also bounds the item search:
+        // promo details, payment rows and VAT summaries printed after it can
+        // never be items (this is what stops a discount being counted twice).
+        let labeled = detectLabeledTotal(lines: lines, decimals: decimals)
+
+        // Reconcile line items by the universal invariant — items (including
+        // negative discounts) sum to the (sub)total. This ends the item list in
+        // any language and yields a language-agnostic total fallback.
+        let reconciled = reconcileItems(lines: lines, decimals: decimals, totalRow: labeled?.row)
+
+        let tax = detectAddOnTax(
+            lines: lines, decimals: decimals, totalRow: labeled?.row,
+            items: reconciled.items, labeledTotal: labeled?.minor,
+            reconciledTotal: reconciled.total
+        )
+
+        let amount: Int?
+        let confident: Bool
+        if let labeled {
+            (amount, confident) = (labeled.minor, true)
+        } else if let total = reconciled.total {
+            (amount, confident) = (total, true)
+        } else {
+            (amount, confident) = (largestAmount(lines: lines, decimals: decimals), false)
+        }
 
         return ParsedReceipt(
             amountMinor: amount,
@@ -58,6 +83,7 @@ enum ReceiptTextParser {
             date: detectDate(in: text),
             amountConfident: confident,
             lineItems: reconciled.items,
+            tax: tax,
             rawText: text
         )
     }
@@ -78,45 +104,49 @@ enum ReceiptTextParser {
 
     // MARK: - Total
 
-    /// Returns the total in minor units and whether it's trustworthy.
-    /// Order of preference: an explicit total label → the amount the items
-    /// reconciled to (language-agnostic) → the largest amount anywhere (weak).
+    /// Finds an explicitly labeled total and the row it lives on.
     /// Vision often splits a "Total" label and its amount onto separate lines in
-    /// either order, so the amount is looked for on the same line and both neighbours.
-    private static func detectTotal(lines: [String], decimals: Int, reconciledTotal: Int?) -> (Int?, Bool) {
+    /// either order, so the amount is looked for on the same line and both
+    /// neighbours. When several rows tie on the best amount (duplicate total
+    /// sections), the **last** row wins, so the item cut covers all of them.
+    private static func detectLabeledTotal(lines: [String], decimals: Int) -> (minor: Int, row: Int)? {
         for tier in totalKeywordTiers {
-            var best: Decimal?
+            var best: (value: Decimal, row: Int)?
             for (index, line) in lines.enumerated() {
                 let lower = line.lowercased()
                 guard tier.contains(where: { lower.contains($0) }) else { continue }
                 guard !totalExclusions.contains(where: { lower.contains($0) }) else { continue }
 
                 var amount = lastMoney(in: line, decimals: decimals)?.value
+                var amountRow = index
                 if amount == nil {
                     for neighbour in [index + 1, index - 1] where neighbour >= 0 && neighbour < lines.count {
                         if let value = lastMoney(in: lines[neighbour], decimals: decimals)?.value {
                             amount = value
+                            amountRow = max(index, neighbour)
                             break
                         }
                     }
                 }
-                if let amount, amount > (best ?? 0) { best = amount }
+                if let amount, amount >= (best?.value ?? 0) {
+                    best = (amount, amountRow)
+                }
             }
-            if let best { return (minorUnits(from: best, decimals: decimals), true) }
+            if let best { return (minorUnits(from: best.value, decimals: decimals), best.row) }
         }
+        return nil
+    }
 
-        // No total label found — trust the reconciled item sum if we have one.
-        if let reconciledTotal { return (reconciledTotal, true) }
-
-        // Last resort: the largest money amount anywhere (low confidence).
+    /// Last resort when no label matched and the items didn't reconcile:
+    /// the largest money amount anywhere (low confidence).
+    private static func largestAmount(lines: [String], decimals: Int) -> Int? {
         var fallback: Decimal?
         for line in lines {
             if let amount = lastMoney(in: line, decimals: decimals)?.value, amount > (fallback ?? 0) {
                 fallback = amount
             }
         }
-        if let fallback { return (minorUnits(from: fallback, decimals: decimals), false) }
-        return (nil, false)
+        return fallback.map { minorUnits(from: $0, decimals: decimals) }
     }
 
     private static func minorUnits(from value: Decimal, decimals: Int) -> Int {
@@ -189,24 +219,38 @@ enum ReceiptTextParser {
 
     // MARK: - Line items
 
-    // Rows that are summary / payment / tax / unit-price lines, never a purchased
-    // item. Includes a few non-English terms common on European receipts.
-    private static let itemExclusions: [String] = [
+    // Rows that are summary / payment / tax lines, never a purchased item —
+    // excluded even when negative (change is often printed negative). Includes
+    // non-English terms common on European receipts.
+    private static let paymentExclusions: [String] = [
         "subtotal", "sub total", "total", "tax", "vat", "gst", "tip", "gratuity",
         "balance", "amount", "change", "cash", "tendered", "card", "visa",
-        "mastercard", "debit", "credit", "approved", "savings", "discount",
-        "points", "to pay", "receipt", "associate", "purchase",
-        // Non-English (pt/es/fr/de/it): cash, change, VAT, tax base, per-unit.
+        "mastercard", "debit", "credit", "approved", "to pay", "receipt",
+        "associate", "purchase",
+        // Non-English (pt/es/fr/de/it/nl/tr): cash, change, VAT, tax base, per-unit.
         "dinheiro", "troco", "efectivo", "cambio", "iva", "base imp", "importe",
         "/kg", "kg x", "x 1,", "x 0,", "€/kg", "eur/kg",
+        "zwischensumme", "mwst", "tva", "btw", "kdv", "rückgeld", "ruckgeld",
+        "bargeld", "wechselgeld", "wisselgeld", "girocard", "kontaktlos",
+        "contanti", "tarjeta", "carte", "espèces", "especes", "rendu", "nakit",
+        "trinkgeld", "propina", "pourboire",
     ]
 
-    private static let nameTrimChars = CharacterSet(charactersIn: " \t-:•·*$€£¥₹")
+    // Discount / promotion rows. Excluded only when printed **positive** — US
+    // "TOTAL SAVINGS 5.00" is informational (already baked into item prices).
+    // When explicitly negative they are real subtractions and become negative
+    // line items, so the breakdown still sums to the charged total.
+    private static let discountKeywords: [String] = [
+        "discount", "savings", "saving", "promo", "coupon", "voucher", "loyalty",
+        "points", "rabatt", "remise", "descuento", "desconto", "sconto", "korting",
+    ]
 
-    private static func isExcludedLine(_ line: String) -> Bool {
-        let lower = line.lowercased()
-        return itemExclusions.contains { lower.contains($0) }
-    }
+    // Add-on tax rows (US-style, tax charged on top of item prices).
+    private static let taxKeywords: [String] = [
+        "sales tax", "tax", "vat", "gst", "mwst", "iva", "tva", "btw", "kdv",
+    ]
+
+    private static let nameTrimChars = CharacterSet(charactersIn: " \t-−:•·*$€£¥₹()")
 
     /// Per-unit / weight rows ("0,540 kg x 1,49 EUR/kg") — structural, not items.
     private static func isUnitPriceRow(_ line: String) -> Bool {
@@ -214,12 +258,35 @@ enum ReceiptTextParser {
         return lower.contains("kg") || lower.contains("/kg") || lower.contains("/lb") || lower.contains("€/")
     }
 
-    /// Reconciles line items by the universal invariant: **items sum to the
-    /// (sub)total**. From the geometry-reconstructed rows it takes each
-    /// "DESCRIPTION … PRICE" row (3+ letters of description) as a candidate, then
-    /// collects them in order until a candidate's amount equals the running sum —
-    /// that candidate is the (sub)total, and everything after it (tax, cash,
-    /// change, in any language) is dropped without needing keywords for it.
+    /// True when the amount at `range` is explicitly negative: a leading minus
+    /// ("-2.20"), a trailing minus ("0,55-", German style), or accounting
+    /// parentheses ("(2.00)", US style).
+    private static func isNegativeAmount(in line: String, at range: NSRange) -> Bool {
+        let ns = line as NSString
+        let before = ns.substring(to: range.location)
+        let after = ns.substring(from: range.location + range.length)
+        let beforeStripped = before.trimmingCharacters(in: CharacterSet(charactersIn: " \t$€£¥₹"))
+        if beforeStripped.hasSuffix("-") || beforeStripped.hasSuffix("−") { return true }
+        // Trailing minus: attached ("0,55-") or alone at the end of the row.
+        if after.hasPrefix("-") || after.hasPrefix("−") { return true }
+        if after.trimmingCharacters(in: .whitespaces) == "-" { return true }
+        if beforeStripped.hasSuffix("("),
+           after.trimmingCharacters(in: .whitespaces).hasPrefix(")") { return true }
+        return false
+    }
+
+    /// Reconciles line items by the universal invariant: **items (including
+    /// negative discounts) sum to the (sub)total**. From the geometry-
+    /// reconstructed rows it takes each "DESCRIPTION … PRICE" row (3+ letters of
+    /// description) as a candidate, then collects them in order until a positive
+    /// candidate's amount equals the running sum — that candidate is the
+    /// (sub)total, and everything after it (tax, cash, change, in any language)
+    /// is dropped without needing keywords for it.
+    ///
+    /// `totalRow` — the labeled total's row when one was found — bounds the
+    /// search: rows printed after the total (promo details, payment, VAT
+    /// summaries) are never items, which prevents double-counting a discount
+    /// that is itemized again in a promotions section.
     ///
     /// Known summary terms are still excluded up front, which both covers the
     /// common case and prevents them from polluting the running sum. When the sum
@@ -228,28 +295,38 @@ enum ReceiptTextParser {
     ///
     /// Returns the items and, when reconciliation succeeded, the amount they summed
     /// to — used as a language-agnostic total fallback.
-    private static func reconcileItems(lines: [String], decimals: Int) -> (items: [ReceiptLineItem], total: Int?) {
+    private static func reconcileItems(
+        lines: [String], decimals: Int, totalRow: Int?
+    ) -> (items: [ReceiptLineItem], total: Int?) {
         var candidates: [(name: String, minor: Int)] = []
-        for line in lines {
-            if isExcludedLine(line) || isUnitPriceRow(line) { continue }
+        let end = min(totalRow ?? lines.count, lines.count)
+        for line in lines[..<end] {
+            if isUnitPriceRow(line) { continue }
             guard let money = lastMoney(in: line, decimals: decimals) else { continue }
+
+            let lower = line.lowercased()
+            if paymentExclusions.contains(where: { lower.contains($0) }) { continue }
+
+            let negative = isNegativeAmount(in: line, at: money.range)
+            // Positive-printed discount/savings rows are informational; only an
+            // explicit negative is a real subtraction worth capturing.
+            if !negative, discountKeywords.contains(where: { lower.contains($0) }) { continue }
+
             let ns = line as NSString
-            let before = ns.substring(to: money.range.location)
-            // A minus right before the amount means a discount / refund / change —
-            // never a purchased item (e.g. "MEAL DEAL @ £4.25  -2.20").
-            let beforeStripped = before.trimmingCharacters(in: CharacterSet(charactersIn: " \t$€£¥₹"))
-            if beforeStripped.hasSuffix("-") || beforeStripped.hasSuffix("−") { continue }
-            let name = before.trimmingCharacters(in: nameTrimChars)
+            let name = ns.substring(to: money.range.location).trimmingCharacters(in: nameTrimChars)
             guard name.filter({ $0.isLetter }).count >= 3 else { continue }
-            candidates.append((name, minorUnits(from: money.value, decimals: decimals)))
+
+            let minor = minorUnits(from: money.value, decimals: decimals)
+            candidates.append((name, negative ? -minor : minor))
         }
 
         var collected: [(name: String, minor: Int)] = []
         var runningSum = 0
         var reconciledTotal: Int?
         for candidate in candidates {
-            // A row equal to the running sum of prior items is the (sub)total — stop.
-            if collected.count >= 2, abs(candidate.minor - runningSum) <= 1 {
+            // A positive row equal to the running sum of prior items is the
+            // (sub)total — stop. (A discount can never be the total.)
+            if candidate.minor > 0, collected.count >= 2, abs(candidate.minor - runningSum) <= 1 {
                 reconciledTotal = candidate.minor
                 break
             }
@@ -259,6 +336,39 @@ enum ReceiptTextParser {
 
         let items = collected.map { ReceiptLineItem(name: $0.name, amountMinor: $0.minor) }
         return (items, reconciledTotal)
+    }
+
+    // MARK: - Add-on tax
+
+    /// Captures US-style add-on tax, but **only** when the arithmetic proves it:
+    /// items (+ discounts) + tax must equal the labeled total. Price-inclusive
+    /// VAT summaries (EU receipts) fail that check — their items already sum to
+    /// the total — so they are never double-counted. Multiple tax rows (state +
+    /// city) are summed under a generic "Tax" label.
+    private static func detectAddOnTax(
+        lines: [String], decimals: Int, totalRow: Int?,
+        items: [ReceiptLineItem], labeledTotal: Int?, reconciledTotal: Int?
+    ) -> ReceiptLineItem? {
+        guard let labeledTotal, reconciledTotal == nil, let totalRow, !items.isEmpty else { return nil }
+
+        var taxRows: [(name: String, minor: Int)] = []
+        for line in lines[..<min(totalRow, lines.count)] {
+            let lower = line.lowercased()
+            guard taxKeywords.contains(where: { lower.contains($0) }) else { continue }
+            guard let money = lastMoney(in: line, decimals: decimals) else { continue }
+            guard !isNegativeAmount(in: line, at: money.range) else { continue }
+            let ns = line as NSString
+            let name = ns.substring(to: money.range.location).trimmingCharacters(in: nameTrimChars)
+            taxRows.append((name.isEmpty ? "Tax" : name, minorUnits(from: money.value, decimals: decimals)))
+        }
+        guard !taxRows.isEmpty else { return nil }
+
+        let taxSum = taxRows.reduce(0) { $0 + $1.minor }
+        let itemsSum = items.reduce(0) { $0 + $1.amountMinor }
+        guard taxSum > 0, abs(itemsSum + taxSum - labeledTotal) <= 1 else { return nil }
+
+        let name = taxRows.count == 1 ? taxRows[0].name : "Tax"
+        return ReceiptLineItem(name: name, amountMinor: taxSum)
     }
 
     // MARK: - Merchant

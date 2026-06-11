@@ -40,6 +40,9 @@ struct ReceiptScanner {
                 }
                 request.recognitionLevel = .accurate
                 request.usesLanguageCorrection = true
+                // Receipts are frequently non-English; let Vision pick the
+                // script instead of assuming the device language.
+                request.automaticallyDetectsLanguage = true
 
                 let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
                 do {

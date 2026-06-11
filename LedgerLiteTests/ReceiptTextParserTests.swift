@@ -52,6 +52,8 @@ struct ReceiptParserReceiptTests {
         #expect(r.currencyCode == "USD")
         #expect(r.merchant == "Blue Bottle Coffee")
         #expect(r.date != nil)
+        // Add-on tax completes the sum (7.75 + 0.70 == 8.45) → captured.
+        #expect(r.tax == ReceiptLineItem(name: "Tax", amountMinor: 70))
     }
 
     @Test("prefers Total over Subtotal and Tip")
@@ -207,6 +209,8 @@ struct ReceiptParserReceiptTests {
         #expect(r.lineItems[1].name.contains("Premium sneaker cleaner"))
         #expect(r.lineItems[2].name.contains("Crew socks"))
         #expect(r.lineItems[3].name.contains("Lace set"))
+        // Sales tax completes the sum (563.99 + 47.11 == 611.10) → captured.
+        #expect(r.tax == ReceiptLineItem(name: "Sales tax", amountMinor: 4711))
     }
 
     @Test("Lidl receipt (geometry rows): groceries kept, payment/tax/unit-price dropped")
@@ -251,12 +255,16 @@ struct ReceiptParserReceiptTests {
         #expect(r.lineItems.allSatisfy { !$0.name.lowercased().contains("troco") })
         #expect(r.lineItems.allSatisfy { !$0.name.lowercased().contains("kg") })
         #expect(r.lineItems.allSatisfy { $0.amountMinor != 2000 && $0.amountMinor != 1996 })
+        // The IVA summary is price-inclusive — never captured as add-on tax.
+        #expect(r.tax == nil)
     }
 
-    @Test("Morrisons receipt: drops the promotion/discount line, keeps real items")
+    @Test("Morrisons receipt: discount captured once as a negative item; post-total promo detail dropped")
     func realMorrisonsOCR() {
         // Geometry rows from the real Vision OCR of a UK Morrisons receipt — has a
-        // promotions section with a negative discount that must not become an item.
+        // promotions section. The discount is captured as a negative line item so
+        // the breakdown sums to the charged total; the duplicate per-promotion
+        // detail line *after* "Total To Pay" must not be counted a second time.
         let text = """
         Morrisons Daily
         Bristol BS16 1QY
@@ -272,11 +280,90 @@ struct ReceiptParserReceiptTests {
         let r = ReceiptTextParser.parse(text, defaultCurrency: "EUR")
         #expect(r.currencyCode == "GBP")          // £ detected, not the EUR default
         #expect(r.amountMinor == 735)             // "Total To Pay" beats "Total Items Sold"
-        #expect(r.lineItems.count == 4)
-        #expect(r.lineItems.map(\.amountMinor) == [125, 310, 310, 210])
-        // The −2.20 promotion line must not appear as an item.
-        #expect(r.lineItems.allSatisfy { $0.amountMinor != 220 })
+        #expect(r.lineItems.count == 5)
+        #expect(r.lineItems.map(\.amountMinor) == [125, 310, 310, 210, -220])
+        #expect(r.lineItems.last?.name == "Less Promotion Discount")
+        // Items + discount reconcile to the charged amount.
+        #expect(r.lineItems.map(\.amountMinor).reduce(0, +) == 735)
+        // The duplicate promo detail after the total row is not double-counted.
         #expect(r.lineItems.allSatisfy { !$0.name.contains("MEAL DEAL") })
+    }
+
+    @Test("German receipt: trailing-minus RABATT is a negative item; Summe is the total; payment/VAT rows dropped")
+    func germanTrailingMinusDiscount() {
+        // German receipts print discounts with a trailing minus ("0,55-") and
+        // label the total "SUMME". The VAT (MwSt) summary is price-inclusive
+        // and must not be captured as add-on tax.
+        let text = """
+        REWE Markt GmbH
+        Sandgasse 12, 60311 Frankfurt
+        VOLLKORNBROT 2,29 A
+        BIO EIER 6ER 3,19 A
+        DT. MARKENBUTTER 2,39 A
+        RABATT 0,55-
+        SUMME 7,32
+        Geg. BAR 10,00
+        Rückgeld 2,68
+        MwSt 7% 6,84 0,48
+        """
+        let r = ReceiptTextParser.parse(text, defaultCurrency: "EUR")
+        #expect(r.amountMinor == 732)
+        #expect(r.amountConfident)
+        #expect(r.lineItems.count == 4)
+        #expect(r.lineItems.map(\.amountMinor) == [229, 319, 239, -55])
+        #expect(r.lineItems.last?.name == "RABATT")
+        #expect(r.lineItems.map(\.amountMinor).reduce(0, +) == 732)
+        #expect(r.tax == nil)   // MwSt is included in prices, not added on top
+        // Cash tendered / change rows after the total are never items.
+        #expect(r.lineItems.allSatisfy { !$0.name.lowercased().contains("bar") })
+        #expect(r.lineItems.allSatisfy { !$0.name.lowercased().contains("rückgeld") })
+    }
+
+    @Test("parenthesized amount is a negative item (US coupon style)")
+    func parenthesizedNegative() {
+        let text = """
+        Walgreens
+        Vitamins D3 12.99
+        Coupon (2.00)
+        Total 10.99
+        """
+        let r = ReceiptTextParser.parse(text, defaultCurrency: "USD")
+        #expect(r.amountMinor == 1099)
+        #expect(r.lineItems.count == 2)
+        #expect(r.lineItems.last == ReceiptLineItem(name: "Coupon", amountMinor: -200))
+        #expect(r.lineItems.map(\.amountMinor).reduce(0, +) == 1099)
+    }
+
+    @Test("informational savings line (positive print) stays excluded")
+    func informationalSavingsExcluded() {
+        // "TOTAL SAVINGS" on US supermarket receipts is informational — the
+        // discounts are already baked into the item prices. A positive-printed
+        // savings row must affect neither the items nor the total.
+        let text = """
+        Walmart
+        GV BREAD 3.50
+        GV MILK 2.50
+        TOTAL SAVINGS 5.00
+        TOTAL 6.00
+        """
+        let r = ReceiptTextParser.parse(text, defaultCurrency: "USD")
+        #expect(r.amountMinor == 600)
+        #expect(r.lineItems.map(\.amountMinor) == [350, 250])
+        #expect(r.lineItems.allSatisfy { $0.amountMinor != 500 && $0.amountMinor != -500 })
+    }
+
+    @Test("EU dot date (12.06.2026) is detected")
+    func euDotDate() {
+        let text = """
+        REWE Markt
+        12.06.2026 18:42
+        Total 5,00 €
+        """
+        let r = ReceiptTextParser.parse(text)
+        let comps = r.date.map { Calendar.current.dateComponents([.year, .month, .day], from: $0) }
+        #expect(comps?.year == 2026)
+        #expect(comps?.month == 6)
+        #expect(comps?.day == 12)
     }
 
     @Test("reconciliation: foreign receipt with no English keywords")

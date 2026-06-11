@@ -81,6 +81,49 @@ struct ExpenseFormScanTests {
         #expect(vm.note.split(separator: "\n").count == 2)
     }
 
+    @Test("discount line items flow into the note breakdown")
+    func discountInNote() throws {
+        let container = try makeContainer()
+        let vm = ExpenseFormViewModel(mode: .add, context: container.mainContext, homeCurrencyCode: "USD")
+        vm.loadCategories()
+
+        vm.applyParsedReceipt(ParsedReceipt(
+            amountMinor: 735,
+            currencyCode: "GBP",
+            amountConfident: true,
+            lineItems: [
+                ReceiptLineItem(name: "Chicken Tikka", amountMinor: 310),
+                ReceiptLineItem(name: "Vithit Perform", amountMinor: 210),
+                ReceiptLineItem(name: "Less Promotion Discount", amountMinor: -220),
+            ]
+        ))
+
+        #expect(vm.note.contains("Less Promotion Discount"))
+        #expect(vm.note.split(separator: "\n").count == 3)
+    }
+
+    @Test("captured tax is appended to the note so the breakdown sums to the total")
+    func taxAppendedToNote() throws {
+        let container = try makeContainer()
+        let vm = ExpenseFormViewModel(mode: .add, context: container.mainContext, homeCurrencyCode: "USD")
+        vm.loadCategories()
+
+        vm.applyParsedReceipt(ParsedReceipt(
+            amountMinor: 61110,
+            currencyCode: "USD",
+            amountConfident: true,
+            lineItems: [
+                ReceiptLineItem(name: "Air Jordan 4", amountMinor: 48900),
+            ],
+            tax: ReceiptLineItem(name: "Sales tax", amountMinor: 4711)
+        ))
+
+        // One item + tax is still a meaningful two-line breakdown.
+        #expect(vm.note.contains("Air Jordan 4"))
+        #expect(vm.note.contains("Sales tax"))
+        #expect(vm.note.split(separator: "\n").count == 2)
+    }
+
     @Test("line items do not overwrite a note the user already has")
     func lineItemsPreserveExistingNote() throws {
         let container = try makeContainer()
