@@ -57,19 +57,27 @@ final class Expense {
     }
 }
 
+extension Expense {
+    /// This expense's value in home-currency minor units, as an unrounded Decimal.
+    ///
+    /// The single source of truth for home-currency conversion — every aggregation
+    /// (Today total, daily average, Insights, budgets, widget) must go through this,
+    /// accumulate Decimals, and round once at the end. `homePlaces` is
+    /// `Money.decimals(for:)` of the home currency the caller is summing into.
+    func homeMinorDecimal(homePlaces: Int) -> Decimal {
+        if currencyCode == homeCurrencyAtEntry {
+            return Decimal(amountMinor)
+        }
+        return money.decimalValue * exchangeRateToHome * Decimal.powerOfTen(homePlaces)
+    }
+}
+
 extension Array where Element == Expense {
     /// Converts each expense to home-currency minor units and sums them.
     /// Accumulates as Decimal before a single final rounding to avoid per-row drift.
     func totalInHomeCurrency(_ currencyCode: String) -> Int {
         let places = Money.decimals(for: currencyCode)
-        var sum = Decimal(0)
-        for expense in self {
-            if expense.currencyCode == expense.homeCurrencyAtEntry {
-                sum += Decimal(expense.amountMinor)
-            } else {
-                sum += expense.money.decimalValue * expense.exchangeRateToHome * Decimal.powerOfTen(places)
-            }
-        }
+        let sum = reduce(Decimal(0)) { $0 + $1.homeMinorDecimal(homePlaces: places) }
         return NSDecimalNumber(decimal: sum.rounded(scale: 0)).intValue
     }
 }

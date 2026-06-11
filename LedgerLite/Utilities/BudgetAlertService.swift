@@ -37,18 +37,14 @@ final class BudgetAlertService {
         let homeCurrency = UserPreferences.homeCurrencyCode
         let homePlaces = Money.decimals(for: homeCurrency)
 
-        var spendingByCategory: [UUID: Int] = [:]
+        // Accumulate per category as Decimal; round once per category at the end.
+        var decimalByCategory: [UUID: Decimal] = [:]
         for expense in expenses {
             guard let cat = expense.category else { continue }
-            let minor: Int
-            if expense.currencyCode == expense.homeCurrencyAtEntry {
-                minor = expense.amountMinor
-            } else {
-                let dec = expense.money.decimalValue * expense.exchangeRateToHome
-                              * Decimal.powerOfTen(homePlaces)
-                minor = NSDecimalNumber(decimal: dec.rounded(scale: 0)).intValue
-            }
-            spendingByCategory[cat.id, default: 0] += minor
+            decimalByCategory[cat.id, default: 0] += expense.homeMinorDecimal(homePlaces: homePlaces)
+        }
+        let spendingByCategory = decimalByCategory.mapValues {
+            NSDecimalNumber(decimal: $0.rounded(scale: 0)).intValue
         }
 
         for category in categories {

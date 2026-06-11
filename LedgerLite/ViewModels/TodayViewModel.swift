@@ -143,18 +143,7 @@ final class TodayViewModel {
                 )
             )
             guard !recent.isEmpty else { return 0 }
-            let homePlaces = Money.decimals(for: homeCurrencyCode)
-            var sum = Decimal(0)
-            for e in recent {
-                if e.currencyCode == e.homeCurrencyAtEntry {
-                    sum += Decimal(e.amountMinor)
-                } else {
-                    sum += e.money.decimalValue * e.exchangeRateToHome * Decimal.powerOfTen(homePlaces)
-                }
-            }
-            let rounded = sum.rounded(scale: 0)
-            let totalMinor = NSDecimalNumber(decimal: rounded).intValue
-            return totalMinor / 30
+            return recent.totalInHomeCurrency(homeCurrencyCode) / 30
         } catch {
             AppLogger.ui.error("Daily average failed: \(error)")
             return 0

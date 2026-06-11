@@ -158,13 +158,12 @@ final class InsightsViewModel {
         for e in expenses {
             guard let cat = e.category else { continue }
             let key = ObjectIdentifier(cat)
-            let v   = homeDecimal(e)
+            let v   = homeMinorDecimal(e)
             if var entry = groups[key] { entry.sum += v; groups[key] = entry }
             else { groups[key] = (cat, v) }
         }
-        let places = Money.decimals(for: homeCurrencyCode)
         return groups.values
-            .map { (category: $0.category, minorUnits: toMinor($0.sum, places: places)) }
+            .map { (category: $0.category, minorUnits: toMinor($0.sum)) }
             .sorted { $0.minorUnits > $1.minorUnits }
     }
 
@@ -181,17 +180,16 @@ final class InsightsViewModel {
             } else {
                 bucket = cal.startOfDay(for: e.date)
             }
-            groups[bucket, default: 0] += homeDecimal(e)
+            groups[bucket, default: 0] += homeMinorDecimal(e)
         }
-        let places = Money.decimals(for: homeCurrencyCode)
         return groups
-            .map { (date: $0.key, minorUnits: toMinor($0.value, places: places)) }
+            .map { (date: $0.key, minorUnits: toMinor($0.value)) }
             .sorted { $0.date < $1.date }
     }
 
     private func makePeriodTotal(_ expenses: [Expense]) -> Int {
-        let sum = expenses.reduce(Decimal(0)) { $0 + homeDecimal($1) }
-        return toMinor(sum, places: Money.decimals(for: homeCurrencyCode))
+        let sum = expenses.reduce(Decimal(0)) { $0 + homeMinorDecimal($1) }
+        return toMinor(sum)
     }
 
     // Builds a startOfDay → minorUnits map for the last 91 days (13-week heatmap window).
@@ -208,36 +206,34 @@ final class InsightsViewModel {
             )
         )) ?? []
 
-        let places = Money.decimals(for: homeCurrencyCode)
         var sums: [Date: Decimal] = [:]
         for e in expenses {
-            sums[cal.startOfDay(for: e.date), default: 0] += homeDecimal(e)
+            sums[cal.startOfDay(for: e.date), default: 0] += homeMinorDecimal(e)
         }
-        return sums.mapValues { toMinor($0, places: places) }
+        return sums.mapValues { toMinor($0) }
     }
 
     // MARK: - Helpers
 
-    private func homeDecimal(_ expense: Expense) -> Decimal {
-        expense.money.decimalValue * expense.exchangeRateToHome
+    /// Canonical per-expense conversion (see Expense.homeMinorDecimal) in this
+    /// view model's home currency; accumulate, then `toMinor` once at the end.
+    private func homeMinorDecimal(_ expense: Expense) -> Decimal {
+        expense.homeMinorDecimal(homePlaces: Money.decimals(for: homeCurrencyCode))
     }
 
-    private func toMinor(_ d: Decimal, places: Int) -> Int {
-        let rounded = d.rounded(scale: places)
-        let minor   = (rounded * Decimal.powerOfTen(places)).rounded(scale: 0)
-        return (minor as NSDecimalNumber).intValue
+    private func toMinor(_ d: Decimal) -> Int {
+        (d.rounded(scale: 0) as NSDecimalNumber).intValue
     }
 
     private func makeTopMerchant(_ expenses: [Expense]) -> (merchant: String, minorUnits: Int)? {
         var groups: [String: Decimal] = [:]
         for e in expenses {
             guard let m = e.merchant, !m.trimmingCharacters(in: .whitespaces).isEmpty else { continue }
-            groups[m, default: 0] += homeDecimal(e)
+            groups[m, default: 0] += homeMinorDecimal(e)
         }
         guard !groups.isEmpty else { return nil }
-        let places = Money.decimals(for: homeCurrencyCode)
         return groups
-            .map { (merchant: $0.key, minorUnits: toMinor($0.value, places: places)) }
+            .map { (merchant: $0.key, minorUnits: toMinor($0.value)) }
             .max(by: { $0.minorUnits < $1.minorUnits })
     }
 }

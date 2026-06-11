@@ -67,20 +67,7 @@ struct WidgetDataService {
         )
         let expenses = (try? context.fetch(descriptor)) ?? []
 
-        let homePlaces = Money.decimals(for: homeCurrency)
-        var accumulated = Decimal(0)
-        for e in expenses {
-            if e.currencyCode == e.homeCurrencyAtEntry {
-                accumulated += Decimal(e.amountMinor)
-            } else {
-                accumulated += e.money.decimalValue * e.exchangeRateToHome
-                    * Decimal.powerOfTen(homePlaces)
-            }
-        }
-        var rounded = Decimal()
-        var acc = accumulated
-        NSDecimalRound(&rounded, &acc, 0, .plain)
-        let totalMinor = NSDecimalNumber(decimal: rounded).intValue
+        let totalMinor = expenses.totalInHomeCurrency(homeCurrency)
 
         let snapshots = expenses.prefix(3).map { e in
             ExpenseSnapshot(
