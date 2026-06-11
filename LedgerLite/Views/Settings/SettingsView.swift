@@ -471,6 +471,13 @@ struct SettingsView: View {
             defaults.dictionaryRepresentation().keys
                 .filter { $0.hasPrefix("budgetAlert_") }
                 .forEach { defaults.removeObject(forKey: $0) }
+            // The system Spotlight index holds merchant names and amounts for every
+            // indexed expense — "Delete Everything" must not leave them searchable.
+            SpotlightService.deindexAll()
+            // Drop the cached safe-to-spend (computed from now-deleted expenses) and
+            // re-render widgets so they stop showing pre-reset data.
+            UserPreferences.cachedSafeToSpendMinor = nil
+            WidgetCenter.shared.reloadAllTimelines()
             importResultText = String(localized: "All data deleted.")
             showImportResult = true
             AppLogger.data.info("All data reset by user")
