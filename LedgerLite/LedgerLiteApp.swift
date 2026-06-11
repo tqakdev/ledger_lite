@@ -63,6 +63,14 @@ struct LedgerLiteApp: App {
         } catch {
             AppLogger.subscriptions.error("Pending expense generation failed on launch: \(error)")
         }
+        // Heal expenses saved offline with a placeholder 1:1 rate (needsRateRefresh).
+        // Covered by the "CurrencyService — rehydrate stale rates" suite; failure here
+        // is tolerable — the flag persists and the next launch retries.
+        do {
+            try await CurrencyService(context: container.mainContext).rehydrateStaleRates()
+        } catch {
+            AppLogger.currency.error("Stale rate rehydration failed on launch: \(error)")
+        }
     }
 
     @MainActor
