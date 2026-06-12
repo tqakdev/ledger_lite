@@ -81,10 +81,13 @@ final class InsightsViewModel {
         do {
             allCategories = (try? categoryRepository.fetchAll()) ?? []
             let filtered: [Expense]
+            let periodLowerBound: Date
             if period == .allTime {
                 filtered = try expenseRepository.fetchAll()
+                periodLowerBound = .distantPast
             } else {
                 let since = periodStart(for: period, referenceDate: referenceDate)
+                periodLowerBound = since
                 filtered = try modelContext.fetch(
                     FetchDescriptor<Expense>(
                         predicate: #Predicate { $0.date >= since },
@@ -97,7 +100,11 @@ final class InsightsViewModel {
             dailyTotals         = makeGroupedTotals(filtered, period: period)
             periodTotalMinor    = makePeriodTotal(filtered)
             topMerchant         = makeTopMerchant(filtered)
-            heatmapDailyTotals  = makeHeatmapTotals()
+            heatmapDailyTotals  = makeHeatmapTotals(
+                periodExpenses: filtered,
+                periodLowerBound: periodLowerBound,
+                referenceDate: referenceDate
+            )
         } catch {
             errorMessage = error.localizedDescription
             AppLogger.data.error("InsightsViewModel refresh failed: \(error)")
@@ -193,21 +200,32 @@ final class InsightsViewModel {
     }
 
     // Builds a startOfDay → minorUnits map for the last 91 days (13-week heatmap window).
-    // This fetch is independent of the period picker so the heatmap always shows recent activity.
-    private func makeHeatmapTotals() -> [Date: Int] {
+    // The window is independent of the period picker so the heatmap always shows recent
+    // activity. When the period fetch already spans the window (.allTime always; .year once
+    // ~91 days in), its expenses are reused instead of running a second store query.
+    private func makeHeatmapTotals(
+        periodExpenses: [Expense],
+        periodLowerBound: Date,
+        referenceDate: Date
+    ) -> [Date: Int] {
         let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
+        let today = cal.startOfDay(for: referenceDate)
         guard let since = cal.date(byAdding: .day, value: -90, to: today) else { return [:] }
 
-        let expenses = (try? modelContext.fetch(
-            FetchDescriptor<Expense>(
-                predicate: #Predicate { $0.date >= since },
-                sortBy: []
-            )
-        )) ?? []
+        let source: [Expense]
+        if periodLowerBound <= since {
+            source = periodExpenses
+        } else {
+            source = (try? modelContext.fetch(
+                FetchDescriptor<Expense>(
+                    predicate: #Predicate { $0.date >= since },
+                    sortBy: []
+                )
+            )) ?? []
+        }
 
         var sums: [Date: Decimal] = [:]
-        for e in expenses {
+        for e in source where e.date >= since {
             sums[cal.startOfDay(for: e.date), default: 0] += homeMinorDecimal(e)
         }
         return sums.mapValues { toMinor($0) }

@@ -105,6 +105,64 @@ struct PeriodFilteringTests {
     }
 }
 
+// MARK: - Heatmap
+
+@Suite("InsightsViewModel — heatmap")
+@MainActor
+struct InsightsHeatmapTests {
+
+    init() { UserDefaults.standard.set("USD", forKey: "homeCurrencyCode") }
+
+    // A fixed reference date far from the real "now" so the 91-day window is
+    // deterministic regardless of when the suite runs.
+    private static let ref = Date(timeIntervalSince1970: 1_592_000_000)   // ~2020-06-12
+
+    private func seedThree(_ context: ModelContext) {
+        // In window: today, and 30 days back (outside the current week). Out of
+        // window: 120 days back.
+        context.insert(InsightsTestHarness.makeExpense(amountMinor: 1000, date: Self.ref))
+        context.insert(InsightsTestHarness.makeExpense(amountMinor: 2000, date: Self.ref.adding(days: -30)))
+        context.insert(InsightsTestHarness.makeExpense(amountMinor: 5000, date: Self.ref.adding(days: -120)))
+    }
+
+    private func expected() -> [Date: Int] {
+        let cal = Calendar.current
+        return [
+            cal.startOfDay(for: Self.ref): 1000,
+            cal.startOfDay(for: Self.ref.adding(days: -30)): 2000,
+        ]
+    }
+
+    // The heatmap shows recent activity independent of the period picker: a
+    // 30-day-old expense is outside the current week but must still appear, and a
+    // 120-day-old one must not. (Period = .week → heatmap uses its own fetch.)
+    @Test("heatmap covers the last 91 days regardless of the selected period")
+    func heatmapIndependentOfWeekPeriod() async throws {
+        let container = try InsightsTestHarness.makeContainer()
+        seedThree(container.mainContext)
+
+        let vm = InsightsViewModel(context: container.mainContext)
+        vm.period = .week
+        await vm.refresh(referenceDate: Self.ref)
+
+        #expect(vm.heatmapDailyTotals == expected())
+    }
+
+    // Period = .allTime already fetched every expense, so the heatmap is derived
+    // from that slice instead of a second query — the result must be identical.
+    @Test("allTime heatmap (reuses the period fetch) matches the windowed result")
+    func heatmapReusesAllTimeFetch() async throws {
+        let container = try InsightsTestHarness.makeContainer()
+        seedThree(container.mainContext)
+
+        let vm = InsightsViewModel(context: container.mainContext)
+        vm.period = .allTime
+        await vm.refresh(referenceDate: Self.ref)
+
+        #expect(vm.heatmapDailyTotals == expected())
+    }
+}
+
 // MARK: - Currency conversion
 
 @Suite("InsightsViewModel — currency conversion")
