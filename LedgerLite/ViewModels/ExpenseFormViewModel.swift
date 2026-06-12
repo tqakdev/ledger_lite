@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import CoreSpotlight
+import WidgetKit
 
 enum ExpenseFormMode: Identifiable {
     case add
@@ -217,6 +218,9 @@ final class ExpenseFormViewModel {
             case .edit(let expense):
                 try await updateExpense(expense, category: category)
             }
+            // The add/edit changed the data the home-screen widgets read — refresh
+            // them now instead of waiting for the next ~30-minute system reload.
+            WidgetCenter.shared.reloadAllTimelines()
             return true
         } catch {
             errorMessage = error.localizedDescription

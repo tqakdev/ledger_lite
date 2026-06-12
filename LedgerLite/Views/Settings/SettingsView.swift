@@ -452,6 +452,9 @@ struct SettingsView: View {
 
             try modelContext.save()
             let imported = rows.count
+            // Imported rows changed the data the home-screen widgets read — refresh
+            // them now instead of waiting for the next ~30-minute system reload.
+            if imported > 0 { WidgetCenter.shared.reloadAllTimelines() }
             var message = imported == 1
                 ? String(localized: "Imported 1 expense.")
                 : String(localized: "Imported \(imported) expenses.")

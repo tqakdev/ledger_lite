@@ -94,9 +94,15 @@ enum ReceiptTextParser {
         for entry in symbolMap where text.contains(entry.symbol) {
             return entry.code
         }
-        // ISO code appearing as a standalone token, e.g. "EUR 12.00".
+        // "RM" (Malaysian Ringgit) is alphabetic, so it's matched only when it
+        // prefixes a number at a word boundary — a plain substring check would
+        // fire on "SUPERMARKET" or "FARM 3.00".
+        if text.range(of: "\\bRM\\s?\\d", options: .regularExpression) != nil { return "MYR" }
+        // ISO code appearing as a standalone token, e.g. "EUR 12.00". A word
+        // boundary is required so "CAD" isn't matched inside "Arcade".
         let upper = text.uppercased()
-        for code in Constants.App.supportedCurrencies where upper.contains(code) {
+        for code in Constants.App.supportedCurrencies
+        where upper.range(of: "\\b\(code)\\b", options: .regularExpression) != nil {
             return code
         }
         return nil
@@ -349,7 +355,13 @@ enum ReceiptTextParser {
         lines: [String], decimals: Int, totalRow: Int?,
         items: [ReceiptLineItem], labeledTotal: Int?, reconciledTotal: Int?
     ) -> ReceiptLineItem? {
-        guard let labeledTotal, reconciledTotal == nil, let totalRow, !items.isEmpty else { return nil }
+        // Run when the items did not reconcile to the labeled total: either no
+        // subtotal was found (reconciledTotal == nil) or an unlabeled subtotal
+        // reconciled to a value below the total, leaving room for add-on tax.
+        // The arithmetic guard below (items + tax == total) is the real safety
+        // net against double-counting price-inclusive VAT.
+        guard let labeledTotal, let totalRow, !items.isEmpty,
+              reconciledTotal == nil || reconciledTotal != labeledTotal else { return nil }
 
         var taxRows: [(name: String, minor: Int)] = []
         for line in lines[..<min(totalRow, lines.count)] {

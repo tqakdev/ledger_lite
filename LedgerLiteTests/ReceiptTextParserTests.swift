@@ -412,4 +412,50 @@ struct ReceiptParserReceiptTests {
         #expect(r.currencyCode == "JPY")
         #expect(r.amountMinor == 1500)
     }
+
+    @Test("add-on tax is captured even when an unlabeled subtotal line reconciles")
+    func addOnTaxWithUnlabeledSubtotal() {
+        // The subtotal isn't labeled "Subtotal" (so it isn't excluded as a
+        // candidate) — the items reconcile to it, setting reconciledTotal. The
+        // add-on sales tax must still be captured because items + tax == total.
+        let text = """
+        Hardware Store
+        Hammer 10.00
+        Wrench 20.00
+        2 ITEMS 30.00
+        Sales tax 3.00
+        Total 33.00
+        """
+        let r = ReceiptTextParser.parse(text, defaultCurrency: "USD")
+        #expect(r.amountMinor == 3300)
+        #expect(r.tax == ReceiptLineItem(name: "Sales tax", amountMinor: 300))
+    }
+
+    @Test("ISO currency match needs a word boundary — 'Arcade' is not CAD")
+    func isoCurrencyWordBoundary() {
+        // A digital receipt with no currency symbol. "Arcade" contains "CAD" —
+        // a substring match would misdetect the currency as Canadian dollars.
+        let text = """
+        Apple Arcade
+        Subscription
+        Total 4.99
+        """
+        let r = ReceiptTextParser.parse(text, defaultCurrency: "USD")
+        #expect(r.currencyCode == "USD")
+    }
+
+    @Test("Malaysian Ringgit 'RM' prefix is detected as MYR")
+    func ringgitPrefixDetected() {
+        let r = ReceiptTextParser.parse("Mydin Mall\nJumlah RM 25.50", defaultCurrency: "USD")
+        #expect(r.currencyCode == "MYR")
+    }
+
+    @Test("'RM' inside a word does not trigger MYR")
+    func ringgitNotMatchedInsideWord() {
+        // All-caps receipts are common; "SUPERMARKET" and "FARM 3.00" both embed
+        // "RM" but must not be read as Ringgit — the prefix only counts at a word
+        // boundary immediately before a number.
+        let r = ReceiptTextParser.parse("SUPERMARKET\nFARM 3.00\nTotal $3.00", defaultCurrency: "USD")
+        #expect(r.currencyCode == "USD")
+    }
 }

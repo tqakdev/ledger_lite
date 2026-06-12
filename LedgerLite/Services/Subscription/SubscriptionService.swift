@@ -182,6 +182,19 @@ final class SubscriptionService {
 
         if generated > 0 {
             try subscriptionRepository.savePendingChanges()
+            // The billing date advanced, so the notification scheduled for the old
+            // date is now stale. Reschedule for the new date — otherwise the user
+            // gets a reminder for the first cycle only, then silence.
+            //
+            // Only reschedule when permission was already granted. This pass runs on
+            // every launch as a background catch-up; it must never trigger the system
+            // permission prompt (`requestAuthorization` blocks awaiting a tap — which
+            // also hangs headless test hosts). `notificationsAuthorized()` queries
+            // settings without prompting. If unauthorized there's no pending request
+            // to reschedule anyway, since scheduling requires permission too.
+            if await notificationsAuthorized() {
+                await scheduleNotification(for: sub)
+            }
             AppLogger.subscriptions.info("Generated \(generated) expense(s) for \(sub.name), next billing: \(sub.nextBillingDate)")
         }
     }

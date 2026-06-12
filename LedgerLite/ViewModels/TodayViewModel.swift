@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import WidgetKit
 
 enum TodaySheet: Identifiable {
     case quickAdd
@@ -87,6 +88,9 @@ final class TodayViewModel {
         do {
             try expenseRepository.delete(expense)
             SpotlightService.deindex(id)
+            // Deleting changed the data the home-screen widgets read — refresh now
+            // instead of waiting for the next ~30-minute system reload.
+            WidgetCenter.shared.reloadAllTimelines()
             refresh()
         } catch {
             errorMessage = error.localizedDescription

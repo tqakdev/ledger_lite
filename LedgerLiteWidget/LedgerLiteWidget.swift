@@ -374,6 +374,11 @@ struct LedgerLiteSubscriptionsWidgetEntryView: View {
 
         // Palette v2 (the widget target doesn't compile Theme, so hex literals).
         switch days {
+        case ..<0:
+            // Billing date already passed (generation hasn't run yet, or it's
+            // paused) — show "Overdue", never "In -3 days".
+            Text(String(localized: "Overdue"))
+                .foregroundStyle(Color(hex: "#E5484D"))
         case 0:
             Text(String(localized: "Today"))
                 .foregroundStyle(Color(hex: "#E5484D"))
