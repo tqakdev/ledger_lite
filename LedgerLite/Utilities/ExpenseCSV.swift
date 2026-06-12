@@ -4,7 +4,10 @@ import Foundation
 /// No SwiftData, no UI — extracted from SettingsView so the format is unit-testable.
 enum ExpenseCSV {
 
-    static let expenseHeader = "Date,Merchant,Category,Amount,Currency,HomeAmount,HomeCurrency,Note"
+    // The trailing ID column makes restore-from-backup idempotent (see `deduplicate`).
+    // It stays last so older, id-less exports still parse and third-party CSVs that
+    // omit it import unchanged.
+    static let expenseHeader = "Date,Merchant,Category,Amount,Currency,HomeAmount,HomeCurrency,Note,ID"
     static let subscriptionHeader = "Name,Amount,Currency,BillingCycle,NextBillingDate,Status"
 
     // MARK: - Export
@@ -18,7 +21,8 @@ enum ExpenseCSV {
             .rounded(scale: Money.decimals(for: e.homeCurrencyAtEntry))
             .description
         let note       = escape(escapeNewlines(e.note ?? ""))
-        return "\(date),\(merchant),\(category),\(amount),\(e.currencyCode),\(homeAmount),\(e.homeCurrencyAtEntry),\(note)"
+        let id         = escape(e.id.uuidString)
+        return "\(date),\(merchant),\(category),\(amount),\(e.currencyCode),\(homeAmount),\(e.homeCurrencyAtEntry),\(note),\(id)"
     }
 
     static func line(for s: Subscription) -> String {
@@ -42,6 +46,10 @@ enum ExpenseCSV {
         let exchangeRateToHome: Decimal
         let homeCurrency: String
         let note: String?
+        /// The originating expense's id when the row came from a LedgerLite export.
+        /// `nil` for legacy (pre-ID) exports and third-party CSVs — those rows are
+        /// always imported, never deduplicated.
+        let id: UUID?
     }
 
     /// Parses one data line. Returns nil for malformed rows (wrong field count,
@@ -67,6 +75,10 @@ enum ExpenseCSV {
             ? unescapeNewlines(fields[7])
             : nil
 
+        // Column 9 (ID) is newer still. A missing or unparseable id reads as nil,
+        // so the row is treated as brand new rather than rejected.
+        let id: UUID? = fields.count >= 9 ? UUID(uuidString: fields[8]) : nil
+
         return ImportedExpense(
             date: date,
             merchant: fields[1].isEmpty ? nil : fields[1],
@@ -75,8 +87,30 @@ enum ExpenseCSV {
             currencyCode: currency,
             exchangeRateToHome: rate,
             homeCurrency: homeCurr,
-            note: note
+            note: note,
+            id: id
         )
+    }
+
+    /// Filters imported rows down to the ones that should actually be inserted,
+    /// making restore-from-backup idempotent. A row is skipped when its id already
+    /// exists in the store (`existingIDs`) or was already seen earlier in the same
+    /// file. Rows without an id (legacy/third-party CSVs) are always kept — there's
+    /// no identity to dedup on, and dropping them would lose data.
+    static func deduplicate(
+        _ rows: [ImportedExpense],
+        existingIDs: Set<UUID>
+    ) -> (unique: [ImportedExpense], skipped: Int) {
+        var seen = existingIDs
+        var unique: [ImportedExpense] = []
+        var skipped = 0
+        for row in rows {
+            if let id = row.id {
+                guard seen.insert(id).inserted else { skipped += 1; continue }
+            }
+            unique.append(row)
+        }
+        return (unique, skipped)
     }
 
     /// Splits a CSV line into fields, honoring double-quote escaping.

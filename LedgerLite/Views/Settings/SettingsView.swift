@@ -427,11 +427,16 @@ struct SettingsView: View {
             }
 
             let categories = (try? CategoryRepository(context: modelContext).fetchAll()) ?? []
-            var imported = 0
+            let parsed = lines.dropFirst().compactMap(ExpenseCSV.importedExpense(fromLine:))
 
-            for line in lines.dropFirst() {
-                guard let row = ExpenseCSV.importedExpense(fromLine: line) else { continue }
+            // Skip rows whose id already exists (re-importing a backup) or repeats
+            // within this file, so restore-from-backup is idempotent.
+            let existingIDs = Set(((try? ExpenseRepository(context: modelContext).fetchAll()) ?? []).map(\.id))
+            let (rows, skipped) = ExpenseCSV.deduplicate(parsed, existingIDs: existingIDs)
+
+            for row in rows {
                 let expense = Expense(
+                    id: row.id ?? UUID(),
                     amountMinor: row.amountMinor,
                     currencyCode: row.currencyCode,
                     exchangeRateToHome: row.exchangeRateToHome,
@@ -443,16 +448,22 @@ struct SettingsView: View {
                 )
                 expense.category = categories.first { $0.name == row.categoryName }
                 modelContext.insert(expense)
-                imported += 1
             }
 
             try modelContext.save()
-            let plural = imported == 1
+            let imported = rows.count
+            var message = imported == 1
                 ? String(localized: "Imported 1 expense.")
                 : String(localized: "Imported \(imported) expenses.")
-            importResultText = plural
+            if skipped > 0 {
+                let dupes = skipped == 1
+                    ? String(localized: "Skipped 1 duplicate.")
+                    : String(localized: "Skipped \(skipped) duplicates.")
+                message += " " + dupes
+            }
+            importResultText = message
             showImportResult = true
-            AppLogger.data.info("CSV import: \(imported) expenses added")
+            AppLogger.data.info("CSV import: \(imported) added, \(skipped) duplicates skipped")
         } catch {
             errorText = error.localizedDescription
             showError  = true

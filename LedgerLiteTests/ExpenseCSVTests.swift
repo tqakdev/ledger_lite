@@ -79,6 +79,84 @@ struct ExpenseCSVNoteTests {
     }
 }
 
+// MARK: - ID column & dedup
+
+@Suite("ExpenseCSV — id column & dedup")
+struct ExpenseCSVDedupTests {
+
+    @Test("header names the ID column")
+    func headerHasIDColumn() {
+        #expect(ExpenseCSV.expenseHeader.hasSuffix(",ID"))
+    }
+
+    /// The id is what makes restore-from-backup idempotent — without it,
+    /// importing your own export doubles every row.
+    @Test("export line carries the expense id and import restores it")
+    @MainActor
+    func idRoundTrip() throws {
+        let expense = makeExpense()
+        let line = ExpenseCSV.line(for: expense)
+        let row = try #require(ExpenseCSV.importedExpense(fromLine: line))
+        #expect(row.id == expense.id)
+    }
+
+    @Test("legacy 8-field rows (pre-ID exports) import with nil id")
+    @MainActor
+    func legacyRowsHaveNilID() throws {
+        let legacy = "\"2026-06-01\",\"Uber\",\"Transport\",14.20,USD,14.20,USD,\"note\""
+        let row = try #require(ExpenseCSV.importedExpense(fromLine: legacy))
+        #expect(row.id == nil)
+        #expect(row.note == "note")
+    }
+
+    @Test("a malformed id imports as nil — treated as a new expense, not rejected")
+    @MainActor
+    func malformedIDImportsAsNil() throws {
+        let line = "\"2026-06-01\",\"Uber\",\"Transport\",14.20,USD,14.20,USD,\"\",not-a-uuid"
+        let row = try #require(ExpenseCSV.importedExpense(fromLine: line))
+        #expect(row.id == nil)
+        #expect(row.amountMinor == 1420)
+    }
+
+    @Test("deduplicate skips rows whose id already exists in the store")
+    @MainActor
+    func dedupSkipsExistingIDs() throws {
+        let kept = makeExpense(merchant: "Keep Me")
+        let dupe = makeExpense(merchant: "Already There")
+        let rows = [kept, dupe].compactMap { ExpenseCSV.importedExpense(fromLine: ExpenseCSV.line(for: $0)) }
+        #expect(rows.count == 2)
+
+        let result = ExpenseCSV.deduplicate(rows, existingIDs: [dupe.id])
+        #expect(result.unique.map(\.merchant) == ["Keep Me"])
+        #expect(result.skipped == 1)
+    }
+
+    @Test("deduplicate drops within-file repeats of the same id")
+    @MainActor
+    func dedupDropsWithinFileRepeats() throws {
+        let expense = makeExpense()
+        let line = ExpenseCSV.line(for: expense)
+        let rows = [line, line].compactMap { ExpenseCSV.importedExpense(fromLine: $0) }
+        #expect(rows.count == 2)
+
+        let result = ExpenseCSV.deduplicate(rows, existingIDs: [])
+        #expect(result.unique.count == 1)
+        #expect(result.skipped == 1)
+    }
+
+    @Test("id-less rows always import — third-party CSVs are never deduped")
+    @MainActor
+    func idlessRowsAlwaysImport() throws {
+        let legacy = "\"2026-06-01\",\"Uber\",\"Transport\",14.20,USD,14.20,USD"
+        let rows = [legacy, legacy].compactMap { ExpenseCSV.importedExpense(fromLine: $0) }
+        #expect(rows.count == 2)
+
+        let result = ExpenseCSV.deduplicate(rows, existingIDs: [])
+        #expect(result.unique.count == 2)
+        #expect(result.skipped == 0)
+    }
+}
+
 // MARK: - Dates
 
 @Suite("ExpenseCSV — calendar-day fidelity")
