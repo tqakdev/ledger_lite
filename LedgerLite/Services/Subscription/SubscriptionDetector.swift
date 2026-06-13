@@ -24,12 +24,10 @@ enum SubscriptionDetector {
 
     // MARK: - Internal constants
 
-    // Most-specific prefix first so "$" (USD) doesn't shadow "A$" (AUD) etc.
-    private static let symbolMap: [(symbol: String, code: String)] = [
-        ("HK$", "HKD"), ("NZ$", "NZD"), ("A$", "AUD"), ("C$", "CAD"), ("S$", "SGD"),
-        ("RM", "MYR"), ("₹", "INR"), ("€", "EUR"), ("£", "GBP"), ("¥", "JPY"),
-        ("₩", "KRW"), ("₺", "TRY"), ("฿", "THB"), ("$", "USD"),
-    ]
+    // Shared with ReceiptTextParser via Constants — see currencySymbolMap.
+    // "RM" (Malaysian Ringgit) is handled separately in extractAmount with a
+    // word boundary, so it can't fire inside "FARM 9.99".
+    private static let symbolMap = Constants.App.currencySymbolMap
 
     private static let subscriptionKeywords: [String] = [
         "subscription", "subscribe", "renewal", "renew", "billing", "billed",
@@ -122,6 +120,18 @@ enum SubscriptionDetector {
             let numStr = String(line[numRange])
             if let minor = parseMinorUnits(numStr, currencyCode: code) {
                 return (minor, code)
+            }
+        }
+
+        // 1b. "RM" (Malaysian Ringgit) — alphabetic, so require a word boundary
+        //     to avoid matching inside words like "FARM 9.99" or "WARM 5.00".
+        if let regex = try? NSRegularExpression(pattern: "\\bRM\\s?(\\d+[.,]?\\d*)"),
+           let match = regex.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)),
+           match.numberOfRanges > 1,
+           let numRange = Range(match.range(at: 1), in: line) {
+            let numStr = String(line[numRange])
+            if let minor = parseMinorUnits(numStr, currencyCode: "MYR") {
+                return (minor, "MYR")
             }
         }
 

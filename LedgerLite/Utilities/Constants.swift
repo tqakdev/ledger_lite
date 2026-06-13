@@ -14,6 +14,18 @@ enum Constants {
             "MYR", "IDR", "PLN", "CZK", "HUF", "ILS", "PHP", "BGN",
             "RON",
         ]
+
+        /// Single source of truth for currency-symbol prefixes shared by
+        /// `SubscriptionDetector` and `ReceiptTextParser`. Most-specific prefix
+        /// first so "$" (USD) doesn't shadow "A$" (AUD) or "R$" (BRL).
+        /// "RM" (Malaysian Ringgit) is alphabetic and deliberately NOT here — both
+        /// parsers match it with a `\bRM\s?\d` word boundary so it can't fire
+        /// inside words like "FARM 9.99" or "SUPERMARKET".
+        static let currencySymbolMap: [(symbol: String, code: String)] = [
+            ("HK$", "HKD"), ("NZ$", "NZD"), ("A$", "AUD"), ("C$", "CAD"), ("S$", "SGD"),
+            ("R$", "BRL"), ("₹", "INR"), ("€", "EUR"), ("£", "GBP"), ("¥", "JPY"),
+            ("₩", "KRW"), ("₺", "TRY"), ("฿", "THB"), ("$", "USD"),
+        ]
     }
 
     enum URLs {

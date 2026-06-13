@@ -63,6 +63,29 @@ struct AmountExtractionTests {
         #expect(result == nil)
     }
 
+    @Test("Malaysian Ringgit prefix — RM 9.99 → MYR")
+    func ringgitPrefix() {
+        let result = SubscriptionDetector.extractAmount(from: "RM 9.99 monthly subscription")
+        #expect(result?.minorUnits == 999)
+        #expect(result?.currencyCode == "MYR")
+    }
+
+    @Test("RM inside a word is not Ringgit — FARM 9.99 → not MYR")
+    func farmIsNotRinggit() {
+        // "RM" is alphabetic; without a word boundary it falsely matched inside
+        // words like FARM/WARM/SUPERMARKET. Must not be read as Malaysian Ringgit.
+        let result = SubscriptionDetector.extractAmount(from: "FARM 9.99 monthly")
+        #expect(result?.currencyCode != "MYR")
+    }
+
+    @Test("Brazilian Real prefix — R$ 9.99 → BRL (not USD)")
+    func brazilianRealPrefix() {
+        // "R$" must win over the bare "$" so Reais aren't misread as dollars.
+        let result = SubscriptionDetector.extractAmount(from: "R$ 9.99 monthly subscription")
+        #expect(result?.minorUnits == 999)
+        #expect(result?.currencyCode == "BRL")
+    }
+
     @Test("amount out of range still extracted; lower confidence than in-range")
     func outOfRangeAmountExtractedWithLowerConfidence() {
         // $999.99 = 99999 minor units, outside ≤50000 → no plausible-range bonus

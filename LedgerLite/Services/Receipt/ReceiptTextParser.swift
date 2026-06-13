@@ -6,12 +6,10 @@ import Foundation
 /// of here means all the real logic is covered without needing real images.
 enum ReceiptTextParser {
 
-    // Most-specific prefix first so "$" (USD) doesn't shadow "A$" (AUD).
-    private static let symbolMap: [(symbol: String, code: String)] = [
-        ("HK$", "HKD"), ("NZ$", "NZD"), ("A$", "AUD"), ("C$", "CAD"), ("S$", "SGD"),
-        ("R$", "BRL"), ("₹", "INR"), ("€", "EUR"), ("£", "GBP"), ("¥", "JPY"),
-        ("₩", "KRW"), ("₺", "TRY"), ("฿", "THB"), ("$", "USD"),
-    ]
+    // Shared with SubscriptionDetector via Constants — see currencySymbolMap.
+    // "RM" (Malaysian Ringgit) is handled separately in detectCurrency with a
+    // word boundary, so it can't fire inside "SUPERMARKET" or "FARM 3.00".
+    private static let symbolMap = Constants.App.currencySymbolMap
 
     // Strongest first — a "grand total" beats a bare "total" beats "amount".
     private static let totalKeywordTiers: [[String]] = [
