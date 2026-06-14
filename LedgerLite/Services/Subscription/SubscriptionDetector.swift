@@ -71,7 +71,6 @@ enum SubscriptionDetector {
             let cycle = extractBillingCycle(from: context)
             let score = scoreConfidence(
                 amountMinor: amountMinor,
-                currencyCode: currencyCode,
                 name: name,
                 cycle: cycle,
                 context: context
@@ -262,18 +261,16 @@ enum SubscriptionDetector {
 
     private static func scoreConfidence(
         amountMinor: Int,
-        currencyCode: String,
         name: String,
         cycle: BillingCycle,
         context: String
     ) -> Double {
         var score: Double = 0.35  // base: parseable amount
 
-        // Plausible subscription range: ¥50–¥50,000 or $0.50–$500.00
-        let places       = Money.decimals(for: currencyCode)
-        let minPlausible = places == 0 ? 50 : 50
-        let maxPlausible = places == 0 ? 50_000 : 50_000
-        if amountMinor >= minPlausible && amountMinor <= maxPlausible { score += 0.15 }
+        // Plausible subscription range in minor units: [50, 50_000] reads as
+        // ¥50–¥50,000 for 0-decimal currencies and $0.50–$500.00 for 2-decimal ones,
+        // so the same bounds apply regardless of the currency's decimal places.
+        if amountMinor >= 50 && amountMinor <= 50_000 { score += 0.15 }
 
         // Known service name (+0.25)
         let nameLower = name.lowercased()
@@ -417,14 +414,21 @@ enum SubscriptionDetector {
         let parts = normalized.components(separatedBy: ".")
         guard let intVal = Int(parts[0].isEmpty ? "0" : parts[0]) else { return nil }
         let multiplier = pow10(places)
+        // A long digit run in OCR/email text (e.g. an account number) can overflow
+        // when scaled to minor units. Such a value is never a plausible price, so
+        // treat overflow as "not a money amount" rather than trapping.
+        let (scaled, scaledOverflow) = intVal.multipliedReportingOverflow(by: multiplier)
+        guard !scaledOverflow else { return nil }
 
         if parts.count > 1 {
             let fracStr = String(parts[1].prefix(places))
                 .padding(toLength: places, withPad: "0", startingAt: 0)
             guard let fracVal = Int(fracStr) else { return nil }
-            return intVal * multiplier + fracVal
+            let (sum, sumOverflow) = scaled.addingReportingOverflow(fracVal)
+            guard !sumOverflow else { return nil }
+            return sum
         }
-        return intVal * multiplier
+        return scaled
     }
 
     private static func pow10(_ n: Int) -> Int {

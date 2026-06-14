@@ -145,6 +145,33 @@ struct AmountInputParserBHDTests {
     }
 }
 
+// MARK: - Overflow / cap safety
+
+@Suite("AmountInputParser — overflow safety")
+struct AmountInputParserOverflowTests {
+
+    // The numpad appends digits with no length cap, so `parse` can receive an
+    // arbitrarily long string. Scaling such an integer to minor units used to
+    // overflow Int and trap; it must clamp to the cap instead.
+    @Test("17-digit integer (Int-parseable but overflows ×100) clamps, not crash")
+    func seventeenDigitsClamps() {
+        let (_, m) = usdParser().parse(String(repeating: "9", count: 17))
+        #expect(m == 999_999_999)
+    }
+
+    @Test("over-long integer (beyond Int range) clamps, not crash")
+    func beyondIntRangeClamps() {
+        let (_, m) = usdParser().parse(String(repeating: "9", count: 25))
+        #expect(m == 999_999_999)
+    }
+
+    @Test("amount above the cap is clamped to 999_999_999")
+    func aboveCapClamps() {
+        let (_, m) = usdParser().parse("12345678.99")  // 1_234_567_899 minor > cap
+        #expect(m == 999_999_999)
+    }
+}
+
 // MARK: - format (edit-mode round-trip)
 
 @Suite("AmountInputParser — format (edit-mode)")

@@ -47,8 +47,11 @@ struct AmountInputParser {
             display = integerPart
         }
 
-        // Compute minor units
-        let intVal = Int(integerPart.isEmpty ? "0" : integerPart) ?? 0
+        // Compute minor units. The numpad appends digits without a length cap, so
+        // `integerPart` can be arbitrarily long: a value too large for Int, or one
+        // that overflows when scaled by `multiplier`, must clamp to the cap below
+        // rather than trap. `parse` is a pure function and must never crash on input.
+        let intVal = Int(integerPart.isEmpty ? "0" : integerPart) ?? Int.max
         let multiplier = pow10(places)
 
         let minorUnits: Int
@@ -58,7 +61,13 @@ struct AmountInputParser {
             // Pad fractional part on the right with zeros: "3" → "30" for 2-decimal currencies
             let fracPadded = fractionalCapped.padding(toLength: places, withPad: "0", startingAt: 0)
             let fracVal = Int(fracPadded) ?? 0
-            minorUnits = intVal * multiplier + fracVal
+            let (scaled, scaledOverflow) = intVal.multipliedReportingOverflow(by: multiplier)
+            if scaledOverflow {
+                minorUnits = Int.max
+            } else {
+                let (sum, sumOverflow) = scaled.addingReportingOverflow(fracVal)
+                minorUnits = sumOverflow ? Int.max : sum
+            }
         }
 
         return (display, min(minorUnits, 999_999_999))
