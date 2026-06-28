@@ -2,6 +2,16 @@
 
 A clean, privacy-first expense and subscription tracker for iOS. Built with SwiftUI and SwiftData — no accounts, no cloud required, everything on device.
 
+## Screenshots
+
+<p align="center">
+  <img src="AppStore/screenshots/6.9-inch/01-runway.png"   width="180" alt="Runway forecast">
+  <img src="AppStore/screenshots/6.9-inch/02-whatif.png"   width="180" alt="What-if simulator">
+  <img src="AppStore/screenshots/6.9-inch/03-bills.png"    width="180" alt="Bills & subscriptions">
+  <img src="AppStore/screenshots/6.9-inch/04-scan.png"     width="180" alt="Receipt scanning">
+  <img src="AppStore/screenshots/6.9-inch/05-spending.png" width="180" alt="Spending insights">
+</p>
+
 ## Features
 
 - **Quick Add** — log an expense in seconds with a large amount numpad, category strip, merchant suggestions, and reusable templates
